@@ -12,7 +12,7 @@ func main() {
 	diam.ListenAndServe(":3868", nil, nil)
 }
 
-// OnCEW reply with CEA.
+// On CER reply with CEA.
 // http://tools.ietf.org/html/rfc3588#section-5.3.2
 func OnCER(w diam.ResponseWriter, r *diam.Request) {
 	fmt.Println("Request from", r.RemoteAddr)
@@ -32,7 +32,7 @@ func OnCER(w diam.ResponseWriter, r *diam.Request) {
 	m.Add(diam.NewAVP(r.Dict.CodeFor("Product-Name"), 0x40, 0x0, "go-diameter"))
 	// Reply with the same Origin-State-Id
 	code := r.Dict.CodeFor("Origin-State-Id")
-	osid := r.Msg.Find(code)
-	m.Add(diam.NewAVP(code, 0x40, 0x0, osid.Data))
+	osAVP := r.Msg.Find(code)
+	m.Add(diam.NewAVP(code, 0x40, 0x0, osAVP.Data))
 	w.Write(m)
 }

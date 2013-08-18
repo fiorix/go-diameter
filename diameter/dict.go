@@ -83,7 +83,8 @@ func (dict *Dict) AVP(code uint32) (*DictAVP, error) {
 	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
 }
 
-// Enum returns a pre-loaded DictEnum for the given AVP code and n, or nil.
+// Enum returns a pre-loaded DictEnumItem for the given AVP code and n
+// (enum code in the dictionary definition), or nil.
 func (dict *Dict) Enum(code uint32, n uint8) (*DictEnumItem, error) {
 	avp, err := dict.AVP(code)
 	if err != nil {

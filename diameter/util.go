@@ -6,7 +6,7 @@ package diameter
 
 // uint24to32 converts b from BigEndian to LittleEndian and return a packed uint32.
 func uint24to32(b [3]uint8) uint32 {
-	return uint32(b[2]) | (uint32(b[1]) << 8) | (uint32(b[0]) << 16)
+	return uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2])
 }
 
 // pad4 returns n padded to 4 bytes

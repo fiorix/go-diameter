@@ -15,11 +15,11 @@ import (
 )
 
 type AVP struct {
-	Code     uint32      // AVP code number
-	Flags    uint8       // AVP flags
-	Length   uint32      // Total bytes with padding
-	VendorId uint32      // Optional Vendor Id
-	Data     interface{} // AVP data
+	Code     uint32
+	Flags    uint8
+	Length   uint32
+	VendorId uint32
+	Data     interface{}
 }
 
 func (avp *AVP) String() string {
@@ -60,8 +60,8 @@ type rawAVP struct {
 	Length [3]uint8
 }
 
-// ReadAVP reads an AVP and returns the number of extra bytes and parsed AVP,
-// or an error.
+// ReadAVP reads an AVP and returns the number of extra bytes read and parsed
+// AVP, or an error.
 // Extra bytes are read when the content of the AVP is OctetString and
 // needs padding. Total bytes read is avp.Length + extra.
 func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {

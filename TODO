@@ -1,3 +1,2 @@
 Handle dynamically grouped AVPs in diameter/avp.go
-Write diameter messages
-Tests
+More tests

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package diameter
+package diam
 
 import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"unsafe"
 )
 
 type Header struct {
@@ -25,9 +26,36 @@ func (hdr *Header) MessageLength() uint32 {
 	return uint24to32(hdr.RawMessageLength)
 }
 
+// UpdateLength updates RawMessageLength.
+func (hdr *Header) SetMessageLength(length uint32) {
+	hdr.RawMessageLength = uint32to24(uint32(unsafe.Sizeof(Header{})) + length)
+}
+
 // CommandCode returns the RawCommandCode as int.
 func (hdr *Header) CommandCode() uint32 {
 	return uint24to32(hdr.RawCommandCode)
+}
+
+// CommandName returns the name of the command based on its code.
+func (hdr *Header) CommandName() *Command {
+	var nameSuffix, abbrevSuffix string
+	if hdr.CommandFlags&0x80 > 0 {
+		nameSuffix = "-Request"
+		abbrevSuffix = "R"
+	} else {
+		nameSuffix = "-Answer"
+		abbrevSuffix = "A"
+	}
+	code := hdr.CommandCode()
+	var resp Command
+	if cmd, ok := commandCodes[code]; ok {
+		resp.Name = cmd.Name + nameSuffix
+		resp.Abbrev = cmd.Abbrev + abbrevSuffix
+	} else {
+		resp.Name = "Unknown"
+		resp.Abbrev = "?"
+	}
+	return &resp
 }
 
 type Command struct {
@@ -35,6 +63,7 @@ type Command struct {
 	Abbrev string
 }
 
+// TODO: Allow applications to register their commands.
 var commandCodes = map[uint32]Command{
 	274: {"Abbort-Session", "AS"},
 	271: {"Accounting", "AC"},
@@ -45,26 +74,7 @@ var commandCodes = map[uint32]Command{
 	275: {"Session-Termination", "ST"},
 }
 
-func CommandName(hdr *Header) (*Command, error) {
-	var nameSuffix, abbrevSuffix string
-	if hdr.CommandFlags&0x80 > 0 {
-		nameSuffix = "-Request"
-		abbrevSuffix = "R"
-	} else {
-		nameSuffix = "-Answer"
-		abbrevSuffix = "A"
-	}
-	code := hdr.CommandCode()
-	if cmd, ok := commandCodes[code]; ok {
-		return &Command{
-			cmd.Name + nameSuffix,
-			cmd.Abbrev + abbrevSuffix,
-		}, nil
-	}
-	return nil, fmt.Errorf("Unknown diameter command code: %d\n", code)
-}
-
-// ReadHeader reads one diameter header and return it.
+// ReadHeader reads one diameter header from the connection and return it.
 func ReadHeader(r io.Reader) (*Header, error) {
 	hdr := new(Header)
 	if err := binary.Read(r, binary.BigEndian, hdr); err != nil {
@@ -83,27 +93,12 @@ func (hdr *Header) String() string {
 	pflag := hdr.CommandFlags&0x40 > 0
 	eflag := hdr.CommandFlags&0x20 > 0
 	tflag := hdr.CommandFlags&0x10 > 0
-	cmd, err := CommandName(hdr)
-	if err != nil {
-		cmd = &Command{err.Error(), ""}
-	}
-	return fmt.Sprintf("DiameterHeader{"+
-		"Version:%d, "+
-		"MessageLength:%d, "+
-		"CommandFlags{r=%v,p=%v,e=%v,t=%v}, "+
-		"Command:%s (%s), "+
-		"ApplicationId:%d, "+
-		"HopByHopId:%#v, "+
-		"EndToEndId:%#v}",
-		hdr.Version,
-		hdr.MessageLength(),
-		rflag,
-		pflag,
-		eflag,
-		tflag,
-		cmd.Name,
-		cmd.Abbrev,
-		hdr.ApplicationId,
-		hdr.HopByHopId,
-		hdr.EndToEndId)
+	cmd := hdr.CommandName()
+	return fmt.Sprintf(
+		"%s (%s) Header{Code=%d,Version=%d,"+
+			"MessageLength=%d,CommandFlags={r=%v,p=%v,e=%v,t=%v},"+
+			"ApplicationId=%d,HopByHopId=%#v,EndToEndId=%#v}",
+		cmd.Name, cmd.Abbrev, hdr.CommandCode(), hdr.Version,
+		hdr.MessageLength(), rflag, pflag, eflag, tflag,
+		hdr.ApplicationId, hdr.HopByHopId, hdr.EndToEndId)
 }

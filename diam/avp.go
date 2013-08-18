@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package diameter
+package diam
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -19,45 +20,23 @@ type AVP struct {
 	Length   uint32
 	VendorId uint32
 	Data     interface{}
+	RawData  []byte
 	Padding  int
-}
-
-func (avp *AVP) String() string {
-	var name string
-	if davp, err := BaseDict.AVP(avp.Code); err != nil {
-		name = "Unknown"
-	} else {
-		name = davp.Name
-	}
-	v := fmt.Sprintf("%s AVP{Code=%d,Flags=%#x,Length=%d,VendorId=%#x,Padding=%d,",
-		name, avp.Code, avp.Flags, avp.Length, avp.VendorId, avp.Padding)
-	switch avp.Data.(type) {
-	case string:
-		v += fmt.Sprintf("string('%s')", avp.Data.(string))
-	case DictEnumItem:
-		v += fmt.Sprintf("enum(%s)", avp.Data.(DictEnumItem))
-	case time.Time:
-		v += fmt.Sprintf("time(%s)", avp.Data.(time.Time))
-	case uint32:
-		v += fmt.Sprintf("uint32(%d)", avp.Data.(uint32))
-	case uint64:
-		v += fmt.Sprintf("uint64(%d)", avp.Data.(uint64))
-	case net.IP:
-		v += fmt.Sprintf("ip(%s)", avp.Data.(net.IP))
-	case GroupedAVP:
-		v += fmt.Sprintf("grouped(%s)", avp.Data.(GroupedAVP))
-	default:
-		v += fmt.Sprintf("unknown(%s)", avp.Data)
-	}
-	return v + "}"
 }
 
 type GroupedAVP []*AVP
 
-type rawAVP struct {
+type avpHDR1 struct {
 	Code   uint32
 	Flags  uint8
 	Length [3]uint8
+}
+
+type avpHDR2 struct {
+	Code     uint32
+	Flags    uint8
+	Length   [3]uint8
+	VendorId uint32
 }
 
 // ReadAVP reads an AVP and returns the number of extra bytes read and parsed
@@ -67,7 +46,7 @@ type rawAVP struct {
 func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 	var (
 		err error
-		raw rawAVP
+		raw avpHDR1
 	)
 	if err = binary.Read(r, binary.BigEndian, &raw); err != nil {
 		return 0, nil, err
@@ -92,6 +71,10 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 		return 0, nil, fmt.Errorf("Unknown AVP code %d: missing dict?", avp.Code)
 	}
 	// Read grouped (embedded) AVPs.
+	// Grouped AVPs are the only reason why this function returns
+	// "extra" bytes, otherwise callers would have to walk through
+	// these grouped AVPs and sum their padding + length to figure
+	// out the total of bytes read.
 	// TODO: Handle dynamically grouped AVPs in case of 260, 279 or 284.
 	if davp.Data.Type == "Grouped" {
 		if eb, gavp, err := ReadAVP(r, dict); err != nil {
@@ -116,7 +99,9 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 		// TODO: Double check this.
 		if len(avp.Data.([]byte)) == 6 {
 			b := avp.Data.([]byte)
-			avp.Data = net.IPv4(b[2], b[3], b[4], b[5])
+			if b[1] == 1 { // Family address 1 == IPv4
+				avp.Data = net.IPv4(b[2], b[3], b[4], b[5])
+			}
 			break
 		}
 		// Fallback to string instead of IPv4.
@@ -168,4 +153,105 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 		}
 	}
 	return extrabytes, avp, nil
+}
+
+func (avp *AVP) String() string {
+	var name string
+	if davp, err := BaseDict.AVP(avp.Code); err != nil {
+		name = "Unknown"
+	} else {
+		name = davp.Name
+	}
+	v := fmt.Sprintf("%s AVP{Code=%d,Flags=%#x,Length=%d,VendorId=%#x,Padding=%d,",
+		name, avp.Code, avp.Flags, avp.Length, avp.VendorId, avp.Padding)
+	switch avp.Data.(type) {
+	case string:
+		v += fmt.Sprintf("string('%s')", avp.Data.(string))
+	case DictEnumItem:
+		v += fmt.Sprintf("enum(%s)", avp.Data.(DictEnumItem))
+	case time.Time:
+		v += fmt.Sprintf("time(%s)", avp.Data.(time.Time))
+	case uint32:
+		v += fmt.Sprintf("uint32(%d)", avp.Data.(uint32))
+	case uint64:
+		v += fmt.Sprintf("uint64(%d)", avp.Data.(uint64))
+	case net.IP:
+		v += fmt.Sprintf("net.IP(%s)", avp.Data.(net.IP))
+	case GroupedAVP:
+		v += fmt.Sprintf("Grouped(%s)", avp.Data.(GroupedAVP))
+	default:
+		v += fmt.Sprintf("Unknown(%s)", avp.Data)
+	}
+	return v + "}"
+}
+
+// NewAVP allocates and returns a new AVP.
+func NewAVP(code uint32, flags uint8, vendor uint32, data interface{}) *AVP {
+	avp := &AVP{
+		Code:     code,
+		Flags:    flags,
+		VendorId: vendor,
+		Data:     data,
+	}
+	if flags&0x20 > 0 {
+		avp.Length = uint32(unsafe.Sizeof(avpHDR2{}))
+	} else {
+		avp.Length = uint32(unsafe.Sizeof(avpHDR1{}))
+	}
+	switch data.(type) {
+	case string:
+		s := data.(string)
+		sl := uint32(len(s))
+		avp.Length += sl
+		if extra := pad4(sl) - sl; extra > 0 {
+			avp.Padding = int(extra)
+			avp.RawData = make([]byte, sl+extra)
+			copy(avp.RawData, s)
+		} else {
+			avp.RawData = []byte(s)
+		}
+	case net.IP:
+		avp.Length += 6
+		ip := data.(net.IP).To4()
+		// TODO: Fix this static family 1 + IPv4 address.
+		s := []byte{0, 1, ip[0], ip[1], ip[2], ip[3]}
+		sl := uint32(len(s))
+		if extra := pad4(sl) - sl; extra > 0 {
+			avp.Padding = int(extra)
+			avp.RawData = make([]byte, sl+extra)
+			copy(avp.RawData, s)
+		} else {
+			avp.RawData = []byte(s)
+		}
+	case uint32:
+		avp.Length += 4
+		avp.RawData = uint32tobytes(data.(uint32))
+	case uint64:
+		avp.Length += 8
+		avp.RawData = uint64tobytes(data.(uint64))
+	}
+	return avp
+}
+
+// Marshal returns a binary encoded version of the AVP.
+func (avp *AVP) Marshal() []byte {
+	b := bytes.NewBuffer(make([]byte, 0))
+	if avp.Flags&0x20 > 0 {
+		hdr := avpHDR2{
+			Code:     avp.Code,
+			Flags:    avp.Flags,
+			Length:   uint32to24(avp.Length),
+			VendorId: avp.VendorId,
+		}
+		binary.Write(b, binary.BigEndian, hdr)
+	} else {
+		hdr := avpHDR1{
+			Code:   avp.Code,
+			Flags:  avp.Flags,
+			Length: uint32to24(avp.Length),
+		}
+		binary.Write(b, binary.BigEndian, hdr)
+	}
+	binary.Write(b, binary.BigEndian, avp.RawData)
+	return b.Bytes()
 }

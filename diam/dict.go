@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package diameter
+package diam
 
 import (
 	"encoding/xml"
@@ -81,6 +81,19 @@ func (dict *Dict) AVP(code uint32) (*DictAVP, error) {
 		return avp, nil
 	}
 	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
+}
+
+// Code returns the code for the given AVP name.
+func (dict *Dict) CodeFor(name string) uint32 {
+	dict.mu.RLock()
+	defer dict.mu.RUnlock()
+	// TODO: Cache this and invalidate when new dict is loaded.
+	for code, v := range dict.avp {
+		if name == v.Name {
+			return code
+		}
+	}
+	return 0
 }
 
 // Enum returns a pre-loaded DictEnumItem for the given AVP code and n

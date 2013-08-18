@@ -5,4 +5,4 @@
 // Diameter Base Protocol for the Go programming language.
 //
 // http://tools.ietf.org/html/rfc3588
-package diameter
+package diam

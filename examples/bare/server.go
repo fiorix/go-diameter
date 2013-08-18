@@ -10,15 +10,15 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/fiorix/go-diameter/diameter"
+	"github.com/fiorix/go-diameter/diam"
 )
 
-// var dict *diameter.Dict
+// var dict *diam.Dict
 
 func main() {
 	var err error
-	// dict, err = diameter.NewDict("./dict/diam_app.xml")
-	// diameter.BaseDict.Load("./dict/diam_app.xml")
+	// dict, err = diam.NewDict("./dict/diam_app.xml")
+	// diam.BaseDict.Load("./dict/diam_app.xml")
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +37,7 @@ func main() {
 
 func client(conn net.Conn) {
 	defer conn.Close()
-	msg, err := diameter.ReadMessage(conn, diameter.BaseDict)
+	msg, err := diam.ReadMessage(conn, diam.BaseDict)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return

@@ -169,7 +169,7 @@ func PrintDict(dict *DictFile) {
 				fmt.Printf("  %d %s\n", item.Code, item.Name)
 			}
 		}
-		// grouped AVPs
+		// Grouped AVPs
 		if len(avp.Data.AVP) > 0 {
 			fmt.Printf("  Grouped AVPs:\n")
 			for _, gavp := range avp.Data.AVP {

@@ -47,7 +47,7 @@ func ReadMessage(r io.Reader, dict *Dict) (*Message, error) {
 	return msg, nil
 }
 
-// Find return an AVP by looking up its code, or nil.
+// Find returns an AVP by looking up its code, or nil.
 func (m *Message) Find(code uint32) *AVP {
 	for _, avp := range m.AVP {
 		if code == avp.Code {
@@ -69,7 +69,7 @@ func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32) *Mes
 	return msg
 }
 
-// Add appends an AVP to the given message.
+// Add adds an AVP to the given message.
 func (m *Message) Add(avp *AVP) {
 	m.AVP = append(m.AVP, avp)
 }

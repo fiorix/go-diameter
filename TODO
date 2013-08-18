@@ -1,2 +1,4 @@
 Handle dynamically grouped AVPs in diameter/avp.go
+Support for sending Grouped AVPs
+Support missing data types (Float32, etc)
 More tests

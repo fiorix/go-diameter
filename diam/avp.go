@@ -24,7 +24,7 @@ type AVP struct {
 	Padding  int
 }
 
-type GroupedAVP []*AVP
+type Grouped []*AVP
 
 type avpHDR1 struct {
 	Code   uint32
@@ -81,9 +81,9 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 			return 0, nil, err
 		} else {
 			if avp.Data == nil {
-				avp.Data = GroupedAVP{}
+				avp.Data = Grouped{}
 			}
-			avp.Data = append(avp.Data.(GroupedAVP), gavp)
+			avp.Data = append(avp.Data.(Grouped), gavp)
 			return eb, avp, nil
 		}
 	}
@@ -178,8 +178,8 @@ func (avp *AVP) String() string {
 		v += fmt.Sprintf("uint64(%d)", avp.Data.(uint64))
 	case net.IP:
 		v += fmt.Sprintf("net.IP(%s)", avp.Data.(net.IP))
-	case GroupedAVP:
-		v += fmt.Sprintf("Grouped(%s)", avp.Data.(GroupedAVP))
+	case Grouped:
+		v += fmt.Sprintf("Grouped(%s)", avp.Data.(Grouped))
 	default:
 		v += fmt.Sprintf("Unknown(%s)", avp.Data)
 	}

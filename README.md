@@ -19,3 +19,4 @@ aiming for simplicity on handling diameter messages.
 - Embedded base protocol dictionary (one less file to carry around)
 - (almost) Human readable AVP representation
 - Dictionary AVPs are can be overloaded
+- TLS (untested, but is there)

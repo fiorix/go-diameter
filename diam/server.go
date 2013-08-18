@@ -44,6 +44,7 @@ type ResponseWriter interface {
 // or to be sent by a client.
 type Request struct {
 	Msg        *Message
+	LocalAddr  string
 	RemoteAddr string
 	TLS        *tls.ConnectionState // or nil when not using TLS
 	Dict       *Dict                // Dicts available on this server
@@ -62,10 +63,9 @@ type CloseNotifier interface {
 
 // A conn represents the server side of a diameter connection.
 type conn struct {
-	remoteAddr string               // network address of remote side
-	server     *Server              // the Server on which the connection arrived
-	rwc        net.Conn             // i/o connection
-	tlsState   *tls.ConnectionState // or nil when not using TLS
+	server   *Server              // the Server on which the connection arrived
+	rwc      net.Conn             // i/o connection
+	tlsState *tls.ConnectionState // or nil when not using TLS
 
 	mu           sync.Mutex // guards the following
 	clientGone   bool       // if client has disconnected mid-request
@@ -109,7 +109,6 @@ type response struct {
 // Create new connection from rwc.
 func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
 	c = new(conn)
-	c.remoteAddr = rwc.RemoteAddr().String()
 	c.server = srv
 	c.rwc = rwc
 	return c, nil
@@ -135,7 +134,8 @@ func (c *conn) readRequest() (w *response, err error) {
 	}
 	req := &Request{
 		Msg:        msg,
-		RemoteAddr: c.remoteAddr,
+		LocalAddr:  c.rwc.LocalAddr().String(),
+		RemoteAddr: c.rwc.RemoteAddr().String(),
 		TLS:        c.tlsState,
 		Dict:       dict,
 	}
@@ -157,7 +157,8 @@ func (c *conn) serve() {
 			const size = 4096
 			buf := make([]byte, size)
 			buf = buf[:runtime.Stack(buf, false)]
-			log.Printf("diam: panic serving %v: %v\n%s", c.remoteAddr, err, buf)
+			log.Printf("diam: panic serving %v: %v\n%s",
+				c.rwc.RemoteAddr().String(), err, buf)
 		}
 		c.rwc.Close()
 	}()

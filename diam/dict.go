@@ -20,12 +20,17 @@ type Dict struct {
 type DictFile struct {
 	XMLName xml.Name      `xml:"diameter"`
 	Vendor  []*DictVendor `xml:"vendor"`
-	AVP     []*DictAVP    `xml:"avp"`
+	App     []*DictApp    `xml:"application"`
 }
 
 type DictVendor struct {
 	Id   uint32 `xml:"id,attr"`
 	Name string `xml:"name,attr"`
+}
+
+type DictApp struct {
+	Id  int        `xml:"id,attr"`
+	AVP []*DictAVP `xml:"avp"`
 }
 
 type DictAVP struct {
@@ -36,12 +41,13 @@ type DictAVP struct {
 	MustNot string   `xml:"must-not,attr"`
 	Encr    string   `xml:"encr,attr"`
 	Data    DictData `xml:"data"`
+	App     *DictApp `xml:"none"` // Link back to diameter application
 }
 
 type DictData struct {
 	Type     string          `xml:"type,attr"`
-	EnumItem []*DictEnumItem `xml:"item"`
-	AVP      []*DictAVP      `xml:"avp"`
+	EnumItem []*DictEnumItem `xml:"item"` // In case the value is Enumerated
+	AVP      []*DictAVP      `xml:"avp"`  // In case of Grouped AVPs
 }
 
 type DictEnumItem struct {
@@ -67,8 +73,11 @@ func (dict *Dict) Load(buf []byte) error {
 	dict.mu.Lock()
 	defer dict.mu.Unlock()
 	dict.file = append(dict.file, f)
-	for _, avp := range f.AVP {
-		dict.avp[avp.Code] = avp
+	for _, app := range f.App {
+		for _, avp := range app.AVP {
+			avp.App = app
+			dict.avp[avp.Code] = avp
+		}
 	}
 	return nil
 }
@@ -83,7 +92,7 @@ func (dict *Dict) AVP(code uint32) (*DictAVP, error) {
 	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
 }
 
-// Code returns the code for the given AVP name.
+// CodeFor returns the code for the given AVP name.
 func (dict *Dict) CodeFor(name string) uint32 {
 	dict.mu.RLock()
 	defer dict.mu.RUnlock()
@@ -94,6 +103,19 @@ func (dict *Dict) CodeFor(name string) uint32 {
 		}
 	}
 	return 0
+}
+
+// AppFor return the DictApp for the given AVP name.
+func (dict *Dict) AppFor(name string) *DictApp {
+	dict.mu.RLock()
+	defer dict.mu.RUnlock()
+	// TODO: Cache this and invalidate when new dict is loaded.
+	for _, v := range dict.avp {
+		if name == v.Name {
+			return v.App
+		}
+	}
+	return nil // TODO: Return error as well?
 }
 
 // Enum returns a pre-loaded DictEnumItem for the given AVP code and n
@@ -137,7 +159,7 @@ func PrintDict(dict *DictFile) {
 	}
 	fmt.Println()
 	fmt.Printf("AVPs:\n")
-	for _, avp := range dict.AVP {
+	for _, avp := range dict.App[0].AVP {
 		fmt.Printf("Code=%d Name=%s Type=%s\n",
 			avp.Code, avp.Name, avp.Data.Type)
 		// enum items

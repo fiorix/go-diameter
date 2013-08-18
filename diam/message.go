@@ -88,11 +88,7 @@ func (m *Message) Bytes() []byte {
 	b := bytes.NewBuffer(make([]byte, 0))
 	binary.Write(b, binary.BigEndian, m.Header)
 	binary.Write(b, binary.BigEndian, bytes.Join(buf, []byte{}))
-	fmt.Println("Writing message")
-	m.PrettyPrint()
-	v := b.Bytes()
-	fmt.Println("Writing bytes:", len(v))
-	return v
+	return b.Bytes()
 }
 
 // PrettyPrint prints messages in a human readable format.

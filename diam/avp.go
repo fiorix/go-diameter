@@ -156,6 +156,7 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 }
 
 func (avp *AVP) String() string {
+	// TODO: Lookup the vendor id from AVP in the dictionary.
 	var name string
 	if davp, err := BaseDict.AVP(avp.Code); err != nil {
 		name = "Unknown"

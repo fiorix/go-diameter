@@ -54,7 +54,7 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 	avp := &AVP{
 		Code:   raw.Code,
 		Flags:  raw.Flags,
-		Length: uint24to32(raw.Length),
+		Length: uint24To32(raw.Length),
 	}
 	dlen := avp.Length - uint32(unsafe.Sizeof(raw))
 	// Read VendorId when necessary.
@@ -123,12 +123,16 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 		if dlen != 4 {
 			return 0, nil, fmt.Errorf("Expecting Unsigned32, got %d instead", dlen*8)
 		}
-		avp.Data = bytes2uint32(avp.Data.([]byte))
+		var n uint32
+		netBytesToN(avp.Data.([]byte), &n)
+		avp.Data = n
 	case "Unsigned64":
 		if dlen != 8 {
 			return 0, nil, fmt.Errorf("Expecting Unsigned64, got %d instead", dlen*8)
 		}
-		avp.Data = bytes2uint64(avp.Data.([]byte))
+		var n uint64
+		netBytesToN(avp.Data.([]byte), &n)
+		avp.Data = n
 	}
 	// Check if there's extra data to read due to padding of OctetString.
 	//
@@ -209,10 +213,10 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data interface{}) *AVP {
 		avpString(avp, []byte{0, 1, ip[0], ip[1], ip[2], ip[3]})
 	case uint32:
 		avp.Length += 4
-		avp.RawData = uint32tobytes(data.(uint32))
+		avp.RawData, _ = nToNetBytes(data.(uint32))
 	case uint64:
 		avp.Length += 8
-		avp.RawData = uint64tobytes(data.(uint64))
+		avp.RawData, _ = nToNetBytes(data.(uint64))
 	}
 	return avp
 }
@@ -239,7 +243,7 @@ func (avp *AVP) Marshal() []byte {
 		hdr := rfcHdr2{
 			Code:     avp.Code,
 			Flags:    avp.Flags,
-			Length:   uint32to24(avp.Length),
+			Length:   uint32To24(avp.Length),
 			VendorId: avp.VendorId,
 		}
 		binary.Write(b, binary.BigEndian, hdr)
@@ -247,7 +251,7 @@ func (avp *AVP) Marshal() []byte {
 		hdr := rfcHdr1{
 			Code:   avp.Code,
 			Flags:  avp.Flags,
-			Length: uint32to24(avp.Length),
+			Length: uint32To24(avp.Length),
 		}
 		binary.Write(b, binary.BigEndian, hdr)
 	}

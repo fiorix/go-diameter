@@ -65,7 +65,7 @@ func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32) *Mes
 	msg.Header = new(Header)
 	msg.Header.Version = 1
 	msg.Header.CommandFlags = flags
-	msg.Header.RawCommandCode = uint32to24(code)
+	msg.Header.RawCommandCode = uint32To24(code)
 	msg.Header.HopByHopId = hopbyhop
 	msg.Header.EndToEndId = endtoend
 	return msg

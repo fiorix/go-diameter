@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Diameter message header parser and helpers.
+
 package diam
 
 import (
@@ -52,17 +54,17 @@ func (hdr *Header) String() string {
 
 // MessageLength is a helper function returns the RawMessageLength as int.
 func (hdr *Header) MessageLength() uint32 {
-	return uint24to32(hdr.RawMessageLength)
+	return uint24To32(hdr.RawMessageLength)
 }
 
 // UpdateLength is a helper function that updates RawMessageLength.
 func (hdr *Header) SetMessageLength(length uint32) {
-	hdr.RawMessageLength = uint32to24(uint32(unsafe.Sizeof(Header{})) + length)
+	hdr.RawMessageLength = uint32To24(uint32(unsafe.Sizeof(Header{})) + length)
 }
 
 // CommandCode is a helper function that returns the RawCommandCode as int.
 func (hdr *Header) CommandCode() uint32 {
-	return uint24to32(hdr.RawCommandCode)
+	return uint24To32(hdr.RawCommandCode)
 }
 
 // CommandName is a helper function that returns the name of the command based

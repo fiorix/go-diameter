@@ -42,9 +42,5 @@ func client(conn net.Conn) {
 		fmt.Println("Error:", err)
 		return
 	}
-	fmt.Printf("message:\n%s\n", msg.Header)
-	for _, avp := range msg.AVP {
-		fmt.Printf("  %s\n", avp)
-	}
-	fmt.Println()
+	msg.PrettyPrint()
 }

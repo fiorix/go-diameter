@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Helper functions for type conversion between diameter data types.
+
 package diam
 
 import (
@@ -29,7 +31,7 @@ func uint32To24(b uint32) [3]uint8 {
 	return r
 }
 
-var invalid = errors.New("Invalid type for conversion")
+var invalidType = errors.New("invalidType type for conversion")
 
 // nToNetBytes converts any numeric type to byte array in network byte order.
 func nToNetBytes(v interface{}) ([]byte, error) {
@@ -48,7 +50,7 @@ func nToNetBytes(v interface{}) ([]byte, error) {
 	case float64:
 		binary.Write(buf, binary.BigEndian, v.(float64))
 	default:
-		return nil, invalid
+		return nil, invalidType
 	}
 	return buf.Bytes(), nil
 }
@@ -69,7 +71,7 @@ func netBytesToN(b []byte, v interface{}) error {
 	case *float64:
 		binary.Read(bytes.NewBuffer(b), binary.BigEndian, v.(*float64))
 	default:
-		return invalid
+		return invalidType
 	}
 	return nil
 }

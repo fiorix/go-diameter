@@ -234,7 +234,7 @@ func avpString(avp *AVP, s []byte) {
 // Marshal returns an AVP in binary form so it can be attached to a Message
 // before sent to a connection.
 func (avp *AVP) Marshal() []byte {
-	b := bytes.NewBuffer(make([]byte, 0))
+	b := bytes.NewBuffer(nil)
 	if avp.Flags&0x20 > 0 {
 		hdr := rfcHdr2{
 			Code:     avp.Code,

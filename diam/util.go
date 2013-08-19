@@ -41,7 +41,7 @@ func bytes2uint32(b []byte) uint32 {
 
 // uint32tobytes converts uint32 to byte array.
 func uint32tobytes(n uint32) []byte {
-	b := bytes.NewBuffer(make([]byte, 0))
+	b := bytes.NewBuffer(nil)
 	binary.Write(b, binary.BigEndian, n) // ign error?
 	return b.Bytes()
 }
@@ -63,7 +63,7 @@ func bytes2uint64(b []byte) uint64 {
 
 // uint64tobytes converts uint64 to byte array.
 func uint64tobytes(n uint64) []byte {
-	b := bytes.NewBuffer(make([]byte, 0))
+	b := bytes.NewBuffer(nil)
 	binary.Write(b, binary.BigEndian, n) // ign error?
 	return b.Bytes()
 }

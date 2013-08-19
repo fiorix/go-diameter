@@ -87,7 +87,7 @@ func (m *Message) Bytes() []byte {
 		buf = append(buf, b)
 	}
 	m.Header.SetMessageLength(length)
-	b := bytes.NewBuffer(make([]byte, 0))
+	b := bytes.NewBuffer(nil)
 	binary.Write(b, binary.BigEndian, m.Header)
 	binary.Write(b, binary.BigEndian, bytes.Join(buf, []byte{}))
 	return b.Bytes()

@@ -202,29 +202,11 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data interface{}) *AVP {
 	}
 	switch data.(type) {
 	case string:
-		s := data.(string)
-		sl := uint32(len(s))
-		avp.Length += sl
-		if extra := pad4(sl) - sl; extra > 0 {
-			avp.Padding = int(extra)
-			avp.RawData = make([]byte, sl+extra)
-			copy(avp.RawData, s)
-		} else {
-			avp.RawData = []byte(s)
-		}
+		avpString(avp, []byte(data.(string)))
 	case net.IP:
-		avp.Length += 6
 		ip := data.(net.IP).To4()
 		// TODO: Fix this static family 1 + IPv4 address.
-		s := []byte{0, 1, ip[0], ip[1], ip[2], ip[3]}
-		sl := uint32(len(s))
-		if extra := pad4(sl) - sl; extra > 0 {
-			avp.Padding = int(extra)
-			avp.RawData = make([]byte, sl+extra)
-			copy(avp.RawData, s)
-		} else {
-			avp.RawData = []byte(s)
-		}
+		avpString(avp, []byte{0, 1, ip[0], ip[1], ip[2], ip[3]})
 	case uint32:
 		avp.Length += 4
 		avp.RawData = uint32tobytes(data.(uint32))
@@ -233,6 +215,20 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data interface{}) *AVP {
 		avp.RawData = uint64tobytes(data.(uint64))
 	}
 	return avp
+}
+
+// avpString encodes the AVP data with padding if needed, and updates the
+// Length header accordingly. It also sets the Padding attribute.
+func avpString(avp *AVP, s []byte) {
+	length := uint32(len(s))
+	avp.Length += length
+	if extra := pad4(length) - length; extra > 0 {
+		avp.Padding = int(extra)
+		avp.RawData = make([]byte, length+extra)
+		copy(avp.RawData, s)
+	} else {
+		avp.RawData = s
+	}
 }
 
 // Marshal returns an AVP in binary form so it can be attached to a Message

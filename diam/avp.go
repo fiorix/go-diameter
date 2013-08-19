@@ -155,6 +155,7 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 	return extrabytes, avp, nil
 }
 
+// String returns the AVP in human readable format.
 func (avp *AVP) String() string {
 	// TODO: Lookup the vendor id from AVP in the dictionary.
 	var name string
@@ -186,7 +187,7 @@ func (avp *AVP) String() string {
 	return v + "}"
 }
 
-// NewAVP allocates and returns a new AVP.
+// NewAVP allocates and returns a new AVP. Used for building messages.
 func NewAVP(code uint32, flags uint8, vendor uint32, data interface{}) *AVP {
 	avp := &AVP{
 		Code:     code,
@@ -234,7 +235,8 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data interface{}) *AVP {
 	return avp
 }
 
-// Marshal returns a binary encoded version of the AVP.
+// Marshal returns an AVP in binary form so it can be attached to a Message
+// before sent to a connection.
 func (avp *AVP) Marshal() []byte {
 	b := bytes.NewBuffer(make([]byte, 0))
 	if avp.Flags&0x20 > 0 {

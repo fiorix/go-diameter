@@ -12,6 +12,7 @@ import (
 	"unsafe"
 )
 
+// Message is a diameter message, composed of a header and multiple AVPs.
 type Message struct {
 	Header *Header
 	AVP    []*AVP
@@ -47,7 +48,7 @@ func ReadMessage(r io.Reader, dict *Dict) (*Message, error) {
 	return msg, nil
 }
 
-// Find returns an AVP by looking up its code, or nil.
+// Find is a helper function that returns an AVP by looking up its code, or nil.
 func (m *Message) Find(code uint32) *AVP {
 	for _, avp := range m.AVP {
 		if code == avp.Code {
@@ -57,7 +58,8 @@ func (m *Message) Find(code uint32) *AVP {
 	return nil
 }
 
-// NewMessage allocates a new Message.
+// NewMessage allocates a new Message. Used for building messages that will
+// be sent to a connection.
 func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32) *Message {
 	msg := new(Message)
 	msg.Header = new(Header)
@@ -69,12 +71,12 @@ func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32) *Mes
 	return msg
 }
 
-// Add adds an AVP to the given message.
+// Add adds an AVP to the given Message.
 func (m *Message) Add(avp *AVP) {
 	m.AVP = append(m.AVP, avp)
 }
 
-// Bytes returns the encoded message in binary form.
+// Bytes returns the Message in binary form to be sent to a connection.
 func (m *Message) Bytes() []byte {
 	var buf [][]byte
 	var length uint32

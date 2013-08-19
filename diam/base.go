@@ -120,8 +120,12 @@ var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 
     <avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" encr="N">
       <data type="Grouped">
-        <avp name="Vendor-Id" code="266" must="M"/>
-        <avp name="Experimental-Result-Code" code="298" must="M"/>
+        <avp name="Vendor-Id" code="266" must="M">
+          <data type="Unsigned32"/>
+        </avp>
+        <avp name="Experimental-Result-Code" code="298" must="M">
+          <data type="Unsigned32"/>
+        </avp>
       </data>
     </avp>
 
@@ -171,8 +175,12 @@ var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 
     <avp name="Proxy-Info" code="284" must="M" may="" must-not="P,V" encr="N">
       <data type="Grouped">
-        <avp name="Proxy-Host" code="280" must="M"/>
-        <avp name="Proxy-State" code="33" must="M"/>
+        <avp name="Proxy-Host" code="280" must="M">
+          <data type="DiameterIdentity"/>
+        </avp>
+        <avp name="Proxy-State" code="33" must="M">
+          <data type="OctetString"/>
+        </avp>
       </data>
     </avp>
 
@@ -256,9 +264,15 @@ var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 
     <avp name="Vendor-Specific-Application-Id" code="260" must="M" may="P" must-not="V" encr="N">
       <data type="Grouped">
-        <avp name="Vendor-Id" code="266" must=""/>
-        <avp name="Auth-Application-Id" code="258" must="M"/>
-        <avp name="Acct-Application-Id" code="259" must="M"/>
+        <avp name="Vendor-Id" code="266" must="">
+          <data type="Unsigned32"/>
+        </avp>
+        <avp name="Auth-Application-Id" code="258" must="M">
+          <data type="Unsigned32"/>
+        </avp>
+        <avp name="Acct-Application-Id" code="259" must="M">
+          <data type="Unsigned32"/>
+        </avp>
       </data>
     </avp>
 

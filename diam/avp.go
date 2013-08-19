@@ -26,13 +26,13 @@ type AVP struct {
 
 type Grouped []*AVP
 
-type avpHDR1 struct {
+type rfcHdr1 struct {
 	Code   uint32
 	Flags  uint8
 	Length [3]uint8
 }
 
-type avpHDR2 struct {
+type rfcHdr2 struct {
 	Code     uint32
 	Flags    uint8
 	Length   [3]uint8
@@ -46,7 +46,7 @@ type avpHDR2 struct {
 func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 	var (
 		err error
-		raw avpHDR1
+		raw rfcHdr1
 	)
 	if err = binary.Read(r, binary.BigEndian, &raw); err != nil {
 		return 0, nil, err
@@ -195,9 +195,9 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data interface{}) *AVP {
 		Data:     data,
 	}
 	if flags&0x20 > 0 {
-		avp.Length = uint32(unsafe.Sizeof(avpHDR2{}))
+		avp.Length = uint32(unsafe.Sizeof(rfcHdr2{}))
 	} else {
-		avp.Length = uint32(unsafe.Sizeof(avpHDR1{}))
+		avp.Length = uint32(unsafe.Sizeof(rfcHdr1{}))
 	}
 	switch data.(type) {
 	case string:
@@ -238,7 +238,7 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data interface{}) *AVP {
 func (avp *AVP) Marshal() []byte {
 	b := bytes.NewBuffer(make([]byte, 0))
 	if avp.Flags&0x20 > 0 {
-		hdr := avpHDR2{
+		hdr := rfcHdr2{
 			Code:     avp.Code,
 			Flags:    avp.Flags,
 			Length:   uint32to24(avp.Length),
@@ -246,7 +246,7 @@ func (avp *AVP) Marshal() []byte {
 		}
 		binary.Write(b, binary.BigEndian, hdr)
 	} else {
-		hdr := avpHDR1{
+		hdr := rfcHdr1{
 			Code:   avp.Code,
 			Flags:  avp.Flags,
 			Length: uint32to24(avp.Length),

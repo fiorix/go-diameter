@@ -14,15 +14,15 @@ import (
 )
 
 type Dict struct {
-	file []*DictFile
-	avp  map[uint32]*DictAVP
+	file []*DictFile         // Dict supports multiple XML dictionaries
+	avp  map[uint32]*DictAVP // AVP index
 	mu   sync.RWMutex
 }
 
 type DictFile struct {
 	XMLName xml.Name      `xml:"diameter"`
-	Vendor  []*DictVendor `xml:"vendor"`
-	App     []*DictApp    `xml:"application"`
+	Vendor  []*DictVendor `xml:"vendor"`      // Support for multiple vendors
+	App     []*DictApp    `xml:"application"` // Support for multiple applications
 }
 
 type DictVendor struct {
@@ -31,8 +31,8 @@ type DictVendor struct {
 }
 
 type DictApp struct {
-	Id  int        `xml:"id,attr"`
-	AVP []*DictAVP `xml:"avp"`
+	Id  int        `xml:"id,attr"` // Application Id
+	AVP []*DictAVP `xml:"avp"`     // Each application support multiple AVPs
 }
 
 type DictAVP struct {
@@ -48,7 +48,7 @@ type DictAVP struct {
 
 type DictData struct {
 	Type     string          `xml:"type,attr"`
-	EnumItem []*DictEnumItem `xml:"item"` // In case the value is Enumerated
+	EnumItem []*DictEnumItem `xml:"item"` // In case of Enumerated AVP data
 	AVP      []*DictAVP      `xml:"avp"`  // In case of Grouped AVPs
 }
 
@@ -92,7 +92,9 @@ func (dict *Dict) Load(buf []byte) error {
 	dict.file = append(dict.file, f)
 	for _, app := range f.App {
 		for _, avp := range app.AVP {
+			// Link AVP to its Application
 			avp.App = app
+			// TODO: Perhaps index by ApplicationId + AVP code?
 			dict.avp[avp.Code] = avp
 		}
 	}
@@ -177,7 +179,7 @@ func printAVP(avp *DictAVP, grouped bool) {
 	}
 	fmt.Printf("%s%s AVP{Code=%d,Type=%s}\n",
 		space, avp.Name, avp.Code, avp.Data.Type)
-	// enum items
+	// Enumerated
 	if len(avp.Data.EnumItem) > 0 {
 		fmt.Printf("  Items:\n")
 		for _, item := range avp.Data.EnumItem {

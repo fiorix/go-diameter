@@ -19,7 +19,7 @@ type Message struct {
 	Dict   *dict.Parser // Dictionary associated with this Message
 }
 
-// Find is a helper that returns an AVP by looking up its code, or nil if
+// FindAVP is a helper that returns an AVP by looking up its code, or nil if
 // the AVP is not in the message.
 func (m *Message) FindAVP(code uint32) *AVP {
 	for _, a := range m.AVP {

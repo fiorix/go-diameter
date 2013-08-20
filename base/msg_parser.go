@@ -7,12 +7,27 @@
 package base
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 	"unsafe"
 
 	"github.com/fiorix/go-diameter/dict"
 )
+
+// ReadHeader reads one diameter header from the connection and return it.
+func ReadHeader(r io.Reader) (*Header, error) {
+	hdr := new(Header)
+	if err := binary.Read(r, binary.BigEndian, hdr); err != nil {
+		return nil, err
+	}
+	// Only supports diameter version 1.
+	if hdr.Version != byte(1) {
+		return nil, fmt.Errorf(
+			"Unsupported diameter version %d", hdr.Version)
+	}
+	return hdr, nil
+}
 
 // ReadMessage reads an entire diameter message from the connection with
 // Header and AVPs and return it.

@@ -88,7 +88,7 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 		}
 		return extra, avp, nil
 	}
-	// Read binary data of regualr (non-grouped) AVPs.
+	// Read binary data of regular (non-grouped) AVPs.
 	b := make([]byte, dlen)
 	if err = binary.Read(r, binary.BigEndian, b); err != nil {
 		return 0, nil, err
@@ -129,7 +129,11 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	case "IPFilterRule":
 		pad = true
 		avp.Data = new(IPFilterRule)
+	default:
+		return 0, nil, fmt.Errorf(
+			"Unsupported AVP data type: %s", davp.Data.Type)
 	}
+	// Put binary data in this AVP.
 	avp.Data.Put(b)
 	// Check if there's extra data to read due to padding of OctetString.
 	//

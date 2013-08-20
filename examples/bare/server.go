@@ -21,6 +21,8 @@ func main() {
 	if GlobalDict, err = dict.New("./diam_app.xml"); err != nil {
 		panic(err)
 	}
+	GlobalDict.PrettyPrint()
+	fmt.Println()
 	srv, err := net.Listen("tcp", ":3868")
 	if err != nil {
 		panic(err)

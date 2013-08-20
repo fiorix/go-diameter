@@ -13,7 +13,7 @@ import (
 )
 
 // pad4 returns n padded to 4 bytes
-func pad4(n uint32) uint32 {
+func pad4(n int) int {
 	return n + ((4 - n) & 3)
 }
 

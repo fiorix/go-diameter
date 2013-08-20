@@ -4,7 +4,7 @@
 
 // Dictionary parser and helper functions.
 
-package diam
+package dict
 
 import (
 	"encoding/xml"

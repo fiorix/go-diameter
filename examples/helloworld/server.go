@@ -36,6 +36,13 @@ func OnCER(w diam.ResponseWriter, r *diam.Request) {
 	code := r.Dict.CodeFor("Origin-State-Id")
 	osAVP := r.Msg.Find(code)
 	m.Add(diam.NewAVP(code, 0x40, 0x0, osAVP.Data))
+	// Add Grouped AVPs as received
+	m.Add(diam.NewAVP(r.Dict.CodeFor("Vendor-Specific-Application-Id"), 0x00, 0x00, []*diam.AVP{
+		diam.NewAVP(r.Dict.CodeFor("Acct-Application-Id"), 0x00, 0x00, uint32(16777299)),
+	}))
+
+	//Vendor-Specific-Application-Id AVP{Code=260,Flags=0x40,Length=44,VendorId=0x0,Padding=0,Grouped([Acct-Application-Id AVP{Code=259,Flags=0x40,Length=12,VendorId=0x0,Padding=0,uint32(16777299)}])}
+
 	// Write response
 	fmt.Println("Response:")
 	m.PrettyPrint()

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package diam
+package dict
 
 // BaseDict is a static Dict with a pre-loaded Base Protocol.
 var BaseDict, _ = NewDict()

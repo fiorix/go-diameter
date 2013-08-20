@@ -10,20 +10,23 @@ import (
 	"fmt"
 	"io"
 	"unsafe"
+
+	"github.com/fiorix/go-diameter/avp"
+	"github.com/fiorix/go-diameter/dict"
 )
 
 // Message is a diameter message, composed of a header and multiple AVPs.
 type Message struct {
 	Header *Header
-	AVP    []*AVP
+	AVP    []*avp.AVP
 }
 
 // ReadMessage reads an entire diameter message from the connection with
 // Header and AVPs and return it.
-func ReadMessage(r io.Reader, dict *Dict) (*Message, error) {
+func ReadMessage(r io.Reader, d *dict.Dict) (*Message, error) {
 	var (
 		err   error
-		avp   *AVP
+		a     *avp.AVP
 		extra uint32
 	)
 	msg := new(Message)
@@ -35,24 +38,24 @@ func ReadMessage(r io.Reader, dict *Dict) (*Message, error) {
 	// Read all AVPs in this message.
 	for b != 0 {
 		// Read may timeout some time.
-		if extra, avp, err = ReadAVP(r, dict); err != nil {
+		if extra, a, err = avp.ReadAVP(r, d); err != nil {
 			return nil, err
 		} else {
-			b -= (avp.Length + extra)
+			b -= (a.Length + extra)
 			if b < 0 {
-				return nil, fmt.Errorf("Malformed AVP %s", avp)
+				return nil, fmt.Errorf("Malformed AVP %s", a)
 			}
 		}
-		msg.AVP = append(msg.AVP, avp)
+		msg.AVP = append(msg.AVP, a)
 	}
 	return msg, nil
 }
 
 // Find is a helper function that returns an AVP by looking up its code, or nil.
-func (m *Message) Find(code uint32) *AVP {
-	for _, avp := range m.AVP {
-		if code == avp.Code {
-			return avp
+func (m *Message) Find(code uint32) *avp.AVP {
+	for _, a := range m.AVP {
+		if code == a.Code {
+			return a
 		}
 	}
 	return nil
@@ -72,8 +75,8 @@ func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32) *Mes
 }
 
 // Add adds an AVP to the given Message.
-func (m *Message) Add(avp *AVP) {
-	m.AVP = append(m.AVP, avp)
+func (m *Message) Add(a *avp.AVP) {
+	m.AVP = append(m.AVP, a)
 }
 
 // Bytes returns the Message in binary form to be sent to a connection.

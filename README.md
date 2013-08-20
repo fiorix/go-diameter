@@ -10,6 +10,12 @@ for the [Go programming language](http://golang.org).
 It can parse dictionaries and read and write messages, but still needs a lot
 of work.
 
+## Modules
+
+- base: Diameter Base Protocol.
+- dict: XML dictionary parser.
+- stack: Server stack for handling multiple clients and requests.
+
 ## Features
 
 This package implements an API based on [net/http](http://golang.org/pkg/net/http/)
@@ -18,5 +24,4 @@ aiming for simplicity of diameter message handling.
 - Comprehensive XML dictionary format
 - Embedded base protocol dictionary (one less file to carry around)
 - Human readable AVP representation
-- Dictionary AVPs are can be overloaded
 - TLS support (untested, but is there)

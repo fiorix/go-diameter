@@ -13,7 +13,7 @@ func main() {
 }
 
 // On CER reply with CEA.
-// http://tools.ietf.org/html/rfc3588#section-5.3.2
+// http://tools.ietf.org/html/rfc6733#section-5.3.2
 func OnCER(w diam.ResponseWriter, r *diam.Request) {
 	fmt.Println("Request from", r.RemoteAddr, "to", r.LocalAddr, ":")
 	host, _, _ := net.SplitHostPort(r.LocalAddr)

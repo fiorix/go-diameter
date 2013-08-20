@@ -2,7 +2,7 @@
 
 Package [diameter](http://godoc.org/github.com/fiorix/go-diameter) is an
 implementation of a stack and
-[Diameter Base Protocol (rfc3588)](http://tools.ietf.org/html/rfc3588)
+Diameter Base Protocol [rfc6733](http://tools.ietf.org/html/rfc6733)
 for the [Go programming language](http://golang.org).
 
 ## Status

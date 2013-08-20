@@ -136,7 +136,7 @@ func ReadAVP(r io.Reader, dict *Dict) (uint32, *AVP, error) {
 	}
 	// Check if there's extra data to read due to padding of OctetString.
 	//
-	// http://tools.ietf.org/html/rfc3588#section-4
+	// http://tools.ietf.org/html/rfc6733#section-4
 	//
 	// Each AVP of type OctetString MUST be padded to align on a 32-bit
 	// boundary, while other AVP types align naturally.  A number of zero-

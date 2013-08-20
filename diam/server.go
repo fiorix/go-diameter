@@ -4,7 +4,7 @@
 //
 // Forked off Go's HTTP server.
 
-// Diameter server.  See RFC 3588.
+// Diameter server.  See RFC 6733.
 
 package diam
 

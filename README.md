@@ -5,16 +5,16 @@ implementation of a stack and
 Diameter Base Protocol [rfc6733](http://tools.ietf.org/html/rfc6733)
 for the [Go programming language](http://golang.org).
 
-## Status
+### Status
 
 It can parse dictionaries and read and write messages, but still needs a lot
 of work.
 
 ## Modules
 
-- base: Diameter Base Protocol.
-- dict: XML dictionary parser.
-- stack: Server stack for handling multiple clients and requests.
+- [base](./base): Diameter Base Protocol
+- [dict](./dict): XML Dictionary Parser
+- [stack](./stack): Server stack for handling multiple clients and requests.
 
 ## Features
 

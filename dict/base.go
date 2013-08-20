@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Diameter dictionary static Parser and Base Protocol XML.
+
 package dict
 
-// BaseDict is a static Dict with a pre-loaded Base Protocol.
-var BaseDict, _ = NewDict()
+// Base is a static Parser with a pre-loaded Base Protocol.
+var Base, _ = New()
 
 // BaseProtocolXML is an embedded version of the Diameter Base Protocol.
-// It is always loaded when a new Dict is created by the NewDict function and
-// its AVPs can be overloaded.
+// It is always loaded when a new Dict is allocated by NewDict.
+//
+// Copy of diam_base.xml
 var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
   <vendor id="10415" name="3GPP"/>

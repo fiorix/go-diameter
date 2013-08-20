@@ -6,7 +6,7 @@
 
 // Diameter server.  See RFC 6733.
 
-package diam
+package stack
 
 import (
 	"crypto/tls"
@@ -17,6 +17,9 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/fiorix/go-diameter/base"
+	"github.com/fiorix/go-diameter/dict"
 )
 
 // Objects implementing the Handler interface can be
@@ -34,7 +37,7 @@ type Handler interface {
 // diameter message.
 type ResponseWriter interface {
 	// Write writes a message to the connection.
-	Write(*Message) (int, error)
+	Write(*base.Message) (int, error)
 
 	// Closes the connection.
 	Close()
@@ -43,11 +46,11 @@ type ResponseWriter interface {
 // A Request represents an incoming diameter message received by a server
 // or to be sent by a client.
 type Request struct {
-	Msg        *Message
+	Msg        *base.Message
 	LocalAddr  string
 	RemoteAddr string
 	TLS        *tls.ConnectionState // or nil when not using TLS
-	Dict       *Dict                // Dicts available on this server
+	Dict       *dict.Parser         // Dicts available on this server
 }
 
 // The CloseNotifier interface is implemented by MessageWriters which
@@ -124,11 +127,11 @@ func (c *conn) readRequest() (w *response, err error) {
 			c.rwc.SetWriteDeadline(time.Now().Add(d))
 		}()
 	}
-	dict := c.server.Dict
-	if dict == nil {
-		dict = BaseDict
+	dp := c.server.Dict
+	if dp == nil {
+		dp = dict.Base
 	}
-	msg, err := ReadMessage(c.rwc, dict)
+	msg, err := base.ReadMessage(c.rwc, dp)
 	if err != nil {
 		return nil, err
 	}
@@ -137,12 +140,12 @@ func (c *conn) readRequest() (w *response, err error) {
 		LocalAddr:  c.rwc.LocalAddr().String(),
 		RemoteAddr: c.rwc.RemoteAddr().String(),
 		TLS:        c.tlsState,
-		Dict:       dict,
+		Dict:       dp,
 	}
 	return &response{conn: c, req: req}, nil
 }
 
-func (w *response) Write(m *Message) (int, error) {
+func (w *response) Write(m *base.Message) (int, error) {
 	return w.conn.rwc.Write(m.Bytes())
 }
 
@@ -276,7 +279,7 @@ func Serve(l net.Listener, handler Handler) error {
 type Server struct {
 	Addr         string        // TCP address to listen on, ":3868" if empty
 	Handler      Handler       // handler to invoke, diam.DefaultServeMux if nil
-	Dict         *Dict         // diameter dictionaries for this server
+	Dict         *dict.Parser  // diameter dictionaries for this server
 	ReadTimeout  time.Duration // maximum duration before timing out read of the request
 	WriteTimeout time.Duration // maximum duration before timing out write of the response
 	TLSConfig    *tls.Config   // optional TLS config, used by ListenAndServeTLS
@@ -374,7 +377,7 @@ func (srv *Server) Serve(l net.Listener) error {
 //			log.Fatal("ListenAndServe: ", err)
 //		}
 //	}
-func ListenAndServe(addr string, handler Handler, dict *Dict) error {
+func ListenAndServe(addr string, handler Handler, dict *dict.Parser) error {
 	server := &Server{Addr: addr, Handler: handler, Dict: dict}
 	return server.ListenAndServe()
 }
@@ -407,7 +410,7 @@ func ListenAndServe(addr string, handler Handler, dict *Dict) error {
 //	}
 //
 // One can use generate_cert.go in crypto/tls to generate cert.pem and key.pem.
-func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler, dict *Dict) error {
+func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler, dict *dict.Parser) error {
 	server := &Server{Addr: addr, Handler: handler, Dict: dict}
 	return server.ListenAndServeTLS(certFile, keyFile)
 }
@@ -494,7 +497,7 @@ type timeoutWriter struct {
 	wroteHeader bool
 }
 
-func (tw *timeoutWriter) Write(m *Message) (int, error) {
+func (tw *timeoutWriter) Write(m *base.Message) (int, error) {
 	return tw.w.Write(m)
 }
 

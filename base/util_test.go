@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package avp
+// Tests
+
+package base
 
 import (
 	"fmt"
 	"testing"
 )
-
-// Tests
 
 func TestPad4(t *testing.T) {
 	switch {

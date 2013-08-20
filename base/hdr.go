@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter message header parser and helpers.
+// Diameter header.  Part of go-diameter.
+// http://tools.ietf.org/html/rfc6733#section-3
 
-package diam
+package base
 
 import (
-	"encoding/binary"
 	"fmt"
-	"io"
 	"unsafe"
 )
 
@@ -21,19 +20,6 @@ type Header struct {
 	ApplicationId    uint32
 	HopByHopId       uint32
 	EndToEndId       uint32
-}
-
-// ReadHeader reads one diameter header from the connection and return it.
-func ReadHeader(r io.Reader) (*Header, error) {
-	hdr := new(Header)
-	if err := binary.Read(r, binary.BigEndian, hdr); err != nil {
-		return nil, err
-	}
-	if hdr.Version != byte(1) {
-		return nil,
-			fmt.Errorf("Invalid diameter version %d", hdr.Version)
-	}
-	return hdr, nil
 }
 
 // String returns the diameter header in human readable format.
@@ -52,24 +38,23 @@ func (hdr *Header) String() string {
 		hdr.ApplicationId, hdr.HopByHopId, hdr.EndToEndId)
 }
 
-// MessageLength is a helper function returns the RawMessageLength as int.
+// MessageLength helper function returns RawMessageLength as int.
 func (hdr *Header) MessageLength() uint32 {
 	return uint24To32(hdr.RawMessageLength)
 }
 
-// UpdateLength is a helper function that updates RawMessageLength.
+// UpdateLength updates RawMessageLength from an int.
 func (hdr *Header) SetMessageLength(length uint32) {
 	hdr.RawMessageLength = uint32To24(uint32(unsafe.Sizeof(Header{})) + length)
 }
 
-// CommandCode is a helper function that returns the RawCommandCode as int.
+// CommandCode returns RawCommandCode as int.
 func (hdr *Header) CommandCode() uint32 {
 	return uint24To32(hdr.RawCommandCode)
 }
 
-// CommandName is a helper function that returns the name of the command based
-// on its code.
-func (hdr *Header) CommandName() *Command {
+// CommandName returns the name of the command based on its code.
+func (hdr *Header) CommandName() *command {
 	var nameSuffix, abbrevSuffix string
 	if hdr.CommandFlags&0x80 > 0 {
 		nameSuffix = "-Request"
@@ -79,7 +64,7 @@ func (hdr *Header) CommandName() *Command {
 		abbrevSuffix = "A"
 	}
 	code := hdr.CommandCode()
-	var resp Command
+	var resp command
 	if cmd, ok := commandCodes[code]; ok {
 		resp.Name = cmd.Name + nameSuffix
 		resp.Abbrev = cmd.Abbrev + abbrevSuffix
@@ -90,13 +75,13 @@ func (hdr *Header) CommandName() *Command {
 	return &resp
 }
 
-type Command struct {
+type command struct {
 	Name   string
 	Abbrev string
 }
 
 // TODO: Allow applications to register their commands?
-var commandCodes = map[uint32]Command{
+var commandCodes = map[uint32]command{
 	274: {"Abbort-Session", "AS"},
 	271: {"Accounting", "AC"},
 	257: {"Capabilities-Exchange", "CE"},

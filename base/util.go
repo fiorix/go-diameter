@@ -4,10 +4,10 @@
 
 // Helper functions for type conversion between diameter data types.
 
-package avp
+package base
 
 // pad4 returns n padded to 4 bytes
-func pad4(n int) int {
+func pad4(n uint32) uint32 {
 	return n + ((4 - n) & 3)
 }
 

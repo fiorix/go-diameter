@@ -52,12 +52,19 @@ type AVP struct {
 
 // Data of an AVP can be EnumItem or a Parser of multiple AVPs.
 type Data struct {
-	Type     string      `xml:"type,attr"`
-	EnumItem []*EnumItem `xml:"item"` // In case of Enumerated AVP data
-	AVP      []*AVP      `xml:"avp"`  // In case of Parsered AVPs
+	Type string  `xml:"type,attr"`
+	Enum []*Enum `xml:"item"` // In case of Enumerated AVP data
+	Rule []*Rule `xml:"rule"` // In case of Grouped AVPs
 }
 
-type EnumItem struct {
+type Enum struct {
 	Code uint8  `xml:"code,attr"`
 	Name string `xml:"name,attr"`
+}
+
+type Rule struct {
+	AVP      string `xml:"avp,attr"` // AVP Name
+	Required bool   `xml:"required,attr"`
+	Min      int    `xml:"min"`
+	Max      int    `xml:"max"`
 }

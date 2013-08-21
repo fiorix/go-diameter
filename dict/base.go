@@ -14,6 +14,7 @@ var Base, _ = New()
 //
 // Copy of diam_base.xml
 var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
   <vendor id="10415" name="3GPP"/>
 
@@ -136,12 +137,8 @@ var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 
     <avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" encr="N">
       <data type="Grouped">
-        <avp name="Vendor-Id" code="266" must="M">
-          <data type="Unsigned32"/>
-        </avp>
-        <avp name="Experimental-Result-Code" code="298" must="M">
-          <data type="Unsigned32"/>
-        </avp>
+        <rule avp="Vendor-Id" required="true" max="1"/>
+        <rule avp="Experimental-Result-Code" required="true" max="1"/>
       </data>
     </avp>
 
@@ -191,12 +188,8 @@ var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 
     <avp name="Proxy-Info" code="284" must="M" may="" must-not="P,V" encr="N">
       <data type="Grouped">
-        <avp name="Proxy-Host" code="280" must="M">
-          <data type="DiameterIdentity"/>
-        </avp>
-        <avp name="Proxy-State" code="33" must="M">
-          <data type="OctetString"/>
-        </avp>
+        <rule avp="Proxy-Host" required="true" max="1"/>
+        <rule avp="Proxy-State" required="true" max="1"/>
       </data>
     </avp>
 
@@ -280,15 +273,9 @@ var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 
     <avp name="Vendor-Specific-Application-Id" code="260" must="M" may="P" must-not="V" encr="N">
       <data type="Grouped">
-        <avp name="Vendor-Id" code="266" must="">
-          <data type="Unsigned32"/>
-        </avp>
-        <avp name="Auth-Application-Id" code="258" must="M">
-          <data type="Unsigned32"/>
-        </avp>
-        <avp name="Acct-Application-Id" code="259" must="M">
-          <data type="Unsigned32"/>
-        </avp>
+        <rule avp="Vendor-Id" required="false" max="1"/>
+        <rule avp="Auth-Application-Id" required="true" max="1"/>
+        <rule avp="Acct-Application-Id" required="true" max="1"/>
       </data>
     </avp>
 

@@ -11,6 +11,12 @@ import (
 	"testing"
 )
 
+func init() {
+	if false {
+		Base.PrettyPrint()
+	}
+}
+
 func TestFindAVP(t *testing.T) {
 	if _, err := Base.FindAVP(0, 263); err != nil {
 		t.Error(err)
@@ -34,5 +40,25 @@ func TestCodeFor(t *testing.T) {
 func TestAppFor(t *testing.T) {
 	if app := Base.AppFor("Session-Id"); app == nil {
 		t.Error("Could not find app for Session-Id AVP")
+	}
+}
+
+func TestEnum(t *testing.T) {
+	if item, err := Base.Enum(0, 274, 1); err != nil {
+		t.Error(err)
+		return
+	} else if item.Name != "AUTHENTICATE_ONLY" {
+		t.Error(fmt.Errorf(
+			"Unexpected value %s, expected AUTHENTICATE_ONLY",
+			item.Name))
+	}
+}
+
+func TestRule(t *testing.T) {
+	if rule, err := Base.Rule(0, 284, "Proxy-Host"); err != nil {
+		t.Error(err)
+		return
+	} else if !rule.Required {
+		t.Error(fmt.Errorf("Unexpected rule %s", rule))
 	}
 }

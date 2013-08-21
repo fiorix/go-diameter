@@ -60,22 +60,48 @@ func (p *Parser) AppFor(name string) *App {
 	return nil // TODO: Return error as well?
 }
 
-// Enum is a helper function that returns a pre-loaded DictEnumItem for the
-// given AVP code and n. (n is the enum code in the dictionary definition)
-func (p *Parser) Enum(appid, code uint32, n uint8) (*EnumItem, error) {
+// Enum is a helper function that returns a pre-loaded Enum item for the
+// given AVP appid, code and n. (n is the enum code in the dictionary)
+func (p *Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
 	avp, err := p.FindAVP(appid, code)
 	if err != nil {
 		return nil, err
 	}
 	if avp.Data.Type != "Enumerated" {
-		return nil, fmt.Errorf("AVP %s (%d) data is not Enumerated.", avp.Name, avp.Code)
+		return nil, fmt.Errorf(
+			"Data of AVP %s (%d) data is not Enumerated.",
+			avp.Name, avp.Code)
 	}
-	for _, item := range avp.Data.EnumItem {
+	for _, item := range avp.Data.Enum {
 		if item.Code == n {
 			return item, nil
 		}
 	}
-	return nil, fmt.Errorf("Could not find preload Enum %d for AVP %s (%d)", n, avp.Name, avp.Code)
+	return nil, fmt.Errorf(
+		"Could not find preload Enum %d for AVP %s (%d)",
+		n, avp.Name, avp.Code)
+}
+
+// Rule is a helper function that returns a pre-loaded Rule item for the
+// given AVP code and name.
+func (p *Parser) Rule(appid, code uint32, n string) (*Rule, error) {
+	avp, err := p.FindAVP(appid, code)
+	if err != nil {
+		return nil, err
+	}
+	if avp.Data.Type != "Grouped" {
+		return nil, fmt.Errorf(
+			"Data of AVP %s (%d) data is not Grouped.",
+			avp.Name, avp.Code)
+	}
+	for _, item := range avp.Data.Rule {
+		if item.AVP == n {
+			return item, nil
+		}
+	}
+	return nil, fmt.Errorf(
+		"Could not find preload Rule for %s for AVP %s (%d)",
+		n, avp.Name, avp.Code)
 }
 
 // PrettyPrint prints the Dict in a human readable form.
@@ -95,31 +121,29 @@ func (p *Parser) PrettyPrint() {
 			}
 			fmt.Printf("  AVPs:\n")
 			for _, avp := range app.AVP {
-				printAVP(avp, false)
+				printAVP(avp)
 			}
 		}
 	}
 }
 
-func printAVP(avp *AVP, Parsered bool) {
+func printAVP(avp *AVP) {
 	var space string
-	if Parsered {
-		space = "      "
-	}
 	fmt.Printf("    %s%s AVP{Code=%d,Type=%s}\n",
 		space, avp.Name, avp.Code, avp.Data.Type)
 	// Enumerated
-	if len(avp.Data.EnumItem) > 0 {
+	if len(avp.Data.Enum) > 0 {
 		fmt.Printf("    Items:\n")
-		for _, item := range avp.Data.EnumItem {
+		for _, item := range avp.Data.Enum {
 			fmt.Printf("      %d %s\n", item.Code, item.Name)
 		}
 	}
 	// Grouped AVPs
-	if len(avp.Data.AVP) > 0 {
-		fmt.Printf("    Grouped AVPs:\n")
-		for _, gravp := range avp.Data.AVP {
-			printAVP(gravp, true)
+	if len(avp.Data.Rule) > 0 {
+		fmt.Printf("    Rules:\n")
+		for _, rule := range avp.Data.Rule {
+			fmt.Printf("      AVP=%s required=%t min=%d max=%d\n",
+				rule.AVP, rule.Required, rule.Min, rule.Max)
 		}
 	}
 }

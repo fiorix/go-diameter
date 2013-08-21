@@ -24,7 +24,11 @@ var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Accounting-Realtime-Required" code="483" must="M" may="P" must-not="V" encr="Y">
-      <data type="Enumerated"/>
+      <data type="Enumerated">
+        <item code="1" name="DELIVER_AND_GRANT"/>
+        <item code="2" name="GRANT_AND_STORE"/>
+        <item code="3" name="GRANT_AND_LOSE"/>
+      </data>
     </avp>
 
     <avp name="Acct-Multi-Session-Id" code="50" must="M" may="P" must-not="V" encr="Y">
@@ -37,9 +41,10 @@ var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 
     <avp name="Accounting-Record-Type" code="480" must="M" may="P" must-not="V" encr="Y">
       <data type="Enumerated">
-        <item code="1" name="DELIVER_AND_GRANT"/>
-        <item code="2" name="GRANT_AND_STORE"/>
-        <item code="3" name="GRANT_AND_LOSE"/>
+        <item code="1" name="EVENT_RECORD"/>
+        <item code="2" name="START_RECORD"/>
+        <item code="3" name="INTERIM_RECORD"/>
+        <item code="4" name="STOP_RECORD"/>
       </data>
     </avp>
 

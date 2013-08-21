@@ -57,7 +57,9 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	// pad it, or even recursively load grouped AVPs from it's data.
 	var davp *dict.AVP
 	if davp, err = m.Dict.FindAVP(m.Header.ApplicationId, avp.Code); err != nil {
-		return 0, nil, fmt.Errorf("Unknown AVP code %d: missing dict?", avp.Code)
+		return 0, nil, fmt.Errorf(
+			"Unknown AVP code %d for appid %d: missing dict?",
+			avp.Code, m.Header.ApplicationId)
 	}
 	// Read grouped (embedded) AVPs.
 	//

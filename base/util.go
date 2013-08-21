@@ -6,7 +6,7 @@
 
 package base
 
-// pad4 returns n padded to 4 bytes
+// pad4 returns n padded to 4 bytes.
 func pad4(n uint32) uint32 {
 	return n + ((4 - n) & 3)
 }

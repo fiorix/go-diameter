@@ -10,6 +10,8 @@ for the [Go programming language](http://golang.org).
 It can parse dictionaries and read and write messages, but still needs a lot
 of work.
 
+[![Build Status](https://secure.travis-ci.org/fiorix/go-diameter.png)](http://travis-ci.org/fiorix/go-diameter)
+
 ## Modules
 
 - [base](./base): Diameter Base Protocol

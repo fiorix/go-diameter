@@ -11,8 +11,6 @@ import (
 	"fmt"
 	"io"
 	"unsafe"
-
-	"github.com/fiorix/go-diameter/dict"
 )
 
 type rfcHdr1 struct {
@@ -32,11 +30,8 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	if m == nil {
 		panic("Can't read AVP without parent Message")
 	}
-	var (
-		err error
-		raw rfcHdr1
-	)
-	if err = binary.Read(r, binary.BigEndian, &raw); err != nil {
+	var raw rfcHdr1
+	if err := binary.Read(r, binary.BigEndian, &raw); err != nil {
 		return 0, nil, err
 	}
 	avp := &AVP{
@@ -47,16 +42,16 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	}
 	dlen := avp.Length - uint32(unsafe.Sizeof(raw))
 	// Read VendorId when necessary.
-	if raw.Flags&0x20 > 0 {
-		if err = binary.Read(r, binary.BigEndian, &avp.VendorId); err != nil {
+	if raw.Flags&0x80 > 0 {
+		if err := binary.Read(r, binary.BigEndian, &avp.VendorId); err != nil {
 			return 0, nil, err
 		}
 		dlen -= uint32(unsafe.Sizeof(avp.VendorId))
 	}
 	// Find this AVP in a pre-loaded dict so we know how to parse it,
 	// pad it, or even recursively load grouped AVPs from it's data.
-	var davp *dict.AVP
-	if davp, err = m.Dict.FindAVP(m.Header.ApplicationId, avp.Code); err != nil {
+	davp, err := m.Dict.FindAVP(m.Header.ApplicationId, avp.Code)
+	if err != nil {
 		return 0, nil, fmt.Errorf(
 			"Unknown AVP code %d for appid %d: missing dict?",
 			avp.Code, m.Header.ApplicationId)
@@ -73,22 +68,19 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	// TODO: Double check the handling of dynamically grouped AVPs
 	//       in case of 260, 279 or 284. Should work as is.
 	if davp.Data.Type == "Grouped" {
-		var (
-			extra uint32
-			gravp *AVP
-			err   error
-		)
-		for dlen > 0 {
-			if extra, gravp, err = ReadAVP(r, m); err != nil {
+		for dlen != 0 {
+			ex, gravp, err := ReadAVP(r, m)
+			if err != nil {
 				return 0, nil, err
-			}
-			if avp.Data == nil {
+			} else if avp.Data == nil {
 				avp.Data = new(Grouped)
 			}
 			avp.Data.Put(gravp)
-			dlen -= gravp.Length + extra
+			dlen = dlen - (gravp.Length + ex)
 		}
-		return extra, avp, nil
+		// Lesson learned: there's never extra bytes in Grouped AVPs.
+		// Only OctetString.
+		return 0, avp, nil
 	}
 	// Read binary data of regular (non-grouped) AVPs.
 	b := make([]byte, dlen)
@@ -115,12 +107,14 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	case "Address":
 		pad = true
 		avp.Data = new(Address)
+	case "IPv4": // To support Framed-IP-Address and alike.
+		avp.Data = new(IPv4)
 	case "Time":
 		pad = true
 		avp.Data = new(Time)
 	case "UTF8String":
 		pad = true
-		avp.Data = new(OctetString)
+		avp.Data = new(UTF8String)
 	case "DiameterIdentity":
 		pad = true
 		avp.Data = new(DiameterIdentity)
@@ -148,18 +142,17 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	// the AVP Length field.
 	//
 	// This also applies to subtypes of OctetString such as Address.
-	var extrabytes uint32
+	var n uint32 // extra bytes to read
 	if pad {
 		// Read and discard pad bytes.
-		if n := pad4(dlen) - dlen; n > 0 {
-			extrabytes += n
+		if n = pad4(dlen) - dlen; n > 0 {
 			b := make([]byte, n)
 			if _, err = io.ReadFull(r, b); err != nil {
 				return 0, nil, err
 			}
 		}
 	}
-	return extrabytes, avp, nil
+	return n, avp, nil
 }
 
 // String returns the AVP in human readable format.

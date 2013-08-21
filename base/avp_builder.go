@@ -33,7 +33,7 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data Codec, m *Message) *AV
 		Data:     data,
 		Message:  m,
 	}
-	if flags&0x20 > 0 {
+	if flags&0x80 > 0 {
 		avp.Length = uint32(unsafe.Sizeof(rfcHdr2{}))
 	} else {
 		avp.Length = uint32(unsafe.Sizeof(rfcHdr1{}))
@@ -46,7 +46,7 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data Codec, m *Message) *AV
 // before sent to a connection.
 func (avp *AVP) Bytes() []byte {
 	b := bytes.NewBuffer(nil)
-	if avp.Flags&0x20 > 0 {
+	if avp.Flags&0x80 > 0 {
 		hdr := rfcHdr2{
 			Code:     avp.Code,
 			Flags:    avp.Flags,

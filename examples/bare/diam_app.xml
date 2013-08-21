@@ -15,13 +15,8 @@
 
     <avp name="My-Custom-Group" code="99903">
       <data type="Grouped">
-        <avp name="My-Custom-AVP1" code="99901">
-          <data type="OctetString"/>
-        </avp>
-
-        <avp name="My-Custom-AVP2" code="99902">
-          <data type="Unsigned32"/>
-        </avp>
+        <rule avp="My-Custom-AVP1" required="true" min="2"/>
+        <rule avp="My-Custom-AVP2" required="false" max="5"/>
       </data>
     </avp>
 

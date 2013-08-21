@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net"
 	"testing"
+	"time"
 )
 
 func TestOctetString(t *testing.T) {
@@ -38,6 +39,22 @@ func TestOctetString(t *testing.T) {
 	if os.Padding != 3 {
 		t.Error(fmt.Errorf("Padding length of '%s' is %d, expected 3.",
 			s, os.Padding))
+		return
+	}
+}
+
+func TestTime(t *testing.T) {
+	s := int64(1377093974)
+	b := []byte{0x52, 0x14, 0xc9, 0x56}
+	tm := Time{Value: time.Unix(s, 0)}
+	tmb := tm.Bytes()
+	if !bytes.Equal(tmb, b) {
+		t.Error(fmt.Errorf("Bytes are 0x%x, expected 0x%x", tmb, b))
+		return
+	}
+	tm.Put(b)
+	if d := tm.Data().(time.Time).Unix(); d != s {
+		t.Error(fmt.Errorf("Data is 0x%x, expected 0x%x", d, s))
 		return
 	}
 }

@@ -13,12 +13,13 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 // OctetString Diameter Type.
 type OctetString struct {
 	Value   string
-	Padding uint32 // Extra bytes to make the String a multiple of 4 octets
+	Padding uint32 // Extra bytes to make the Value a multiple of 4 octets
 }
 
 // Data implements the Data interface.
@@ -26,7 +27,7 @@ func (os *OctetString) Data() Data {
 	return os.Value
 }
 
-// Put implements the Codec interface. It updates internal String and Padding.
+// Put implements the Codec interface. It updates internal Value and Padding.
 func (os *OctetString) Put(d Data) {
 	b := d.([]byte)
 	l := uint32(len(b))
@@ -35,7 +36,7 @@ func (os *OctetString) Put(d Data) {
 }
 
 // Bytes implement the Codec interface. Padding is always recalculated from
-// the internal String.
+// the internal Value.
 func (os *OctetString) Bytes() []byte {
 	os.updatePadding() // Do this every time? Geez.
 	l := uint32(len(os.Value))
@@ -62,17 +63,6 @@ func (os *OctetString) String() string {
 	os.updatePadding() // Update padding
 	return fmt.Sprintf("OctetString{Value:'%s',Padding:%d}",
 		os.Value, os.Padding)
-}
-
-// Time Diameter Type.
-type Time struct {
-	OctetString
-}
-
-// String returns a human readable version of the AVP.
-func (p *Time) String() string {
-	p.updatePadding() // Update padding
-	return fmt.Sprintf("Time{Value:'%s',Padding:%d}", p.Value, p.Padding)
 }
 
 // UTF8String Diameter Type.
@@ -109,6 +99,41 @@ func (p *IPFilterRule) String() string {
 	p.updatePadding() // Update padding
 	return fmt.Sprintf("IPFilterRule{Value:'%s',Padding:%d}",
 		p.Value, p.Padding)
+}
+
+// Time Diameter Type.
+type Time struct {
+	Value time.Time
+}
+
+// Data implements the Data interface.
+func (t *Time) Data() Data {
+	return t.Value
+}
+
+// Put implements the Codec interface. It updates internal Value.
+func (t *Time) Put(d Data) {
+	b := d.([]byte)
+	if len(b) == 4 {
+		t.Value = time.Unix(int64(binary.BigEndian.Uint32(b)), 0)
+	}
+}
+
+// Bytes implement the Codec interface.
+func (t *Time) Bytes() []byte {
+	buf := new(bytes.Buffer)
+	binary.Write(buf, binary.BigEndian, uint32(t.Value.Unix()))
+	return buf.Bytes()
+}
+
+// Length implements the Codec interface. Returns length without padding.
+func (t *Time) Length() uint32 {
+	return 4
+}
+
+// String returns a human readable version of the AVP.
+func (t *Time) String() string {
+	return fmt.Sprintf("Time{Value:'%s'}", t.Value.String())
 }
 
 // Address Diameter Type.
@@ -173,6 +198,46 @@ func (addr *Address) String() string {
 	addr.Bytes() // Update family and padding
 	return fmt.Sprintf("Address{Value:'%s',Padding:%d}",
 		addr.IP.String(), addr.Padding)
+}
+
+// IPv4 Type for Framed-IP-Address and alike.
+type IPv4 struct {
+	// Parsed IP address
+	IP net.IP
+}
+
+// Data implements the Data interface.
+func (addr *IPv4) Data() Data {
+	return addr.IP
+}
+
+// Put implements the Coded interface. It updates internal Family and IP.
+func (addr *IPv4) Put(d Data) {
+	b := d.([]byte)
+	if len(b) == 4 {
+		addr.IP = net.IPv4(b[0], b[1], b[2], b[3])
+	}
+}
+
+// Bytes implement the Codec interface.
+func (addr *IPv4) Bytes() []byte {
+	if ip := addr.IP.To4(); ip != nil {
+		return ip
+	}
+	return []byte{}
+}
+
+// Length implements the Codec interface. Returns length without padding.
+func (addr *IPv4) Length() uint32 {
+	if addr.IP.To4() != nil {
+		return 4 // TODO: Fix this
+	}
+	return 0
+}
+
+// String returns a human readable version of the AVP.
+func (addr *IPv4) String() string {
+	return fmt.Sprintf("IPv4{Value:'%s'}", addr.IP.String())
 }
 
 // DiameterURI Diameter Type.

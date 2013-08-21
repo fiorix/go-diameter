@@ -49,15 +49,15 @@
       <data type="Unsigned64"/>
     </avp>
 
-    <avp name="Acct-Application-Id" code="259" must="M" may="P" must-not="V" encr="N">
+    <avp name="Acct-Application-Id" code="259" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Auth-Application-Id" code="258" must="M" may="P" must-not="V" encr="N">
+    <avp name="Auth-Application-Id" code="258" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Auth-Request-Type" code="274" must="M" may="P" must-not="V" encr="N">
+    <avp name="Auth-Request-Type" code="274" must="M" may="P" must-not="V" encr="-">
       <data type="Enumerated">
         <item code="1" name="AUTHENTICATE_ONLY"/>
         <item code="2" name="AUTHORIZE_ONLY"/>
@@ -65,22 +65,22 @@
       </data>
     </avp>
 
-    <avp name="Authorization-Lifetime" code="291" must="M" may="P" must-not="V" encr="N">
+    <avp name="Authorization-Lifetime" code="291" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Auth-Grace-Period" code="276" must="M" may="P" must-not="V" encr="N">
+    <avp name="Auth-Grace-Period" code="276" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Auth-Session-State" code="277" must="M" may="P" must-not="V" encr="N">
+    <avp name="Auth-Session-State" code="277" must="M" may="P" must-not="V" encr="-">
       <data type="Enumerated">
         <item code="0" name="STATE_MAINTAINED"/>
         <item code="1" name="NO_STATE_MAINTAINED"/>
       </data>
     </avp>
 
-    <avp name="Re-Auth-Request-Type" code="285" must="M" may="P" must-not="V" encr="N">
+    <avp name="Re-Auth-Request-Type" code="285" must="M" may="P" must-not="V" encr="-">
       <data type="Enumerated">
         <item code="0" name="AUTHORIZE_ONLY"/>
         <item code="1" name="AUTHORIZE_AUTHENTICATE"/>
@@ -91,15 +91,15 @@
       <data type="OctetString"/>
     </avp>
 
-    <avp name="Destination-Host" code="293" must="M" may="P" must-not="V" encr="N">
+    <avp name="Destination-Host" code="293" must="M" may="P" must-not="V" encr="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Destination-Realm" code="283" must="M" may="P" must-not="V" encr="N">
+    <avp name="Destination-Realm" code="283" must="M" may="P" must-not="V" encr="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Disconnect-Cause" code="273" must="M" may="P" must-not="V" encr="N">
+    <avp name="Disconnect-Cause" code="273" must="M" may="P" must-not="V" encr="-">
       <data type="Enumerated">
         <item code="0" name="REBOOTING"/>
         <item code="1" name="BUSY"/>
@@ -107,42 +107,42 @@
       </data>
     </avp>
 
-    <avp name="Error-Message" code="281" must="" may="P" must-not="V,M" encr="N">
+    <avp name="Error-Message" code="281" must="-" may="P" must-not="V,M" encr="-">
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Error-Reporting-Host" code="294" must="" may="P" must-not="V,M" encr="N">
+    <avp name="Error-Reporting-Host" code="294" must="-" may="P" must-not="V,M" encr="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Event-Timestamp" code="55" must="M" may="P" must-not="V" encr="N">
+    <avp name="Event-Timestamp" code="55" must="M" may="P" must-not="V" encr="-">
       <data type="Time"/>
     </avp>
 
-    <avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" encr="N">
+    <avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" encr="-">
       <data type="Grouped">
         <rule avp="Vendor-Id" required="true" max="1"/>
         <rule avp="Experimental-Result-Code" required="true" max="1"/>
       </data>
     </avp>
 
-    <avp name="Experimental-Result-Code" code="298" must="M" may="P" must-not="V" encr="N">
+    <avp name="Experimental-Result-Code" code="298" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Failed-AVP" code="279" must="M" may="P" must-not="V" encr="N">
+    <avp name="Failed-AVP" code="279" must="M" may="P" must-not="V" encr="-">
       <data type="Grouped"/>
     </avp>
 
-    <avp name="Firmware-Revision" code="267" must="" may="" must-not="P,V,M" encr="N">
+    <avp name="Firmware-Revision" code="267" must="-" may="-" must-not="P,V,M" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Host-IP-Address" code="257" must="M" may="P" must-not="V" encr="N">
+    <avp name="Host-IP-Address" code="257" must="M" may="P" must-not="V" encr="-">
       <data type="Address"/>
     </avp>
 
-    <avp name="Inband-Security-Id" code="299" must="M" may="P" must-not="V" encr="N">
+    <avp name="Inband-Security-Id" code="299" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
@@ -150,42 +150,42 @@
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Origin-Host" code="264" must="M" may="P" must-not="V" encr="N">
+    <avp name="Origin-Host" code="264" must="M" may="P" must-not="V" encr="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Origin-Realm" code="296" must="M" may="P" must-not="V" encr="N">
+    <avp name="Origin-Realm" code="296" must="M" may="P" must-not="V" encr="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Origin-State-Id" code="278" must="M" may="P" must-not="V" encr="N">
+    <avp name="Origin-State-Id" code="278" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Product-Name" code="269" must="" may="" must-not="P,V,M" encr="N">
+    <avp name="Product-Name" code="269" must="-" may="-" must-not="P,V,M" encr="-">
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Proxy-Host" code="280" must="M" may="" must-not="P,V" encr="N">
+    <avp name="Proxy-Host" code="280" must="M" may="-" must-not="P,V" encr="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Proxy-Info" code="284" must="M" may="" must-not="P,V" encr="N">
+    <avp name="Proxy-Info" code="284" must="M" may="-" must-not="P,V" encr="-">
       <data type="Grouped">
         <rule avp="Proxy-Host" required="true" max="1"/>
         <rule avp="Proxy-State" required="true" max="1"/>
       </data>
     </avp>
 
-    <avp name="Proxy-State" code="33" must="M" may="" must-not="P,V" encr="N">
+    <avp name="Proxy-State" code="33" must="M" may="-" must-not="P,V" encr="-">
       <data type="OctetString"/>
     </avp>
 
-    <avp name="Redirect-Host" code="292" must="M" may="P" must-not="V" encr="N">
+    <avp name="Redirect-Host" code="292" must="M" may="P" must-not="V" encr="-">
       <data type="DiameterURI"/>
     </avp>
 
-    <avp name="Redirect-Host-Usage" code="261" must="M" may="P" must-not="V" encr="N">
+    <avp name="Redirect-Host-Usage" code="261" must="M" may="P" must-not="V" encr="-">
       <data type="Enumerated">
         <item code="0" name="DONT_CACHE"/>
         <item code="1" name="ALL_SESSION"/>
@@ -197,15 +197,15 @@
       </data>
     </avp>
 
-    <avp name="Redirect-Max-Cache-Time" code="262" must="M" may="P" must-not="V" encr="N">
+    <avp name="Redirect-Max-Cache-Time" code="262" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Result-Code" code="268" must="M" may="P" must-not="V" encr="N">
+    <avp name="Result-Code" code="268" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Route-Record" code="282" must="M" may="" must-not="P,V" encr="N">
+    <avp name="Route-Record" code="282" must="M" may="-" must-not="P,V" encr="-">
       <data type="DiameterIdentity"/>
     </avp>
 
@@ -213,7 +213,7 @@
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Session-Timeout" code="27" must="M" may="P" must-not="V" encr="N">
+    <avp name="Session-Timeout" code="27" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
@@ -230,11 +230,11 @@
       </data>
     </avp>
 
-    <avp name="Supported-Vendor-Id" code="265" must="M" may="P" must-not="V" encr="N">
+    <avp name="Supported-Vendor-Id" code="265" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Termination-Cause" code="295" must="M" may="P" must-not="V" encr="N">
+    <avp name="Termination-Cause" code="295" must="M" may="P" must-not="V" encr="-">
       <data type="Enumerated">
         <item code="1" name="DIAMETER_LOGOUT"/>
         <item code="2" name="DIAMETER_SERVICE_NOT_PROVIDED"/>
@@ -251,11 +251,11 @@
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Vendor-Id" code="266" must="M" may="P" must-not="V" encr="N">
+    <avp name="Vendor-Id" code="266" must="M" may="P" must-not="V" encr="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Vendor-Specific-Application-Id" code="260" must="M" may="P" must-not="V" encr="N">
+    <avp name="Vendor-Specific-Application-Id" code="260" must="M" may="P" must-not="V" encr="-">
       <data type="Grouped">
         <rule avp="Vendor-Id" required="false" max="1"/>
         <rule avp="Auth-Application-Id" required="true" max="1"/>

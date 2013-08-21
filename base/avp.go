@@ -18,18 +18,6 @@ type AVP struct {
 }
 
 // Data is an interface for AVP Data types.
-// These are the supported types and their equivalent native types:
-//
-// Diameter             Go
-// --------             --
-// OctetString          string
-// DiameterIdentity     string
-// Integer32            int32
-// Integer64            int64
-// Unsigned32           uint32
-// Unsigned64           uint64
-// Enumerated           []EnumItem
-// Grouped              []*AVP
 type Data interface{}
 
 // Codec provides an interface for converting Data from network bytes to

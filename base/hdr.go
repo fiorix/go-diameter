@@ -19,6 +19,8 @@ type Header struct {
 	EndToEndId       uint32
 }
 
+const hdrSize = uint32(unsafe.Sizeof(Header{}))
+
 // MessageLength helper function returns RawMessageLength as int.
 func (hdr *Header) MessageLength() uint32 {
 	return uint24To32(hdr.RawMessageLength)
@@ -26,7 +28,7 @@ func (hdr *Header) MessageLength() uint32 {
 
 // UpdateLength updates RawMessageLength from an int.
 func (hdr *Header) SetMessageLength(length uint32) {
-	hdr.RawMessageLength = uint32To24(uint32(unsafe.Sizeof(Header{})) + length)
+	hdr.RawMessageLength = uint32To24(hdrSize + length)
 }
 
 // CommandCode returns RawCommandCode as int.

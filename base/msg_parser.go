@@ -14,20 +14,6 @@ import (
 	"github.com/fiorix/go-diameter/dict"
 )
 
-// ReadHeader reads one diameter header from the connection and return it.
-func ReadHeader(r io.Reader) (*Header, error) {
-	var hdr Header
-	if err := binary.Read(r, binary.BigEndian, &hdr); err != nil {
-		return nil, err
-	}
-	// Only supports diameter version 1.
-	if hdr.Version != byte(1) {
-		return nil, fmt.Errorf(
-			"Unsupported diameter version %d", hdr.Version)
-	}
-	return &hdr, nil
-}
-
 // ReadMessage reads an entire diameter message from the connection with
 // Header and AVPs and return it.
 func ReadMessage(r io.Reader, d *dict.Parser) (*Message, error) {
@@ -37,7 +23,7 @@ func ReadMessage(r io.Reader, d *dict.Parser) (*Message, error) {
 		extra uint32
 	)
 	m := &Message{Dict: d}
-	if m.Header, err = ReadHeader(r); err != nil {
+	if m.Header, err = readHeader(r); err != nil {
 		return nil, err
 	}
 	// n is how many bytes are left in this message.
@@ -56,4 +42,18 @@ func ReadMessage(r io.Reader, d *dict.Parser) (*Message, error) {
 		m.AVP = append(m.AVP, avp)
 	}
 	return m, nil
+}
+
+// readHeader reads one diameter header from the connection and return it.
+func readHeader(r io.Reader) (*Header, error) {
+	var hdr Header
+	if err := binary.Read(r, binary.BigEndian, &hdr); err != nil {
+		return nil, err
+	}
+	// Only supports diameter version 1.
+	if hdr.Version != byte(1) {
+		return nil, fmt.Errorf(
+			"Unsupported diameter version %d", hdr.Version)
+	}
+	return &hdr, nil
 }

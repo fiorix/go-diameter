@@ -4,6 +4,14 @@
 
   <application id="0"> <!-- Diameter Common Messages -->
 
+    <command code="257" short="CE" name="Capabilities-Exchange"/>
+    <command code="258" short="RA" name="Re-Auth"/>
+    <command code="271" short="AC" name="Accounting"/>
+    <command code="274" short="AS" name="Abort-Session"/>
+    <command code="275" short="ST" name="Session-Termination"/>
+    <command code="280" short="DW" name="Device-Watchdog"/>
+    <command code="282" short="DP" name="Disconnect-Peer"/>
+
     <avp name="Acct-Interim-Interval" code="85" must="M" may="P" must-not="V" encr="Y">
       <data type="Unsigned32"/>
     </avp>

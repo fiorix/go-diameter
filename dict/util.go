@@ -18,6 +18,16 @@ func (p Parser) FindAVP(appid, code uint32) (*AVP, error) {
 	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
 }
 
+// FindCmd is a helper function that returns a pre-loaded Cmd from the Dict.
+func (p Parser) FindCmd(appid, code uint32) (*Cmd, error) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	if cmd, ok := p.cmd[index{appid, code}]; ok {
+		return cmd, nil
+	}
+	return nil, fmt.Errorf("Could not find preloaded Cmd with code %d", code)
+}
+
 // CodeFor is a helper function that returns the code for the given AVP name.
 func (p *Parser) CodeFor(name string) uint32 {
 	p.mu.RLock()
@@ -67,11 +77,17 @@ func (p *Parser) PrettyPrint() {
 	fmt.Printf("Vendors:\n")
 	for _, f := range p.file {
 		for _, vendor := range f.Vendor {
-			fmt.Printf("Id=%d Name=%s\n", vendor.Id, vendor.Name)
+			fmt.Printf("  Id=%d Name=%s\n", vendor.Id, vendor.Name)
 		}
 		fmt.Println()
 		for _, app := range f.App {
-			fmt.Printf("Application Id: %d\nAVPs:\n", app.Id)
+			fmt.Printf("Application Id: %d\n", app.Id)
+			fmt.Printf("  Commands:\n")
+			for _, cmd := range app.Cmd {
+				fmt.Printf("    Code=%d %s %s\n",
+					cmd.Code, cmd.Name, cmd.Short)
+			}
+			fmt.Printf("  AVPs:\n")
 			for _, avp := range app.AVP {
 				printAVP(avp, false)
 			}
@@ -82,22 +98,22 @@ func (p *Parser) PrettyPrint() {
 func printAVP(avp *AVP, Parsered bool) {
 	var space string
 	if Parsered {
-		space = "  "
+		space = "      "
 	}
-	fmt.Printf("%s%s AVP{Code=%d,Type=%s}\n",
+	fmt.Printf("    %s%s AVP{Code=%d,Type=%s}\n",
 		space, avp.Name, avp.Code, avp.Data.Type)
 	// Enumerated
 	if len(avp.Data.EnumItem) > 0 {
-		fmt.Printf("  Items:\n")
+		fmt.Printf("    Items:\n")
 		for _, item := range avp.Data.EnumItem {
-			fmt.Printf("  %d %s\n", item.Code, item.Name)
+			fmt.Printf("      %d %s\n", item.Code, item.Name)
 		}
 	}
-	// Parsered AVPs
+	// Grouped AVPs
 	if len(avp.Data.AVP) > 0 {
-		fmt.Printf("  Parsered AVPs:\n")
-		for _, ParseredAVP := range avp.Data.AVP {
-			printAVP(ParseredAVP, true)
+		fmt.Printf("    Grouped AVPs:\n")
+		for _, gravp := range avp.Data.AVP {
+			printAVP(gravp, true)
 		}
 	}
 }

@@ -27,7 +27,15 @@ type Vendor struct {
 // App defines a diameter application in XML and its multiple AVPs.
 type App struct {
 	Id  uint32 `xml:"id,attr"` // Application Id
+	Cmd []*Cmd `xml:"command"` // Diameter commands
 	AVP []*AVP `xml:"avp"`     // Each application support multiple AVPs
+}
+
+// Cmd defines a diameter command (CE, CC, etc)
+type Cmd struct {
+	Code  uint32 `xml:"code,attr"`
+	Name  string `xml:"name,attr"`
+	Short string `xml:"short,attr"`
 }
 
 // AVP represents a dictionary AVP that is loaded from XML.

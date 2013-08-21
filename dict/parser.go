@@ -24,10 +24,11 @@ import (
 type Parser struct {
 	file []*File        // Dict supports multiple XML dictionaries
 	avp  map[index]*AVP // AVP index
+	cmd  map[index]*Cmd // Cmd index
 	mu   sync.RWMutex
 }
 
-// index AVPs by their application id and code.
+// index AVPs and Cmds by their application id and code.
 type index struct {
 	AppId uint32
 	Code  uint32
@@ -38,6 +39,7 @@ type index struct {
 func New(filename ...string) (*Parser, error) {
 	p := new(Parser)
 	p.avp = make(map[index]*AVP)
+	p.cmd = make(map[index]*Cmd)
 	p.Load(BaseProtocolXML)
 	var err error
 	for _, f := range filename {
@@ -67,6 +69,9 @@ func (p *Parser) Load(buf []byte) error {
 	defer p.mu.Unlock()
 	p.file = append(p.file, f)
 	for _, app := range f.App {
+		for _, cmd := range app.Cmd {
+			p.cmd[index{app.Id, cmd.Code}] = cmd
+		}
 		for _, avp := range app.AVP {
 			// Link AVP to its Application
 			avp.App = app

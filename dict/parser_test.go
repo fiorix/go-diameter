@@ -8,7 +8,7 @@ package dict
 
 import "testing"
 
-func TestNewParser(t *testing.T) {
+func TestNew(t *testing.T) {
 	if _, err := New("./diam_base.xml"); err != nil {
 		t.Error(err)
 	}

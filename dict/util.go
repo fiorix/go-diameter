@@ -14,6 +14,9 @@ func (p Parser) FindAVP(appid, code uint32) (*AVP, error) {
 	defer p.mu.RUnlock()
 	if avp, ok := p.avp[index{appid, code}]; ok {
 		return avp, nil
+	} else if avp, ok = p.avp[index{0, code}]; ok {
+		// Always fall back to base dict.
+		return avp, nil
 	}
 	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
 }
@@ -23,6 +26,9 @@ func (p Parser) FindCmd(appid, code uint32) (*Cmd, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	if cmd, ok := p.cmd[index{appid, code}]; ok {
+		return cmd, nil
+	} else if cmd, ok = p.cmd[index{0, code}]; ok {
+		// Always fall back to base dict.
 		return cmd, nil
 	}
 	return nil, fmt.Errorf("Could not find preloaded Cmd with code %d", code)

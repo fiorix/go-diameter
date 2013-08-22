@@ -168,6 +168,9 @@ func (addr *Address) Put(d Data) {
 // Bytes implement the Codec interface.
 func (addr *Address) Bytes() []byte {
 	if ip := addr.IP.To4(); ip != nil {
+		if addr.Family == nil {
+			addr.Family = []byte{0, 1}
+		}
 		// IPv4 always need 2 byte padding. (derived from OctetString)
 		addr.Padding = 2 // TODO: Fix this
 		b := []byte{

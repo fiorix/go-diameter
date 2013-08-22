@@ -8,6 +8,7 @@ package base
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"unsafe"
@@ -19,6 +20,8 @@ type rfcHdr1 struct {
 	Length [3]uint8
 }
 
+var ErrInvalidAvpHdr = errors.New("Invalid AVP header size: probably a bad dict")
+
 // ReadAVP reads an AVP and returns the number of extra bytes read and parsed
 // AVP, or an error.
 //
@@ -26,7 +29,7 @@ type rfcHdr1 struct {
 // has padding. Total bytes read is each avp.Length + extra.
 //
 // A pointer to the parent Message is required.
-func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
+func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	if m == nil {
 		panic("Can't read AVP without parent Message")
 	}
@@ -41,6 +44,9 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 		Message: m,
 	}
 	dlen := avp.Length - uint32(unsafe.Sizeof(raw))
+	if dlen >= m.Header.MessageLength() {
+		return 0, nil, ErrInvalidAvpHdr
+	}
 	// Read VendorId when necessary.
 	if raw.Flags&0x80 > 0 {
 		if err := binary.Read(r, binary.BigEndian, &avp.VendorId); err != nil {
@@ -50,10 +56,14 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	}
 	// Find this AVP in a pre-loaded dict so we know how to parse it,
 	// pad it, or even recursively load grouped AVPs from it's data.
+	//
+	// If a previously parsed AVP has the incorrect size due to a bad
+	// dictionary, this call might fail because the current header
+	// will be malformed.
 	davp, err := m.Dict.FindAVP(m.Header.ApplicationId, avp.Code)
 	if err != nil {
 		return 0, nil, fmt.Errorf(
-			"Unknown AVP code %d for appid %d: missing dict?",
+			"Unknown AVP code %d for appid %d: missing dict",
 			avp.Code, m.Header.ApplicationId)
 	}
 	// Read grouped (embedded) AVPs.
@@ -69,7 +79,7 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 	//       in case of 260, 279 or 284. Should work as is.
 	if davp.Data.Type == "Grouped" {
 		for dlen != 0 {
-			ex, gravp, err := ReadAVP(r, m)
+			ex, gravp, err := ReadAVP(m, r)
 			if err != nil {
 				return 0, nil, err
 			} else if avp.Data == nil {

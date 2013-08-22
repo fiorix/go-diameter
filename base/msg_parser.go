@@ -30,7 +30,7 @@ func ReadMessage(r io.Reader, d *dict.Parser) (*Message, error) {
 	n := int32(m.Header.MessageLength() - hdrSize)
 	// Read all AVPs in this message.
 	for n != 0 {
-		if extra, avp, err = ReadAVP(r, m); err != nil {
+		if extra, avp, err = ReadAVP(m, r); err != nil {
 			return nil, err
 		} else {
 			n = n - int32(avp.Length+extra)

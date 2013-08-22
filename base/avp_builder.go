@@ -20,7 +20,7 @@ type rfcHdr2 struct {
 }
 
 // NewAVP allocates and returns a new AVP.
-func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, data Codec) {
+func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, data Codec) *AVP {
 	avp := &AVP{
 		Code:     code,
 		Flags:    flags,
@@ -35,6 +35,7 @@ func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, data Codec) {
 	}
 	avp.Length += data.Length()
 	m.Add(avp)
+	return avp
 }
 
 // Bytes returns an AVP in binary form so it can be attached to a Message

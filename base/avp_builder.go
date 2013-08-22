@@ -19,13 +19,8 @@ type rfcHdr2 struct {
 	VendorId uint32
 }
 
-// NewAVP allocates and returns a new AVP. Used for building messages.
-//
-// The parent Message is required because it contains a link to the
-// dictionary associated with the message, used for parsing AVP data.
-// If nil, it will be automatically associated with the message when
-// Message.Add(avp) is called.
-func NewAVP(code uint32, flags uint8, vendor uint32, data Codec, m *Message) *AVP {
+// NewAVP allocates and returns a new AVP.
+func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, data Codec) {
 	avp := &AVP{
 		Code:     code,
 		Flags:    flags,
@@ -39,7 +34,7 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data Codec, m *Message) *AV
 		avp.Length = uint32(unsafe.Sizeof(rfcHdr1{}))
 	}
 	avp.Length += data.Length()
-	return avp
+	m.Add(avp)
 }
 
 // Bytes returns an AVP in binary form so it can be attached to a Message

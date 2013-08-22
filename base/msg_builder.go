@@ -30,8 +30,10 @@ func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *d
 
 // Add adds an AVP to the given Message.
 func (m *Message) Add(avp *AVP) {
-	if avp.Message == nil {
-		avp.Message = m // Just in case!
+	// Set AVP's parent Message to this.
+	// This is required when copying AVPs from one Message to another.
+	if avp.Message != m {
+		avp.Message = m
 	}
 	m.AVP = append(m.AVP, avp)
 }

@@ -159,13 +159,16 @@ func ReadAVP(r io.Reader, m *Message) (uint32, *AVP, error) {
 func (avp *AVP) String() string {
 	// TODO: Lookup the vendor id from AVP in the dictionary.
 	var name string
-	if davp, err := avp.Message.Dict.FindAVP(
-		avp.Message.Header.ApplicationId,
-		avp.Code,
-	); err != nil {
+	if avp.Message != nil {
+		if davp, err := avp.Message.Dict.FindAVP(
+			avp.Message.Header.ApplicationId,
+			avp.Code,
+		); davp != nil && err == nil {
+			name = davp.Name
+		}
+	}
+	if name == "" {
 		name = "Unknown"
-	} else {
-		name = davp.Name
 	}
 	return fmt.Sprintf("%s AVP{Code=%d,Flags=%#x,Length=%d,VendorId=%#x,%s}",
 		name,

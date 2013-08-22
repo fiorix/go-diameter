@@ -27,35 +27,35 @@ func OnCER(w diam.ResponseWriter, r *diam.Request) {
 		r.Msg.Dict,
 	)
 	// Build message by attaching multiple AVPs to it.
-	m.Add(base.NewAVP(
+	m.NewAVP(
 		r.Dict.CodeFor("Result-Code"), 0x40, 0x0,
-		&base.Unsigned32{Value: 2001}, nil,
-	))
-	m.Add(base.NewAVP(
+		&base.Unsigned32{Value: 2001},
+	)
+	m.NewAVP(
 		r.Dict.CodeFor("Origin-Host"), 0x40, 0x0,
-		&base.DiameterIdentity{base.OctetString{Value: "go"}}, nil,
-	))
-	m.Add(base.NewAVP(
+		&base.DiameterIdentity{base.OctetString{Value: "go"}},
+	)
+	m.NewAVP(
 		r.Dict.CodeFor("Origin-Realm"), 0x40, 0x0,
-		&base.DiameterIdentity{base.OctetString{Value: "server"}}, nil,
-	))
+		&base.DiameterIdentity{base.OctetString{Value: "server"}},
+	)
 	localIP, _, _ := net.SplitHostPort(r.LocalAddr)
-	m.Add(base.NewAVP(
+	m.NewAVP(
 		r.Dict.CodeFor("Host-IP-Address"), 0x40, 0x0,
-		&base.Address{Family: []byte("01"), IP: net.ParseIP(localIP)}, nil,
-	))
-	m.Add(base.NewAVP(
+		&base.Address{Family: []byte("01"), IP: net.ParseIP(localIP)},
+	)
+	m.NewAVP(
 		r.Dict.CodeFor("Vendor-Id"), 0x40, 0x0,
-		&base.Unsigned32{Value: 131313}, nil,
-	))
-	m.Add(base.NewAVP(
+		&base.Unsigned32{Value: 131313},
+	)
+	m.NewAVP(
 		r.Dict.CodeFor("Product-Name"), 0x40, 0x0,
-		&base.OctetString{Value: "go-diameter"}, nil,
-	))
+		&base.OctetString{Value: "go-diameter"},
+	)
 	// Reply with the same Origin-State-Id
 	code := r.Dict.CodeFor("Origin-State-Id")
 	OriginStateId := r.Msg.FindAVP(code)
-	m.Add(base.NewAVP(code, 0x40, 0x0, OriginStateId.Data, nil))
+	m.NewAVP(code, 0x40, 0x0, OriginStateId.Data)
 
 	// Write response
 	fmt.Println("Response:")

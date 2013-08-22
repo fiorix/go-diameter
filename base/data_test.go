@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tests
+// Tests and Benchmarks
 
 package base
 
@@ -13,6 +13,9 @@ import (
 	"testing"
 	"time"
 )
+
+// Tests
+// go test -v
 
 func TestOctetString(t *testing.T) {
 	s := "hello, world!"
@@ -184,5 +187,53 @@ func TestFloat64(t *testing.T) {
 	if d := n.Data(); d != s {
 		t.Error(fmt.Errorf("Data is 0x%x, expected 0x%x", d, s))
 		return
+	}
+}
+
+// Benchmarks
+// go test -bench .
+
+func BenchmarkOctetStringParser(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := new(OctetString)
+		p.Put([]byte{
+			0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20,
+			0x77, 0x6f, 0x72, 0x6c, 0x64, 0x21,
+		})
+	}
+}
+
+func BenchmarkOctetStringBuilder(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := &OctetString{Value: "Hello, world"}
+		p.Bytes()
+	}
+}
+
+func BenchmarkTimeParser(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := new(Time)
+		p.Put([]byte{0x52, 0x14, 0xc9, 0x56})
+	}
+}
+
+func BenchmarkTimeBuilder(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := &Time{Value: time.Unix(1377093974, 0)}
+		p.Bytes()
+	}
+}
+
+func BenchmarkAddressParser(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := new(Address)
+		p.Put([]byte{0, 1, 0xc0, 0xa8, 0x04, 0x14})
+	}
+}
+
+func BenchmarkAddressBuilder(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := &Address{IP: net.ParseIP("192.168.4.20")}
+		p.Bytes()
 	}
 }

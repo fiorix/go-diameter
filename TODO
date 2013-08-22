@@ -1,1 +1,4 @@
-Review
+Sanity check (functions to check for required and optional AVPs in messages)
+Add automatic sanity check in the stack
+Add test cases for msg parsing with real, binary data
+Benchmarks

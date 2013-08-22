@@ -87,10 +87,21 @@ func TestAddress(t *testing.T) {
 
 func TestDiameterURI(t *testing.T) {
 	s := "aaa://diameter:3868;transport=tcp"
+	b := []byte{
+		0x61, 0x61, 0x61, 0x3a, 0x2f, 0x2f, 0x64, 0x69, 0x61, 0x6d,
+		0x65, 0x74, 0x65, 0x72, 0x3a, 0x33, 0x38, 0x36, 0x38, 0x3b,
+		0x74, 0x72, 0x61, 0x6e, 0x73, 0x70, 0x6f, 0x72, 0x74, 0x3d,
+		0x74, 0x63, 0x70,
+	}
 	du := DiameterURI{Value: s}
-	du.Put(du.Bytes())
+	dub := du.Bytes()
+	if !bytes.Equal(dub, b) {
+		t.Error(fmt.Errorf("Bytes are 0x%x, expected 0x%x", dub, b))
+		return
+	}
+	du.Put(b)
 	if d := du.Data(); d != s {
-		t.Error(fmt.Errorf("Data is '%s', expected '%s'", d, s))
+		t.Error(fmt.Errorf("Data is 0x%x, expected 0x%x", d, s))
 	}
 }
 
@@ -234,6 +245,39 @@ func BenchmarkAddressParser(b *testing.B) {
 func BenchmarkAddressBuilder(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		p := &Address{IP: net.ParseIP("192.168.4.20")}
+		p.Bytes()
+	}
+}
+
+func BenchmarkIPv4Parser(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := new(IPv4)
+		p.Put([]byte{0xc0, 0xa8, 0x04, 0x14})
+	}
+}
+
+func BenchmarkIPv4Builder(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := &IPv4{IP: net.ParseIP("192.168.4.20")}
+		p.Bytes()
+	}
+}
+
+func BenchmarkDiameterURIParser(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := new(DiameterURI)
+		p.Put([]byte{
+			0x61, 0x61, 0x61, 0x3a, 0x2f, 0x2f, 0x64, 0x69, 0x61,
+			0x6d, 0x65, 0x74, 0x65, 0x72, 0x3a, 0x33, 0x38, 0x36,
+			0x38, 0x3b, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x70, 0x6f,
+			0x72, 0x74, 0x3d, 0x74, 0x63, 0x70,
+		})
+	}
+}
+
+func BenchmarkDiameterURIBuilder(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := &DiameterURI{Value: "aaa://diameter:3868;transport=tcp"}
 		p.Bytes()
 	}
 }

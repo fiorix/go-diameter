@@ -8,6 +8,17 @@ package dict
 
 import "fmt"
 
+// Vendors return an array of all vendors in all dictionary files.
+func (p Parser) Vendors() []*Vendor {
+	var vendors []*Vendor
+	for _, f := range p.file {
+		for _, v := range f.Vendor {
+			vendors = append(vendors, v)
+		}
+	}
+	return vendors
+}
+
 // FindAVP is a helper function that returns a pre-loaded AVP from the Dict.
 func (p Parser) FindAVP(appid, code uint32) (*AVP, error) {
 	p.mu.RLock()

@@ -13,8 +13,18 @@ type AVP struct {
 	Flags    uint8
 	Length   uint32
 	VendorId uint32
-	Data     Codec
+	body     Codec    // AVP data
 	Message  *Message // Link to parent Message
+}
+
+// Data returns internal AVP body data.  It's a short for AVP.Body().Data().
+func (avp *AVP) Data() Data {
+	return avp.body.Data()
+}
+
+// Body returns the internal AVP body.
+func (avp *AVP) Body() Codec {
+	return avp.body
 }
 
 // Data is an interface for AVP Data types.

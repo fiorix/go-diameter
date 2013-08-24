@@ -82,10 +82,10 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 			ex, gravp, err := ReadAVP(m, r)
 			if err != nil {
 				return 0, nil, err
-			} else if avp.Data == nil {
-				avp.Data = new(Grouped)
+			} else if avp.body == nil {
+				avp.body = new(Grouped)
 			}
-			avp.Data.Put(gravp)
+			avp.body.Put(gravp)
 			dlen = dlen - (gravp.Length + ex)
 		}
 		// Lesson learned: there's never extra bytes in Grouped AVPs.
@@ -101,46 +101,46 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	switch davp.Data.Type {
 	case "OctetString":
 		pad = true
-		avp.Data = new(OctetString)
+		avp.body = new(OctetString)
 	case "Integer32":
-		avp.Data = new(Integer32)
+		avp.body = new(Integer32)
 	case "Integer64":
-		avp.Data = new(Integer64)
+		avp.body = new(Integer64)
 	case "Unsigned32":
-		avp.Data = new(Unsigned32)
+		avp.body = new(Unsigned32)
 	case "Unsigned64":
-		avp.Data = new(Unsigned64)
+		avp.body = new(Unsigned64)
 	case "Float32":
-		avp.Data = new(Float32)
+		avp.body = new(Float32)
 	case "Float64":
-		avp.Data = new(Float64)
+		avp.body = new(Float64)
 	case "Address":
 		pad = true
-		avp.Data = new(Address)
+		avp.body = new(Address)
 	case "IPv4": // To support Framed-IP-Address and alike.
-		avp.Data = new(IPv4)
+		avp.body = new(IPv4)
 	case "Time":
 		pad = true
-		avp.Data = new(Time)
+		avp.body = new(Time)
 	case "UTF8String":
 		pad = true
-		avp.Data = new(UTF8String)
+		avp.body = new(UTF8String)
 	case "DiameterIdentity":
 		pad = true
-		avp.Data = new(DiameterIdentity)
+		avp.body = new(DiameterIdentity)
 	case "DiameterURI":
-		avp.Data = new(DiameterURI)
+		avp.body = new(DiameterURI)
 	case "Enumerated":
-		avp.Data = new(Enumerated)
+		avp.body = new(Enumerated)
 	case "IPFilterRule":
 		pad = true
-		avp.Data = new(IPFilterRule)
+		avp.body = new(IPFilterRule)
 	default:
 		return 0, nil, fmt.Errorf(
-			"Unsupported AVP data type: %s", davp.Data.Type)
+			"Unsupported avp.body type: %s", davp.Data.Type)
 	}
 	// Put binary data in this AVP.
-	avp.Data.Put(b)
+	avp.body.Put(b)
 	// Check if there's extra data to read due to padding of OctetString.
 	//
 	// http://tools.ietf.org/html/rfc6733#section-4
@@ -186,6 +186,6 @@ func (avp *AVP) String() string {
 		avp.Flags,
 		avp.Length,
 		avp.VendorId,
-		avp.Data,
+		avp.body,
 	)
 }

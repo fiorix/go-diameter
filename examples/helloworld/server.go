@@ -59,7 +59,7 @@ func OnCER(w diam.ResponseWriter, r *diam.Request) {
 		fmt.Println("Err:", err)
 		return
 	}
-	m.NewAVP(code, 0x40, 0x0, OriginStateId.Data)
+	m.NewAVP(code, 0x40, 0x0, OriginStateId.Body())
 
 	// Write response
 	fmt.Println("Response:")

@@ -20,12 +20,12 @@ type rfcHdr2 struct {
 }
 
 // NewAVP allocates and returns a new AVP.
-func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, data Codec) *AVP {
+func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, body Codec) *AVP {
 	avp := &AVP{
 		Code:     code,
 		Flags:    flags,
 		VendorId: vendor,
-		Data:     data,
+		body:     body,
 		Message:  m,
 	}
 	if flags&0x80 > 0 {
@@ -33,7 +33,7 @@ func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, data Codec) *A
 	} else {
 		avp.Length = uint32(unsafe.Sizeof(rfcHdr1{}))
 	}
-	avp.Length += data.Length()
+	avp.Length += body.Length()
 	m.Add(avp)
 	return avp
 }
@@ -58,6 +58,6 @@ func (avp *AVP) Bytes() []byte {
 		}
 		binary.Write(b, binary.BigEndian, hdr)
 	}
-	binary.Write(b, binary.BigEndian, avp.Data.Bytes())
+	binary.Write(b, binary.BigEndian, avp.body.Bytes())
 	return b.Bytes()
 }

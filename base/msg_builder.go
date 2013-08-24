@@ -16,6 +16,9 @@ import (
 // NewMessage allocates a new Message. Used for building messages that will
 // be sent to a connection.
 func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *dict.Parser) *Message {
+	if d == nil {
+		panic("NewMessage requires a valid dictionary, not nil")
+	}
 	return &Message{
 		Header: &Header{
 			Version:        1, // Supports diameter version 1.

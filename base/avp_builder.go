@@ -24,7 +24,7 @@ type rfcHdr2 struct {
 // NewAVP allocates and returns a new AVP.
 func NewAVP(d *dict.Parser, code uint32, flags uint8, vendor uint32, body Codec) *AVP {
 	if d == nil {
-		panic("AVP requires a valid dictionary, not nil")
+		panic("NewAVP requires a valid dictionary, not nil")
 	}
 	avp := &AVP{
 		Code:     code,

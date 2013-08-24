@@ -30,7 +30,17 @@ func (m *Message) FindAVP(code uint32) (*AVP, error) {
 			return a, nil
 		}
 	}
-	return nil, ErrNotFound
+	var (
+		name string
+		avp  *dict.AVP
+		err  error
+	)
+	if avp, err = m.Dict.ScanAVP(code); err != nil {
+		name = "Unknown"
+	} else {
+		name = avp.Name
+	}
+	return nil, fmt.Errorf("AVP %d (%s) not found", code, name)
 }
 
 // PrettyPrint prints messages in a human readable format.

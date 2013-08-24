@@ -20,14 +20,31 @@ func (p Parser) Vendors() []*Vendor {
 }
 
 // FindAVP is a helper function that returns a pre-loaded AVP from the Dict.
+// If the AVP code is not found in the given appid, it try with appid=0.
 func (p Parser) FindAVP(appid, code uint32) (*AVP, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	if avp, ok := p.avp[index{appid, code}]; ok {
 		return avp, nil
-	} else if avp, ok = p.avp[index{0, code}]; ok {
-		// Always fall back to base dict.
-		return avp, nil
+	} else if appid != 0 {
+		if avp, ok = p.avp[index{0, code}]; ok {
+			// Always fall back to base dict.
+			return avp, nil
+		}
+	}
+	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
+}
+
+// ScanAVP is a helper function that returns a pre-loaded AVP from the Dict.
+// It's similar to FindAPI except that it scans the list of available AVPs
+// instead of looking into one specific appid.
+func (p Parser) ScanAVP(code uint32) (*AVP, error) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	for idx, avp := range p.avp {
+		if idx.Code == code {
+			return avp, nil
+		}
 	}
 	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
 }

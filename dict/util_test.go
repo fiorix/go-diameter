@@ -31,6 +31,12 @@ func TestFindAVP(t *testing.T) {
 	}
 }
 
+func TestScanAVP(t *testing.T) {
+	if _, err := Base.ScanAVP(263); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestFindCmd(t *testing.T) {
 	if cmd, err := Base.FindCmd(0, 257); err != nil {
 		t.Error(err)

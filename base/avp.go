@@ -7,14 +7,16 @@
 
 package base
 
+import "github.com/fiorix/go-diameter/dict"
+
 // AVP represents an AVP header and data.
 type AVP struct {
 	Code     uint32
 	Flags    uint8
 	Length   uint32
 	VendorId uint32
-	body     Codec    // AVP data
-	Message  *Message // Link to parent Message
+	body     Codec        // AVP data
+	dict     *dict.Parser // Dictionary (for PrettyPrint)
 }
 
 // Data returns internal AVP body data.  It's a short for AVP.Body().Data().

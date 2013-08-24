@@ -38,10 +38,10 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 		return 0, nil, err
 	}
 	avp := &AVP{
-		Code:    raw.Code,
-		Flags:   raw.Flags,
-		Length:  uint24To32(raw.Length),
-		Message: m,
+		Code:   raw.Code,
+		Flags:  raw.Flags,
+		Length: uint24To32(raw.Length),
+		dict:   m.Dict,
 	}
 	dlen := avp.Length - uint32(unsafe.Sizeof(raw))
 	if dlen >= m.Header.MessageLength() {
@@ -166,14 +166,15 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 }
 
 // String returns the AVP in human readable format.
+// The AVP name is "guessed" by scanning the list of available AVPs in the
+// dictionary that was used to build this AVP. It might return the wrong
+// AVP name if the same code is used by different dictionaries in different
+// applications, with a different name - yet, very unlikely.
 func (avp *AVP) String() string {
 	// TODO: Lookup the vendor id from AVP in the dictionary.
 	var name string
-	if avp.Message != nil {
-		if davp, err := avp.Message.Dict.FindAVP(
-			avp.Message.Header.ApplicationId,
-			avp.Code,
-		); davp != nil && err == nil {
+	if avp.dict != nil {
+		if davp, err := avp.dict.ScanAVP(avp.Code); davp != nil && err == nil {
 			name = davp.Name
 		}
 	}

@@ -10,6 +10,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"unsafe"
+
+	"github.com/fiorix/go-diameter/dict"
 )
 
 type rfcHdr2 struct {
@@ -20,13 +22,16 @@ type rfcHdr2 struct {
 }
 
 // NewAVP allocates and returns a new AVP.
-func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, body Codec) *AVP {
+func NewAVP(d *dict.Parser, code uint32, flags uint8, vendor uint32, body Codec) *AVP {
+	if d == nil {
+		panic("AVP requires a valid dictionary, not nil")
+	}
 	avp := &AVP{
 		Code:     code,
 		Flags:    flags,
 		VendorId: vendor,
 		body:     body,
-		Message:  m,
+		dict:     d,
 	}
 	if flags&0x80 > 0 {
 		avp.Length = uint32(unsafe.Sizeof(rfcHdr2{}))
@@ -34,7 +39,6 @@ func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, body Codec) *A
 		avp.Length = uint32(unsafe.Sizeof(rfcHdr1{}))
 	}
 	avp.Length += body.Length()
-	m.Add(avp)
 	return avp
 }
 

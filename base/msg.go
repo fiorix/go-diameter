@@ -7,10 +7,13 @@
 package base
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/fiorix/go-diameter/dict"
 )
+
+var ErrNotFound = errors.New("Not found")
 
 // Message is a diameter message, composed of a header and multiple AVPs.
 type Message struct {
@@ -21,13 +24,13 @@ type Message struct {
 
 // FindAVP is a helper that returns an AVP by looking up its code, or nil if
 // the AVP is not in the message.
-func (m *Message) FindAVP(code uint32) *AVP {
+func (m *Message) FindAVP(code uint32) (*AVP, error) {
 	for _, a := range m.AVP {
 		if code == a.Code {
-			return a
+			return a, nil
 		}
 	}
-	return nil
+	return nil, ErrNotFound
 }
 
 // PrettyPrint prints messages in a human readable format.

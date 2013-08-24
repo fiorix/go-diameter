@@ -54,7 +54,11 @@ func OnCER(w diam.ResponseWriter, r *diam.Request) {
 	)
 	// Reply with the same Origin-State-Id
 	code := r.Dict.CodeFor("Origin-State-Id")
-	OriginStateId := r.Msg.FindAVP(code)
+	OriginStateId, err := r.Msg.FindAVP(code)
+	if err != nil {
+		fmt.Println("Err:", err)
+		return
+	}
 	m.NewAVP(code, 0x40, 0x0, OriginStateId.Data)
 
 	// Write response

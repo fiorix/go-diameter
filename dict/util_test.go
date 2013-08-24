@@ -17,14 +17,6 @@ func init() {
 	}
 }
 
-func TestVendors(t *testing.T) {
-	s := &Vendor{Id: 10415}
-	v := Base.Vendors()
-	if len(v) != 1 || v[0].Id != s.Id {
-		t.Error(fmt.Errorf("Unexpected vendor: %#v", v[0]))
-	}
-}
-
 func TestFindAVP(t *testing.T) {
 	if _, err := Base.FindAVP(0, 263); err != nil {
 		t.Error(err)

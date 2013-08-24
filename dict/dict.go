@@ -12,9 +12,16 @@ import (
 
 // File is the dictionary root element of a XML file.  See diam_base.xml.
 type File struct {
-	XMLName xml.Name  `xml:"diameter"`
-	Vendor  []*Vendor `xml:"vendor"`      // Support for multiple vendors
-	App     []*App    `xml:"application"` // Support for multiple applications
+	XMLName xml.Name `xml:"diameter"`
+	App     []*App   `xml:"application"` // Support for multiple applications
+}
+
+// App defines a diameter application in XML and its multiple AVPs.
+type App struct {
+	Id     uint32    `xml:"id,attr"` // Application Id
+	Vendor []*Vendor `xml:"vendor"`  // Support for multiple vendors
+	Cmd    []*Cmd    `xml:"command"` // Diameter commands
+	AVP    []*AVP    `xml:"avp"`     // Each application support multiple AVPs
 }
 
 // Vendor defines diameter vendors in XML, that can be used to translate
@@ -22,13 +29,6 @@ type File struct {
 type Vendor struct {
 	Id   uint32 `xml:"id,attr"`
 	Name string `xml:"name,attr"`
-}
-
-// App defines a diameter application in XML and its multiple AVPs.
-type App struct {
-	Id  uint32 `xml:"id,attr"` // Application Id
-	Cmd []*Cmd `xml:"command"` // Diameter commands
-	AVP []*AVP `xml:"avp"`     // Each application support multiple AVPs
 }
 
 // Cmd defines a diameter command (CE, CC, etc)

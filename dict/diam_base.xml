@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-  <vendor id="10415" name="3GPP"/>
 
   <application id="0"> <!-- Diameter Common Messages -->
+
+    <vendor id="10415" name="3GPP"/>
 
     <command code="257" short="CE" name="Capabilities-Exchange"/>
     <command code="258" short="RA" name="Re-Auth"/>

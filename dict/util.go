@@ -8,15 +8,17 @@ package dict
 
 import "fmt"
 
-// Vendors return an array of all vendors in all dictionary files.
-func (p Parser) Vendors() []*Vendor {
-	var vendors []*Vendor
+// Apps return a list of all applications loaded in the Dict instance.
+func (p Parser) Apps() []*App {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	var apps []*App
 	for _, f := range p.file {
-		for _, v := range f.Vendor {
-			vendors = append(vendors, v)
+		for _, app := range f.App {
+			apps = append(apps, app)
 		}
 	}
-	return vendors
+	return apps
 }
 
 // FindAVP is a helper function that returns a pre-loaded AVP from the Dict.
@@ -134,14 +136,13 @@ func (p *Parser) Rule(appid, code uint32, n string) (*Rule, error) {
 
 // PrettyPrint prints the Dict in a human readable form.
 func (p *Parser) PrettyPrint() {
-	fmt.Printf("Vendors:\n")
 	for _, f := range p.file {
-		for _, vendor := range f.Vendor {
-			fmt.Printf("  Id=%d Name=%s\n", vendor.Id, vendor.Name)
-		}
-		fmt.Println()
 		for _, app := range f.App {
 			fmt.Printf("Application Id: %d\n", app.Id)
+			fmt.Printf("  Vendors:\n")
+			for _, vendor := range app.Vendor {
+				fmt.Printf("    Id=%d Name=%s\n", vendor.Id, vendor.Name)
+			}
 			fmt.Printf("  Commands:\n")
 			for _, cmd := range app.Cmd {
 				fmt.Printf("    Code=%d %s %s\n",

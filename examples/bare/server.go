@@ -11,17 +11,11 @@ import (
 	"net"
 
 	"github.com/fiorix/go-diameter/base"
-	"github.com/fiorix/go-diameter/dict"
 )
 
-var GlobalDict *dict.Parser
-
 func main() {
-	var err error
-	if GlobalDict, err = dict.New("./diam_app.xml"); err != nil {
-		panic(err)
-	}
-	GlobalDict.PrettyPrint()
+	base.Dict.LoadFile("diam_app.xml")
+	base.Dict.PrettyPrint()
 	fmt.Println()
 	srv, err := net.Listen("tcp", ":3868")
 	if err != nil {
@@ -38,7 +32,7 @@ func main() {
 
 func client(conn net.Conn) {
 	defer conn.Close()
-	msg, err := base.ReadMessage(conn, GlobalDict)
+	msg, err := base.ReadMessage(conn, base.Dict)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return

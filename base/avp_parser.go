@@ -83,7 +83,7 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 			if err != nil {
 				return 0, nil, err
 			} else if avp.body == nil {
-				avp.body = new(Grouped)
+				avp.body = &Grouped{Message: m}
 			}
 			avp.body.Put(gravp)
 			dlen = dlen - (gravp.Length + ex)

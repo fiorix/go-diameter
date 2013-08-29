@@ -13,13 +13,13 @@ var Dict *dict.Parser
 
 func init() {
 	Dict, _ = dict.New()
-	Dict.Load(BaseProtocolXML)
+	Dict.Load(DictXML)
 }
 
-// BaseProtocolXML is an embedded version of the Diameter Base Protocol.
+// DictXML is an embedded version of the Diameter Base Protocol.
 //
 // Copy of ../dict/diam_base.xml
-var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
+var DictXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
   <application id="0"> <!-- Diameter Common Messages -->

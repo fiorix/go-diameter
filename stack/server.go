@@ -33,6 +33,17 @@ type Handler interface {
 	ServeDiam(Conn, *base.Message)
 }
 
+// The CloseNotifier interface is implemented by ResponseWriters which
+// allow detecting when the underlying connection has gone away.
+//
+// This mechanism can be used to cancel long operations on the server
+// if the client has disconnected before the response is ready.
+type CloseNotifier interface {
+	// CloseNotify returns a channel that receives a single value
+	// when the client connection has gone away.
+	CloseNotify() <-chan bool
+}
+
 // A Conn interface is used by a handler to construct a
 // diameter message.
 type Conn interface {
@@ -41,16 +52,6 @@ type Conn interface {
 	LocalAddr() net.Addr              // Local IP
 	RemoteAddr() net.Addr             // Remote IP
 	TLS() *tls.ConnectionState        // or nil when not using TLS
-}
-
-// A Request represents an incoming diameter message received by a server
-// or to be sent by a client.
-type Request struct {
-	Msg        *base.Message
-	LocalAddr  string
-	RemoteAddr string
-	TLS        *tls.ConnectionState // or nil when not using TLS
-	Dict       *dict.Parser         // Dicts available on this server
 }
 
 // A conn represents the server side of a diameter connection.
@@ -69,10 +70,11 @@ func (c *conn) closeNotify() <-chan bool {
 	defer c.mu.Unlock()
 	if c.closeNotifyc == nil {
 		c.closeNotifyc = make(chan bool, 1)
-		pr, pw := io.Pipe()
+		_, pw := io.Pipe()
+		readSource := c.rwc
 		go func() {
 			// TODO: test!!!!!
-			_, err := io.Copy(pw, pr)
+			_, err := io.Copy(pw, readSource)
 			if err == nil {
 				err = io.EOF
 			}

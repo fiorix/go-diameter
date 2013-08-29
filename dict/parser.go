@@ -22,25 +22,29 @@ import (
 //
 // The Parser element has an index to make pre-loaded AVPs searcheable per App.
 type Parser struct {
-	file []*File        // Dict supports multiple XML dictionaries
-	avp  map[index]*AVP // AVP index
-	cmd  map[index]*Cmd // Cmd index
-	mu   sync.RWMutex
+	file    []*File          // Dict supports multiple XML dictionaries
+	avpname map[nameIdx]*AVP // AVP index by name
+	avpcode map[codeIdx]*AVP // AVP index by code
+	cmd     map[codeIdx]*Cmd // Cmd index
+	mu      sync.RWMutex
 }
 
-// index AVPs and Cmds by their application id and code.
-type index struct {
+type codeIdx struct {
 	AppId uint32
 	Code  uint32
 }
 
+type nameIdx struct {
+	AppId uint32
+	Name  string
+}
+
 // New allocates a new Parser optionally loading dictionary XML files.
-// Base Protocol dictionary is always present, and AVPs can be overloaded.
 func New(filename ...string) (*Parser, error) {
 	p := new(Parser)
-	p.avp = make(map[index]*AVP)
-	p.cmd = make(map[index]*Cmd)
-	p.Load(BaseProtocolXML)
+	p.avpname = make(map[nameIdx]*AVP)
+	p.avpcode = make(map[codeIdx]*AVP)
+	p.cmd = make(map[codeIdx]*Cmd)
 	var err error
 	for _, f := range filename {
 		if err = p.LoadFile(f); err != nil {
@@ -70,12 +74,13 @@ func (p *Parser) Load(buf []byte) error {
 	p.file = append(p.file, f)
 	for _, app := range f.App {
 		for _, cmd := range app.Cmd {
-			p.cmd[index{app.Id, cmd.Code}] = cmd
+			p.cmd[codeIdx{app.Id, cmd.Code}] = cmd
 		}
 		for _, avp := range app.AVP {
 			// Link AVP to its Application
 			avp.App = app
-			p.avp[index{app.Id, avp.Code}] = avp
+			p.avpname[nameIdx{app.Id, avp.Name}] = avp
+			p.avpcode[codeIdx{app.Id, avp.Code}] = avp
 		}
 	}
 	return nil

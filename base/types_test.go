@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Tests and Benchmarks
+// go test -v
 
 package base
 
@@ -13,9 +14,6 @@ import (
 	"testing"
 	"time"
 )
-
-// Tests
-// go test -v
 
 func TestOctetString(t *testing.T) {
 	s := "hello, world!"

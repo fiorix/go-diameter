@@ -6,9 +6,7 @@
 
 package dict
 
-import (
-	"encoding/xml"
-)
+import "encoding/xml"
 
 // File is the dictionary root element of a XML file.  See diam_base.xml.
 type File struct {

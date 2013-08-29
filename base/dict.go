@@ -2,17 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter dictionary static Parser and Base Protocol XML.
+// Static dictionary Parser and Base Protocol XML.
 
-package dict
+package base
 
-// Base is a static Parser with a pre-loaded Base Protocol.
-var Base, _ = New()
+import "github.com/fiorix/go-diameter/dict"
+
+// Dict is a static Parser with a pre-loaded Base Protocol.
+var Dict *dict.Parser
+
+func init() {
+	Dict, _ = dict.New()
+	Dict.Load(BaseProtocolXML)
+}
 
 // BaseProtocolXML is an embedded version of the Diameter Base Protocol.
-// It is always loaded when a new Dict is allocated by NewDict.
 //
-// Copy of diam_base.xml
+// Copy of ../dict/diam_base.xml
 var BaseProtocolXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 

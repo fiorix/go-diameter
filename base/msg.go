@@ -24,16 +24,20 @@ type Message struct {
 
 // FindAVP is a helper that returns an AVP by looking up its code, or nil if
 // the AVP is not in the message.
-func (m *Message) FindAVP(code uint32) (*AVP, error) {
+// @code can be either the AVP code (int, uint32) or name (string).
+func (m *Message) FindAVP(code interface{}) (*AVP, error) {
+	davp, err := m.Dict.FindAVP(m.Header.ApplicationId, code)
+	if err != nil {
+		return nil, err
+	}
 	for _, a := range m.AVP {
-		if code == a.Code {
+		if davp.Code == a.Code {
 			return a, nil
 		}
 	}
 	var (
 		name string
 		avp  *dict.AVP
-		err  error
 	)
 	if avp, err = m.Dict.ScanAVP(code); err != nil {
 		name = "Unknown"

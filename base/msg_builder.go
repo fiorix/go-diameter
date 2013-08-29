@@ -15,15 +15,23 @@ import (
 
 // NewMessage allocates a new Message. Used for building messages that will
 // be sent to a connection.
-func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *dict.Parser) *Message {
+// TODO: Support command short names like CER, CEA.
+func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *dict.Parser) *Message {
 	if d == nil {
 		panic("NewMessage requires a valid dictionary, not nil")
+	}
+	if hopbyhop == 0 {
+		hopbyhop = RandUint32()
+	}
+	if endtoend == 0 {
+		endtoend = RandUint32()
 	}
 	return &Message{
 		Header: &Header{
 			Version:        1, // Supports diameter version 1.
 			CommandFlags:   flags,
-			RawCommandCode: uint32To24(code),
+			RawCommandCode: uint32To24(cmd),
+			ApplicationId:  appid,
 			HopByHopId:     hopbyhop,
 			EndToEndId:     endtoend,
 		},
@@ -31,14 +39,21 @@ func NewMessage(code uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *d
 	}
 }
 
-// Add adds an AVP to the given Message.
-func (m *Message) Add(avp *AVP) {
-	// Set AVP's parent Message to this.
-	// This is required when copying AVPs from one Message to another.
-	if avp.dict != m.Dict {
-		avp.dict = m.Dict
+// Answer creates an answer for the current Message with the Result-Code AVP.
+func (m *Message) Answer(resultCode uint32) *Message {
+	nm := &Message{
+		Header: &Header{
+			Version:        m.Header.Version,
+			CommandFlags:   (m.Header.CommandFlags &^ 0x80),
+			RawCommandCode: m.Header.RawCommandCode,
+			ApplicationId:  m.Header.ApplicationId,
+			HopByHopId:     m.Header.HopByHopId,
+			EndToEndId:     m.Header.EndToEndId,
+		},
+		Dict: m.Dict,
 	}
-	m.AVP = append(m.AVP, avp)
+	nm.NewAVP("Result-Code", 0x40, 0x00, &Unsigned32{Value: resultCode})
+	return nm
 }
 
 // Bytes returns the Message in binary form to be sent to a connection.

@@ -21,13 +21,13 @@ type rfcHdr2 struct {
 	VendorId uint32
 }
 
-// NewAVP allocates and returns a new AVP.
-func NewAVP(d *dict.Parser, code uint32, flags uint8, vendor uint32, body Codec) *AVP {
-	if d == nil {
-		panic("NewAVP requires a valid dictionary, not nil")
+func newAVP(appid uint32, d *dict.Parser, code interface{}, flags uint8, vendor uint32, body Codec) (*AVP, error) {
+	davp, err := d.FindAVP(appid, code)
+	if err != nil {
+		return nil, err
 	}
 	avp := &AVP{
-		Code:     code,
+		Code:     davp.Code,
 		Flags:    flags,
 		VendorId: vendor,
 		body:     body,
@@ -39,7 +39,36 @@ func NewAVP(d *dict.Parser, code uint32, flags uint8, vendor uint32, body Codec)
 		avp.Length = uint32(unsafe.Sizeof(rfcHdr1{}))
 	}
 	avp.Length += body.Length()
-	return avp
+	return avp, nil
+}
+
+// NewAVP allocates and returns a new AVP.
+// @code can be either the AVP code (int, uint32) or name (string).
+func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, body Codec) (*AVP, error) {
+	avp, err := newAVP(
+		m.Header.ApplicationId,
+		m.Dict,
+		code,
+		flags,
+		vendor,
+		body,
+	)
+	if err != nil {
+		return nil, err
+	}
+	m.AVP = append(m.AVP, avp)
+	return avp, nil
+}
+
+// Append appends an AVP to the given Message and sets its internal dictionary
+// to the one in the Message.
+func (m *Message) Append(avp *AVP) {
+	// Set AVP's parent Message to this.
+	// This is required when copying AVPs from one Message to another.
+	if avp.dict != m.Dict {
+		avp.dict = m.Dict
+	}
+	m.AVP = append(m.AVP, avp)
 }
 
 // Bytes returns an AVP in binary form so it can be attached to a Message

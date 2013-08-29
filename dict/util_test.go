@@ -11,7 +11,14 @@ import (
 	"testing"
 )
 
+var Base *Parser
+
 func init() {
+	var err error
+	Base, err = New("./diam_base.xml")
+	if err != nil {
+		panic(err)
+	}
 	if false {
 		Base.PrettyPrint()
 	}
@@ -24,8 +31,11 @@ func TestFindAVP(t *testing.T) {
 }
 
 func TestScanAVP(t *testing.T) {
-	if _, err := Base.ScanAVP(263); err != nil {
+	if avp, err := Base.ScanAVP("Session-Id"); err != nil {
 		t.Error(err)
+	} else if avp.Code != 263 {
+		t.Error(fmt.Errorf(
+			"Unexpected code %d for Session-Id AVP", avp.Code))
 	}
 }
 
@@ -34,18 +44,6 @@ func TestFindCmd(t *testing.T) {
 		t.Error(err)
 	} else if cmd.Short != "CE" {
 		t.Error(fmt.Errorf("Unexpected command: %#v", cmd))
-	}
-}
-
-func TestCodeFor(t *testing.T) {
-	if n := Base.CodeFor("Session-Id"); n != 263 {
-		t.Error(fmt.Errorf("Unexpected code %d for Session-Id AVP", n))
-	}
-}
-
-func TestAppFor(t *testing.T) {
-	if app := Base.AppFor("Session-Id"); app == nil {
-		t.Error("Could not find app for Session-Id AVP")
 	}
 }
 

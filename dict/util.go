@@ -22,72 +22,80 @@ func (p Parser) Apps() []*App {
 }
 
 // FindAVP is a helper function that returns a pre-loaded AVP from the Dict.
-// If the AVP code is not found in the given appid, it try with appid=0.
-func (p Parser) FindAVP(appid, code uint32) (*AVP, error) {
+// If the AVP code is not found in the given appid it tries with appid=0
+// before returning an error.
+// @code can be either the AVP code (int, uint32) or name (string).
+func (p Parser) FindAVP(appid uint32, code interface{}) (*AVP, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	if avp, ok := p.avp[index{appid, code}]; ok {
+	var (
+		avp *AVP
+		ok  bool
+		err error
+	)
+	switch code.(type) {
+	case string:
+		avp, ok = p.avpname[nameIdx{appid, code.(string)}]
+		if !ok {
+			err = fmt.Errorf("Could not find AVP %s", code.(string))
+		}
+	case uint32:
+		avp, ok = p.avpcode[codeIdx{appid, code.(uint32)}]
+		if !ok {
+			err = fmt.Errorf("Could not find AVP %d", code.(uint32))
+		}
+	case int:
+		return p.FindAVP(appid, uint32(code.(int)))
+	default:
+		return nil, fmt.Errorf("Unsupported AVP code type %#v", code)
+	}
+	if ok {
 		return avp, nil
 	} else if appid != 0 {
-		if avp, ok = p.avp[index{0, code}]; ok {
-			// Always fall back to base dict.
-			return avp, nil
-		}
+		return p.FindAVP(0, code)
 	}
-	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
+	return nil, err
 }
 
 // ScanAVP is a helper function that returns a pre-loaded AVP from the Dict.
 // It's similar to FindAPI except that it scans the list of available AVPs
 // instead of looking into one specific appid.
-func (p Parser) ScanAVP(code uint32) (*AVP, error) {
+// @code can be either the AVP code (uint32) or name (string).
+func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	for idx, avp := range p.avp {
-		if idx.Code == code {
-			return avp, nil
+	switch code.(type) {
+	case string:
+		for idx, avp := range p.avpname {
+			if idx.Name == code.(string) {
+				return avp, nil
+			}
 		}
+		return nil, fmt.Errorf("Could not find AVP %s", code.(string))
+	case uint32:
+		for idx, avp := range p.avpcode {
+			if idx.Code == code.(uint32) {
+				return avp, nil
+			}
+		}
+		return nil, fmt.Errorf("Could not find AVP code %d", code.(uint32))
+	case int:
+		return p.ScanAVP(uint32(code.(int)))
 	}
-	return nil, fmt.Errorf("Could not find preload AVP with code %d", code)
+	return nil, fmt.Errorf("Unsupported AVP code type %#v", code)
 }
 
 // FindCmd is a helper function that returns a pre-loaded Cmd from the Dict.
 func (p Parser) FindCmd(appid, code uint32) (*Cmd, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	if cmd, ok := p.cmd[index{appid, code}]; ok {
+	if cmd, ok := p.cmd[codeIdx{appid, code}]; ok {
 		return cmd, nil
-	} else if cmd, ok = p.cmd[index{0, code}]; ok {
+	} else if cmd, ok = p.cmd[codeIdx{0, code}]; ok {
 		// Always fall back to base dict.
 		return cmd, nil
 	}
 	return nil, fmt.Errorf("Could not find preloaded Cmd with code %d", code)
-}
-
-// CodeFor is a helper function that returns the code for the given AVP name.
-func (p *Parser) CodeFor(name string) uint32 {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	// TODO: Cache this and invalidate when new dict is loaded.
-	for avp, v := range p.avp {
-		if name == v.Name {
-			return avp.Code
-		}
-	}
-	return 0
-}
-
-// AppFor is a helper function that returns the DictApp for the given AVP name.
-func (p *Parser) AppFor(name string) *App {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	// TODO: Cache this and invalidate when new dict is loaded.
-	for _, v := range p.avp {
-		if name == v.Name {
-			return v.App
-		}
-	}
-	return nil // TODO: Return error as well?
 }
 
 // Enum is a helper function that returns a pre-loaded Enum item for the

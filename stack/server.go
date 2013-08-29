@@ -4,7 +4,7 @@
 //
 // Forked off Go's HTTP server.
 
-// Diameter server.  See RFC 6733.
+// Diameter server.
 
 package stack
 
@@ -30,17 +30,17 @@ import (
 // Returning signals that the request is finished and that the Diam server
 // can move on to the next request on the connection.
 type Handler interface {
-	ServeDiam(ResponseWriter, *Request)
+	ServeDiam(Conn, *base.Message)
 }
 
-// A ResponseWriter interface is used by a handler to construct a
+// A Conn interface is used by a handler to construct a
 // diameter message.
-type ResponseWriter interface {
-	// Write writes a message to the connection.
-	Write(*base.Message) (int, error)
-
-	// Closes the connection.
-	Close()
+type Conn interface {
+	Write(*base.Message) (int, error) // Writes a msg to the connection
+	Close()                           // Close the connection
+	LocalAddr() net.Addr              // Local IP
+	RemoteAddr() net.Addr             // Remote IP
+	TLS() *tls.ConnectionState        // or nil when not using TLS
 }
 
 // A Request represents an incoming diameter message received by a server
@@ -51,17 +51,6 @@ type Request struct {
 	RemoteAddr string
 	TLS        *tls.ConnectionState // or nil when not using TLS
 	Dict       *dict.Parser         // Dicts available on this server
-}
-
-// The CloseNotifier interface is implemented by MessageWriters which
-// allow detecting when the underlying connection has gone away.
-//
-// This mechanism can be used to cancel long operations on the server
-// if the client has disconnected before the response is ready.
-type CloseNotifier interface {
-	// CloseNotify returns a channel that receives a single value
-	// when the client connection has gone away.
-	CloseNotify() <-chan bool
 }
 
 // A conn represents the server side of a diameter connection.
@@ -106,7 +95,6 @@ func (c *conn) noteClientGone() {
 // A response represents the server side of a diameter response.
 type response struct {
 	conn *conn
-	req  *Request // request for this response
 }
 
 // Create new connection from rwc.
@@ -118,7 +106,7 @@ func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
 }
 
 // Read next request from connection.
-func (c *conn) readRequest() (w *response, err error) {
+func (c *conn) readRequest() (*base.Message, *response, error) {
 	if d := c.server.ReadTimeout; d != 0 {
 		c.rwc.SetReadDeadline(time.Now().Add(d))
 	}
@@ -129,20 +117,13 @@ func (c *conn) readRequest() (w *response, err error) {
 	}
 	dp := c.server.Dict
 	if dp == nil {
-		dp = dict.Base
+		dp = base.Dict
 	}
-	msg, err := base.ReadMessage(c.rwc, dp)
+	m, err := base.ReadMessage(c.rwc, dp)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	req := &Request{
-		Msg:        msg,
-		LocalAddr:  c.rwc.LocalAddr().String(),
-		RemoteAddr: c.rwc.RemoteAddr().String(),
-		TLS:        c.tlsState,
-		Dict:       dp,
-	}
-	return &response{conn: c, req: req}, nil
+	return m, &response{conn: c}, nil
 }
 
 func (w *response) Write(m *base.Message) (int, error) {
@@ -151,6 +132,18 @@ func (w *response) Write(m *base.Message) (int, error) {
 
 func (w *response) Close() {
 	w.conn.rwc.Close()
+}
+
+func (w *response) LocalAddr() net.Addr {
+	return w.conn.rwc.LocalAddr()
+}
+
+func (w *response) RemoteAddr() net.Addr {
+	return w.conn.rwc.RemoteAddr()
+}
+
+func (w *response) TLS() *tls.ConnectionState {
+	return w.conn.tlsState
 }
 
 // Serve a new connection.
@@ -179,7 +172,7 @@ func (c *conn) serve() {
 		*c.tlsState = tlsConn.ConnectionState()
 	}
 	for {
-		w, err := c.readRequest()
+		m, w, err := c.readRequest()
 		if err != nil {
 			c.rwc.Close()
 			break
@@ -188,7 +181,7 @@ func (c *conn) serve() {
 		// Until the server replies to this request, it can't
 		// read another, so we might as well run the handler in
 		// this goroutine.
-		serverHandler{c.server}.ServeHTTP(w, w.req)
+		serverHandler{c.server}.ServeDiam(w, m)
 	}
 }
 
@@ -200,70 +193,89 @@ func (w *response) CloseNotify() <-chan bool {
 // ordinary functions as diameter handlers.  If f is a function
 // with the appropriate signature, HandlerFunc(f) is a
 // Handler object that calls f.
-type HandlerFunc func(ResponseWriter, *Request)
+type HandlerFunc func(Conn, *base.Message)
 
-// ServeDiam calls f(w, r).
-func (f HandlerFunc) ServeDiam(w ResponseWriter, r *Request) {
-	f(w, r)
+// ServeDiam calls f(c, m).
+func (f HandlerFunc) ServeDiam(c Conn, m *base.Message) {
+	f(c, m)
 }
 
 // ServeMux is a diameter request multiplexer.
-// It matches the command code from the incoming message against a list
-// of registered codes and calls the handler for the given code.
+// It matches the command from the incoming message against a list
+// of registered commands and calls the handler.
 type ServeMux struct {
 	mu sync.RWMutex
-	m  map[uint32]muxEntry
+	m  map[string]muxEntry
 }
 
 type muxEntry struct {
-	h    Handler
-	code uint32
+	h   Handler
+	cmd string
 }
 
 // NewServeMux allocates and returns a new ServeMux.
-func NewServeMux() *ServeMux { return &ServeMux{m: make(map[uint32]muxEntry)} }
+func NewServeMux() *ServeMux { return &ServeMux{m: make(map[string]muxEntry)} }
 
 // DefaultServeMux is the default ServeMux used by Serve.
 var DefaultServeMux = NewServeMux()
 
 // ServeDiam dispatches the request to the handler whose code match
 // the incoming message, or close the connection if no handler is found.
-func (mux *ServeMux) ServeDiam(w ResponseWriter, r *Request) {
+func (mux *ServeMux) ServeDiam(c Conn, m *base.Message) {
 	mux.mu.RLock()
 	defer mux.mu.RUnlock()
-	if me, ok := mux.m[r.Msg.Header.CommandCode()]; ok {
-		me.h.ServeDiam(w, r)
+	var cmd string
+	if dcmd, err := m.Dict.FindCmd(
+		m.Header.ApplicationId,
+		m.Header.CommandCode(),
+	); err != nil {
+		cmd = "ALL"
 	} else {
-		w.Close()
+		cmd = dcmd.Short
+		if m.Header.CommandFlags&0x80 > 0 {
+			cmd += "R"
+		} else {
+			cmd += "A"
+		}
+	}
+	if me, ok := mux.m[cmd]; ok {
+		me.h.ServeDiam(c, m)
+	} else if me, ok = mux.m["ALL"]; ok {
+		me.h.ServeDiam(c, m)
+	} else {
+		// This is not HTTP. Ignore messages that are not bound
+		// instead of closing the connection.
+		//c.Close()
 	}
 }
 
 // Handle registers the handler for the given code.
 // If a handler already exists for code, Handle panics.
-func (mux *ServeMux) Handle(code uint32, handler Handler) {
+func (mux *ServeMux) Handle(cmd string, handler Handler) {
 	mux.mu.Lock()
 	defer mux.mu.Unlock()
 	if handler == nil {
 		panic("diam: nil handler")
 	}
-	mux.m[code] = muxEntry{h: handler, code: code}
+	mux.m[cmd] = muxEntry{h: handler, cmd: cmd}
 }
 
 // HandleFunc registers the handler function for the given pattern.
-func (mux *ServeMux) HandleFunc(code uint32, handler func(ResponseWriter, *Request)) {
-	mux.Handle(code, HandlerFunc(handler))
+// Special @cmd "ALL" may be used as a catch all.
+func (mux *ServeMux) HandleFunc(cmd string, handler func(Conn, *base.Message)) {
+	mux.Handle(cmd, HandlerFunc(handler))
 }
 
 // Handle registers the handler for the given pattern
 // in the DefaultServeMux.
 // The documentation for ServeMux explains how patterns are matched.
-func Handle(code uint32, handler Handler) { DefaultServeMux.Handle(code, handler) }
+func Handle(cmd string, handler Handler) { DefaultServeMux.Handle(cmd, handler) }
 
 // HandleFunc registers the handler function for the given pattern
 // in the DefaultServeMux.
 // The documentation for ServeMux explains how patterns are matched.
-func HandleFunc(code uint32, handler func(ResponseWriter, *Request)) {
-	DefaultServeMux.HandleFunc(code, handler)
+func HandleFunc(cmd string, handler func(Conn, *base.Message)) {
+	DefaultServeMux.HandleFunc(cmd, handler)
 }
 
 // Serve accepts incoming HTTP connections on the listener l,
@@ -290,12 +302,12 @@ type serverHandler struct {
 	srv *Server
 }
 
-func (sh serverHandler) ServeHTTP(rw ResponseWriter, req *Request) {
+func (sh serverHandler) ServeDiam(w Conn, m *base.Message) {
 	handler := sh.srv.Handler
 	if handler == nil {
 		handler = DefaultServeMux
 	}
-	handler.ServeDiam(rw, req)
+	handler.ServeDiam(w, m)
 }
 
 // ListenAndServe listens on the TCP network address srv.Addr and then
@@ -351,33 +363,9 @@ func (srv *Server) Serve(l net.Listener) error {
 // and then calls Serve with handler to handle requests
 // on incoming connections.
 //
-// If Handler is nil, diam.DefaultServeMux is used.
+// If @handler is nil, diam.DefaultServeMux is used.
 //
-// If Dict is nil, diam.BaseDict is used.
-//
-// A trivial example server is:
-//
-//	package main
-//
-//	import (
-//		"io"
-//		"log"
-//
-//		"github.com/fiorix/go-diameter/diam"
-//	)
-//
-//	// handles cer with cea
-//	func CerHandler(w diam.ResponseWriter, r *diam.Request) {
-//		...
-//	}
-//
-//	func main() {
-//		diam.HandleFunc(257, CerHandler)
-//		err := diam.ListenAndServe(":12345", nil, nil)
-//		if err != nil {
-//			log.Fatal("ListenAndServe: ", err)
-//		}
-//	}
+// If @dict is nil, dict.Base is used.
 func ListenAndServe(addr string, handler Handler, dict *dict.Parser) error {
 	server := &Server{Addr: addr, Handler: handler, Dict: dict}
 	return server.ListenAndServe()
@@ -388,27 +376,6 @@ func ListenAndServe(addr string, handler Handler, dict *dict.Parser) error {
 // matching private key for the server must be provided. If the certificate
 // is signed by a certificate authority, the certFile should be the concatenation
 // of the server's certificate followed by the CA's certificate.
-//
-// A trivial example server is:
-//
-//	import (
-//		"log"
-//
-//		"github.com/fiorix/go-diameter/diam"
-//	)
-//
-//	// handles cer with cea
-//	func CerHandler(w diam.ResponseWriter, r *diam.Request) {
-//		...
-//	}
-//
-//	func main() {
-//		diam.HandleFunc(257, CerHandler)
-//		err := diam.ListenAndServeTLS(":12345", "cert.pem", "key.pem", nil, nil)
-//		if err != nil {
-//			log.Fatal(err)
-//		}
-//	}
 //
 // One can use generate_cert.go in crypto/tls to generate cert.pem and key.pem.
 func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler, dict *dict.Parser) error {
@@ -470,11 +437,11 @@ type timeoutHandler struct {
 	body    string
 }
 
-func (h *timeoutHandler) ServeDiam(w ResponseWriter, r *Request) {
+func (h *timeoutHandler) ServeDiam(w Conn, m *base.Message) {
 	done := make(chan bool, 1)
-	tw := &timeoutWriter{w: w}
+	tw := &timeoutConn{w: w}
 	go func() {
-		h.handler.ServeDiam(tw, r)
+		h.handler.ServeDiam(tw, m)
 		done <- true
 	}()
 	select {
@@ -490,18 +457,30 @@ func (h *timeoutHandler) ServeDiam(w ResponseWriter, r *Request) {
 	}
 }
 
-type timeoutWriter struct {
-	w ResponseWriter
+type timeoutConn struct {
+	w Conn
 
 	mu          sync.Mutex
 	timedOut    bool
 	wroteHeader bool
 }
 
-func (tw *timeoutWriter) Write(m *base.Message) (int, error) {
+func (tw *timeoutConn) Write(m *base.Message) (int, error) {
 	return tw.w.Write(m)
 }
 
-func (tw *timeoutWriter) Close() {
+func (tw *timeoutConn) Close() {
 	tw.w.Close()
+}
+
+func (tw *timeoutConn) LocalAddr() net.Addr {
+	return tw.w.LocalAddr()
+}
+
+func (tw *timeoutConn) RemoteAddr() net.Addr {
+	return tw.w.RemoteAddr()
+}
+
+func (tw *timeoutConn) TLS() *tls.ConnectionState {
+	return tw.w.TLS()
 }

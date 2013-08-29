@@ -49,6 +49,8 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 
 // PrettyPrint prints messages in a human readable format.
 func (m *Message) PrettyPrint() {
+	// Update header length and other fields.
+	m.Bytes()
 	fmt.Println(m.String())
 	for _, avp := range m.AVP {
 		fmt.Printf("  %s\n", avp)

@@ -41,7 +41,7 @@ func OnCER(c diam.Conn, m *base.Message) {
 		fmt.Println("Err:", err)
 		return
 	}
-	a.NewAVP("Origin-State-Id", 0x40, 0x0, OriginStateId.Body())
+	a.Append(OriginStateId)
 	// Write response
 	//fmt.Println("Response:")
 	//m.PrettyPrint()

@@ -30,6 +30,9 @@ func (gr *Grouped) Data() Data {
 func (gr *Grouped) Put(d Data) {
 	avp := d.(*AVP)
 	gr.length += avp.Length
+	if avp.dict != gr.Message.Dict {
+		avp.dict = gr.Message.Dict
+	}
 	gr.AVP = append(gr.AVP, avp)
 	gr.Buffer = bytes.Join([][]byte{gr.Buffer, avp.Bytes()}, []byte{})
 }
@@ -73,6 +76,11 @@ func (gr *Grouped) NewAVP(code interface{}, flags uint8, vendor uint32, body Cod
 	}
 	gr.Put(avp)
 	return avp, nil
+}
+
+// Append is an alias to Put.
+func (gr *Grouped) Append(avp *AVP) {
+	gr.Put(avp)
 }
 
 // NewGroup allocates a new Grouped AVP. Same as &Grouped{Message: m}

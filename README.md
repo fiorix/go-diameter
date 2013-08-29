@@ -1,7 +1,5 @@
 # Diameter Base Protocol
 
-[![Build Status](https://secure.travis-ci.org/fiorix/go-diameter.png)](http://travis-ci.org/fiorix/go-diameter)
-
 Package [diameter](http://godoc.org/github.com/fiorix/go-diameter) is an
 implementation of the
 Diameter Base Protocol [rfc6733](http://tools.ietf.org/html/rfc6733)
@@ -9,10 +7,13 @@ and a stack for the [Go programming language](http://golang.org).
 
 ### Status
 
-It can currently send and receive messages, build and parse AVPs based on
-dictionaries. API is subject to changes.
+- v0.3
 
-See the [TODO](./TODO) list for details.
+It can currently send and receive messages, build and parse AVPs based on
+dictionaries. API is subject to changes. See the [TODO](./TODO) list for
+details.
+
+[![Build Status](https://secure.travis-ci.org/fiorix/go-diameter.png)](http://travis-ci.org/fiorix/go-diameter)
 
 ## Modules
 

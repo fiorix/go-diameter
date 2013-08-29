@@ -15,11 +15,6 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-// RandUint32 generates random numbers.
-func RandUint32() uint32 {
-	return uint32(1 + rand.Intn(((1<<32)-1)-1))
-}
-
 // pad4 returns n padded to 4 bytes.
 func pad4(n uint32) uint32 {
 	return n + ((4 - n) & 3)

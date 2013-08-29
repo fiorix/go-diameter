@@ -9,6 +9,7 @@ package base
 import (
 	"bytes"
 	"encoding/binary"
+	"math/rand"
 
 	"github.com/fiorix/go-diameter/dict"
 )
@@ -21,10 +22,10 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *di
 		panic("NewMessage requires a valid dictionary, not nil")
 	}
 	if hopbyhop == 0 {
-		hopbyhop = RandUint32()
+		hopbyhop = rand.Uint32()
 	}
 	if endtoend == 0 {
-		endtoend = RandUint32()
+		endtoend = rand.Uint32()
 	}
 	return &Message{
 		Header: &Header{

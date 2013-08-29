@@ -6,6 +6,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"net"
 
 	"os"
@@ -34,7 +35,7 @@ func SendCER(c diam.Conn) {
 		&base.OctetString{Value: "go-diameter client"})
 	// Add random Origin-State-Id
 	m.NewAVP("Origin-State-Id", 0x40, 0x0,
-		&base.Unsigned32{Value: base.RandUint32()})
+		&base.Unsigned32{Value: rand.Uint32()})
 	// Write request
 	//fmt.Println("Request:")
 	//m.PrettyPrint()

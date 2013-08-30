@@ -60,21 +60,17 @@ func (m *Message) PrettyPrint() {
 
 // String returns a human readable version of the Message header.
 func (m *Message) String() string {
-	rflag := m.Header.CommandFlags&0x80 > 0
-	pflag := m.Header.CommandFlags&0x40 > 0
-	eflag := m.Header.CommandFlags&0x20 > 0
-	tflag := m.Header.CommandFlags&0x10 > 0
 	cmdName, cmdShort := findCmd(m.Dict, m.Header)
 	return fmt.Sprintf(
 		"%s (%s) Header{Code=%d,Version=%d,"+
-			"MessageLength=%d,CommandFlags={r=%v,p=%v,e=%v,t=%v},"+
+			"MessageLength=%d,CommandFlags=%#v,"+
 			"ApplicationId=%d,HopByHopId=%#v,EndToEndId=%#v}",
 		cmdName,
 		cmdShort,
 		m.Header.CommandCode(),
 		m.Header.Version,
 		m.Header.MessageLength(),
-		rflag, pflag, eflag, tflag,
+		m.Header.CommandFlags,
 		m.Header.ApplicationId,
 		m.Header.HopByHopId,
 		m.Header.EndToEndId,

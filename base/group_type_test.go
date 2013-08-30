@@ -10,12 +10,19 @@ import "testing"
 
 func TestGrouped(t *testing.T) {
 	m := NewMessage(267, 0, 0, 0, 0, Dict)
-	m.NewAVP("Origin-Host", 0x40, 0,
-		&DiameterIdentity{OctetString{Value: "z"}})
+	if _, err := m.NewAVP("Origin-Host", 0x40, 0, &DiameterIdentity{OctetString{Value: "z"}}); err != nil {
+		t.Error(err)
+	}
 	gr := NewGroup(m)
-	gr.NewAVP("Vendor-Id", 0x40, 0, &Unsigned32{Value: 1})
-	gr.NewAVP("Vendor-Id", 0x40, 0, &Unsigned32{Value: 2})
-	m.NewAVP("Vendor-Specific-Application-Id", 0x40, 0, gr)
+	if _, err := gr.NewAVP("Vendor-Id", 0x40, 0, &Unsigned32{Value: 1}); err != nil {
+		t.Error(err)
+	}
+	if _, err := gr.NewAVP("Vendor-Id", 0x40, 0, &Unsigned32{Value: 2}); err != nil {
+		t.Error(err)
+	}
+	if _, err := m.NewAVP("Vendor-Specific-Application-Id", 0x40, 0, gr); err != nil {
+		t.Error(err)
+	}
 	if len(m.AVP) != 2 {
 		t.Error("Missing newly created AVPs")
 		return

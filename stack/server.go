@@ -176,7 +176,10 @@ func (c *conn) serve() {
 	for {
 		m, w, err := c.readRequest()
 		if err != nil {
-			log.Print("Server error: ", err)
+			// TODO: What to do with this? Server might silently
+			// ignore clients with erroneous messages due to
+			// a missing dictionary.
+			//log.Print("Server error: ", err)
 			c.rwc.Close()
 			break
 		}

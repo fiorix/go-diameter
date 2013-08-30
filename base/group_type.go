@@ -59,7 +59,7 @@ func (gr *Grouped) String() string {
 
 // NewAVP allocates an AVP and appends to the group.
 // @code can be either the AVP code (int, uint32) or name (string).
-func (gr *Grouped) NewAVP(code interface{}, flags uint8, vendor uint32, body Codec) (*AVP, error) {
+func (gr *Grouped) NewAVP(code interface{}, flags uint8, vendor uint32, data Data) (*AVP, error) {
 	if gr.Message == nil {
 		panic("Grouped.NewAVP requires a parent Message, not nil")
 	}
@@ -69,7 +69,7 @@ func (gr *Grouped) NewAVP(code interface{}, flags uint8, vendor uint32, body Cod
 		code,
 		flags,
 		vendor,
-		body,
+		data,
 	)
 	if err != nil {
 		return nil, err

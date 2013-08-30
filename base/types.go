@@ -148,6 +148,9 @@ type Address struct {
 	Padding int
 }
 
+// AF_INET represents IPv4 address family.
+var AF_INET = []byte{0, 1}
+
 // Data implements the Data interface.
 func (addr *Address) Data() Data {
 	return addr.IP
@@ -168,7 +171,7 @@ func (addr *Address) Put(d Data) {
 func (addr *Address) Bytes() []byte {
 	if ip := addr.IP.To4(); ip != nil {
 		if addr.Family == nil {
-			addr.Family = []byte{0, 1}
+			addr.Family = AF_INET
 		}
 		// IPv4 always need 2 byte padding. (derived from OctetString)
 		addr.Padding = 2 // TODO: Fix this
@@ -198,7 +201,7 @@ func (addr *Address) Length() uint32 {
 // String returns a human readable version of the AVP.
 func (addr *Address) String() string {
 	addr.Bytes() // Update family and padding
-	return fmt.Sprintf("Address{Value:'%s',Padding:%d}",
+	return fmt.Sprintf("Address{IP:'%s',Padding:%d}",
 		addr.IP.String(), addr.Padding)
 }
 

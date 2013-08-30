@@ -60,15 +60,13 @@ func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, body Code
 	return avp, nil
 }
 
-// Append appends an AVP to the given Message and sets its internal dictionary
-// to the one in the Message.
-func (m *Message) Append(avp *AVP) {
-	// Set AVP's parent Message to this.
-	// This is required when copying AVPs from one Message to another.
-	if avp.dict != m.Dict {
-		avp.dict = m.Dict
+// Set updates the internal AVP data (the body) with a new value.
+func (avp *AVP) Set(body Codec) {
+	if avp.body != nil {
+		avp.Length -= avp.body.Length()
 	}
-	m.AVP = append(m.AVP, avp)
+	avp.body = body
+	avp.Length += body.Length()
 }
 
 // Bytes returns an AVP in binary form so it can be attached to a Message

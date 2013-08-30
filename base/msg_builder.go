@@ -57,6 +57,17 @@ func (m *Message) Answer(resultCode uint32) *Message {
 	return nm
 }
 
+// Append appends an AVP to the given Message and sets its internal dictionary
+// to the one in the Message.
+func (m *Message) Append(avp *AVP) {
+	// Set AVP's parent Message to this.
+	// This is required when copying AVPs from one Message to another.
+	if avp.dict != m.Dict {
+		avp.dict = m.Dict
+	}
+	m.AVP = append(m.AVP, avp)
+}
+
 // Bytes returns the Message in binary form to be sent to a connection.
 func (m *Message) Bytes() []byte {
 	var buf [][]byte

@@ -4,7 +4,7 @@
 
 // Diameter message, header with multiple AVPs.  Part of go-diameter.
 
-package base
+package diam
 
 import (
 	"errors"

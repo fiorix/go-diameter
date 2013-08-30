@@ -5,7 +5,7 @@
 // Diameter header.  Part of go-diameter.
 // http://tools.ietf.org/html/rfc6733#section-3
 
-package base
+package diam
 
 import "unsafe"
 

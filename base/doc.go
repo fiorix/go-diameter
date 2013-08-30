@@ -3,4 +3,4 @@
 // found in the LICENSE file.
 
 // Diameter Base Protocol for the Go programming language.  See RFC 6733.
-package base
+package diam

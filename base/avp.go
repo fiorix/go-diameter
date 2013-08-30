@@ -5,9 +5,12 @@
 // Diameter AVP.  Part of go-diameter.
 // http://tools.ietf.org/html/rfc6733#section-4
 
-package base
+package diam
 
-import "github.com/fiorix/go-diameter/dict"
+import (
+	"github.com/fiorix/go-diameter/diam/datatype"
+	"github.com/fiorix/go-diameter/dict"
+)
 
 // AVP represents an AVP header and data.
 type AVP struct {
@@ -20,7 +23,7 @@ type AVP struct {
 }
 
 // Data returns internal AVP body data.  It's a short for AVP.Body().Data().
-func (avp *AVP) Data() Data {
+func (avp *AVP) Data() datatype.Generic {
 	return avp.body.Data()
 }
 
@@ -28,9 +31,6 @@ func (avp *AVP) Data() Data {
 func (avp *AVP) Body() Codec {
 	return avp.body
 }
-
-// Data is an interface for AVP Data types.
-type Data interface{}
 
 // Codec provides an interface for converting Data from network bytes to
 // native and vice-versa.

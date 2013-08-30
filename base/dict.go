@@ -4,7 +4,7 @@
 
 // Static dictionary Parser and Base Protocol XML.
 
-package base
+package diam
 
 import "github.com/fiorix/go-diameter/dict"
 

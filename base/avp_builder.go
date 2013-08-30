@@ -4,7 +4,7 @@
 
 // AVP parser.  Part of go-diameter.
 
-package base
+package diam
 
 import (
 	"bytes"

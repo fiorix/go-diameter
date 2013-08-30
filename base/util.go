@@ -4,7 +4,7 @@
 
 // Helper functions for type conversion between diameter data types.
 
-package base
+package diam
 
 import (
 	"math/rand"
@@ -13,11 +13,6 @@ import (
 
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
-}
-
-// pad4 returns n padded to 4 bytes.
-func pad4(n uint32) uint32 {
-	return n + ((4 - n) & 3)
 }
 
 // uint24To32 converts b from [3]uint8 to uint32 in network byte order.

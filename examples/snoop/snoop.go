@@ -56,7 +56,12 @@ func main() {
 	log.Printf("Starting server on %s", *local)
 	diam.HandleFunc("ALL", func(c diam.Conn, m *diam.Message) {
 		// Forward incoming messages to the upstream server.
-		GetBridge(c).Server <- m
+		if b := GetBridge(c); b != nil {
+			b.Server <- m
+		} else {
+			// Upstream server unavailable, bye.
+			c.Close()
+		}
 	})
 	// Start the server using default handler and dict.
 	diam.ListenAndServe(*local, nil, nil)
@@ -85,12 +90,10 @@ func GetBridge(c diam.Conn) *Bridge {
 		// Forward incoming messages to the client.
 		b.Client <- m
 	})
-	// Connect to upstream server, and notify the client channel
-	// in case of failure.
+	// Connect to upstream server.
 	s, err := diam.Dial(UpstreamAddr, mux, nil)
 	if err != nil {
-		b.Client <- nil
-		return b
+		return nil
 	}
 	log.Printf("Creating bridge from %s to %s",
 		c.RemoteAddr().String(), s.RemoteAddr().String())

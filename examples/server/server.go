@@ -45,10 +45,10 @@ func main() {
 	// Start server.
 	if *cert != "" && *key != "" {
 		log.Println("Starting secure server on", *addr)
-		diam.ListenAndServeTLS(*addr, *cert, *key, nil, nil)
+		log.Fatal(diam.ListenAndServeTLS(*addr, *cert, *key, nil, nil))
 	} else {
 		log.Println("Starting server on", *addr)
-		diam.ListenAndServe(*addr, nil, nil)
+		log.Fatal(diam.ListenAndServe(*addr, nil, nil))
 	}
 }
 

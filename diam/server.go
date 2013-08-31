@@ -27,6 +27,7 @@ import (
 // can move on to the next request on the connection.
 type Handler interface {
 	ServeDiam(Conn, *Message)
+	ErrorReports() chan ErrorReport
 }
 
 // The CloseNotifier interface is implemented by Conns which
@@ -174,11 +175,15 @@ func (c *conn) serve() {
 	for {
 		m, w, err := c.readMessage()
 		if err != nil {
-			// TODO: What to do with this? Server might silently
-			// ignore clients with erroneous messages due to
-			// a missing dictionary.
-			//log.Print("Server error: ", err)
 			c.rwc.Close()
+			// Report errors to the channel, except EOF.
+			if err != io.EOF {
+				h := c.server.Handler
+				if h == nil {
+					h = DefaultServeMux
+				}
+				h.ErrorReports() <- ErrorReport{m, err}
+			}
 			break
 		}
 		// Diameter cannot have multiple simultaneous active requests.
@@ -204,12 +209,25 @@ func (f HandlerFunc) ServeDiam(c Conn, m *Message) {
 	f(c, m)
 }
 
+// ErrorReports calls f.ErrorReports()
+func (f HandlerFunc) ErrorReports() chan ErrorReport {
+	return f.ErrorReports()
+}
+
 // ServeMux is a diameter message multiplexer.
 // It matches the command from the incoming message against a list
 // of registered commands and calls the handler.
 type ServeMux struct {
 	mu sync.RWMutex
 	m  map[string]muxEntry
+	e  chan ErrorReport
+}
+
+// ErrorReport is sent out of the server in case it fails to read messages
+// because of a bad dictionary or network errors.
+type ErrorReport struct {
+	Message *Message
+	Error   error
 }
 
 type muxEntry struct {
@@ -218,7 +236,12 @@ type muxEntry struct {
 }
 
 // NewServeMux allocates and returns a new ServeMux.
-func NewServeMux() *ServeMux { return &ServeMux{m: make(map[string]muxEntry)} }
+func NewServeMux() *ServeMux {
+	return &ServeMux{
+		m: make(map[string]muxEntry),
+		e: make(chan ErrorReport),
+	}
+}
 
 // DefaultServeMux is the default ServeMux used by Serve.
 var DefaultServeMux = NewServeMux()
@@ -264,20 +287,30 @@ func (mux *ServeMux) Handle(cmd string, handler Handler) {
 	mux.m[cmd] = muxEntry{h: handler, cmd: cmd}
 }
 
-// HandleFunc registers the handler function for the given pattern.
+// HandleFunc registers the handler function for the given command.
 // Special cmd "ALL" may be used as a catch all.
 func (mux *ServeMux) HandleFunc(cmd string, handler func(Conn, *Message)) {
 	mux.Handle(cmd, HandlerFunc(handler))
 }
 
+// ErrorReports returns the ErrorReport channel of the handler.
+func (mux *ServeMux) ErrorReports() chan ErrorReport { return mux.e }
+
 // Handle registers the handler for the given pattern
 // in the DefaultServeMux.
-func Handle(cmd string, handler Handler) { DefaultServeMux.Handle(cmd, handler) }
+func Handle(cmd string, handler Handler) {
+	DefaultServeMux.Handle(cmd, handler)
+}
 
 // HandleFunc registers the handler function for the given command
 // in the DefaultServeMux.
 func HandleFunc(cmd string, handler func(Conn, *Message)) {
 	DefaultServeMux.HandleFunc(cmd, handler)
+}
+
+// ErrorReport returns the ErrorReport channel of the DefaultServeMux.
+func ErrorReports() chan ErrorReport {
+	return DefaultServeMux.ErrorReports()
 }
 
 // Serve accepts incoming diameter connections on the listener l,
@@ -457,6 +490,10 @@ func (h *timeoutHandler) ServeDiam(w Conn, m *Message) {
 		}
 		tw.timedOut = true
 	}
+}
+
+func (h *timeoutHandler) ErrorReports() chan ErrorReport {
+	return h.ErrorReports()
 }
 
 type timeoutConn struct {

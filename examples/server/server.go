@@ -32,6 +32,13 @@ func main() {
 	diam.HandleFunc("CER", OnCER)
 	diam.HandleFunc("DWR", OnDWR)
 	diam.HandleFunc("ALL", OnMSG) // Catch all
+	// Handle server errors.
+	go func() {
+		for {
+			report := <-diam.ErrorReports()
+			log.Println("Error:", report.Error)
+		}
+	}()
 	// Start server.
 	if *cert != "" && *key != "" {
 		log.Println("Starting secure server on", *addr)

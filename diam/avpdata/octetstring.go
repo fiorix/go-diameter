@@ -40,7 +40,7 @@ func (os *OctetString) Bytes() []byte {
 
 // Length implements the Codec interface. Returns length without padding.
 func (os *OctetString) Length() uint32 {
-	return uint32(len(os.Value)) - os.Padding
+	return uint32(len(os.Value))
 }
 
 // update internal padding value.

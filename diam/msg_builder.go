@@ -81,8 +81,7 @@ func (m *Message) Bytes() []byte {
 	var length uint32
 	for _, avp := range m.AVP {
 		b := avp.Bytes()
-		bl := uint32(len(b))
-		length += bl
+		length += uint32(len(b))
 		buf = append(buf, b)
 	}
 	m.Header.SetMessageLength(length)

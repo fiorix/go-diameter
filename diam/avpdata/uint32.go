@@ -15,7 +15,7 @@ type Unsigned32 struct {
 	Value uint32
 }
 
-// Data implements the Data interface.
+// Data implements the Generic interface.
 func (n *Unsigned32) Data() Generic {
 	return n.Value
 }

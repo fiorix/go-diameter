@@ -15,7 +15,7 @@ type Float64 struct {
 	Value float64
 }
 
-// Data implements the Data interface.
+// Data implements the Generic interface.
 func (n *Float64) Data() Generic {
 	return n.Value
 }

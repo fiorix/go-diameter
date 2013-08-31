@@ -11,7 +11,7 @@ type DiameterURI struct {
 	Value string
 }
 
-// Data implements the Data interface.
+// Data implements the Generic interface.
 func (du *DiameterURI) Data() Generic {
 	return du.Value
 }

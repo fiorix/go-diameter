@@ -25,7 +25,7 @@ type Address struct {
 // AF_INET represents IPv4 address family.
 var AF_INET = []byte{0, 1}
 
-// Data implements the Data interface.
+// Data implements the Generic interface.
 func (addr *Address) Data() Generic {
 	return addr.IP
 }

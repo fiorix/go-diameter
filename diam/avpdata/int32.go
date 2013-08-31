@@ -15,7 +15,7 @@ type Integer32 struct {
 	Value int32
 }
 
-// Data *implements the Data interface.
+// Data implements the Generic interface.
 func (n Integer32) Data() Generic {
 	return n.Value
 }

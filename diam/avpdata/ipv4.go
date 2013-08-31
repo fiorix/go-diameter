@@ -15,7 +15,7 @@ type IPv4 struct {
 	IP net.IP
 }
 
-// Data implements the Data interface.
+// Data implements the Generic interface.
 func (addr *IPv4) Data() Generic {
 	return addr.IP
 }

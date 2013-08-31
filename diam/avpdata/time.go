@@ -16,7 +16,7 @@ type Time struct {
 	Value time.Time
 }
 
-// Data implements the Data interface.
+// Data implements the Generic interface.
 func (t *Time) Data() Generic {
 	return t.Value
 }

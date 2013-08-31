@@ -7,7 +7,7 @@ and a stack for the [Go programming language](http://golang.org).
 
 ### Status
 
-- v0.4
+- v0.5
 
 It can currently send and receive messages and build and parse AVPs based on
 dictionaries. API is subject to changes. See the [TODO](./TODO) list for
@@ -22,6 +22,10 @@ details.
 - Human readable AVP representation
 - TLS support
 - Stack based on [net/http](http://golang.org/pkg/net/http/) for simplicity
+- Ships with sample client, server, snoop agent and benchmark tool
+
+For now, [state machines](http://tools.ietf.org/html/rfc6733#section-4) are
+not part of this implementation on purpose.
 
 ## Install
 
@@ -34,3 +38,6 @@ Install:
 Check out the examples:
 
 	cd $GOPATH/src/github.com/fiorix/go-diameter/examples
+
+See the [API reference](http://godoc.org/github.com/fiorix/go-diameter) for
+details.

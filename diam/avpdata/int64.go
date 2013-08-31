@@ -15,7 +15,7 @@ type Integer64 struct {
 	Value int64
 }
 
-// Data implements the Data interface.
+// Data implements the Generic interface.
 func (n *Integer64) Data() Generic {
 	return n.Value
 }

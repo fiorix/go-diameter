@@ -16,7 +16,7 @@ type OctetString struct {
 	Padding uint32 // Extra bytes to make the Value a multiple of 4 octets
 }
 
-// Data implements the Data interface.
+// Data implements the Generic interface.
 func (os *OctetString) Data() Generic {
 	return os.Value
 }

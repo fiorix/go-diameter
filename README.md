@@ -39,5 +39,5 @@ Check out the examples:
 
 	cd $GOPATH/src/github.com/fiorix/go-diameter/examples
 
-See the [API reference](http://godoc.org/github.com/fiorix/go-diameter) for
+See the [API docs](http://godoc.org/github.com/fiorix/go-diameter) for
 details.

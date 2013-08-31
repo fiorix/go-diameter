@@ -4,14 +4,10 @@
 
 package diam
 
-import (
-	"testing"
-
-	"github.com/fiorix/go-diameter/diam/dict"
-)
+import "testing"
 
 func TestGrouped(t *testing.T) {
-	m := NewMessage(267, 0, 0, 0, 0, dict.Default)
+	m := NewMessage(267, 0, 0, 0, 0, nil)
 	if _, err := m.NewAVP("Origin-Host", 0x40, 0, "z"); err != nil {
 		t.Error(err)
 	}

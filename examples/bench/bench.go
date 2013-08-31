@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter bench client skeleton.
+// Diameter benchmark client.
 
 package main
 
@@ -68,7 +68,9 @@ func NewClient(ssl bool) {
 	mux := diam.NewServeMux()
 	mux.HandleFunc("ACA", func(c diam.Conn, m *diam.Message) {
 		counter++
-		OnACA(c, m, counter)
+		if counter == BenchMessages {
+			c.Close()
+		}
 	})
 	// Connect using the our custom mux and default base.Dict.
 	if ssl {
@@ -140,11 +142,4 @@ func NewClient(ssl bool) {
 	mps := int(float64(n) / elapsed.Seconds())
 	log.Printf("%d messages in %s seconds, %d msg/s",
 		n, elapsed, mps)
-}
-
-// OnACA handles all incoming messages Accounting-Answer messages.
-func OnACA(c diam.Conn, m *diam.Message, counter int) {
-	if counter == BenchMessages {
-		c.Close()
-	}
 }

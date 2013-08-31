@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter message, header with multiple AVPs.  Part of go-diameter.
-
 package diam
 
 import (
@@ -11,15 +9,24 @@ import (
 	"encoding/binary"
 	"math/rand"
 
-	"github.com/fiorix/go-diameter/dict"
+	"github.com/fiorix/go-diameter/diam/avpdata"
+	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diam/util"
 )
 
-// NewMessage allocates a new Message. Used for building messages that will
-// be sent to a connection.
+// NewMessage allocates a new Message object. Used for building messages
+// that will be sent to a connection later.
+//
+// Arguments hopbyhop and endtoend are optional. If set to 0, random values
+// are used.
+//
+// Dictionary d is used for encoding the AVPs added to the message. If set to
+// nil, static dict.Default is used.
+//
 // TODO: Support command short names like CER, CEA.
 func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *dict.Parser) *Message {
 	if d == nil {
-		panic("NewMessage requires a valid dictionary, not nil")
+		d = dict.Default
 	}
 	if hopbyhop == 0 {
 		hopbyhop = rand.Uint32()
@@ -31,7 +38,7 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *di
 		Header: &Header{
 			Version:        1, // Supports diameter version 1.
 			CommandFlags:   flags,
-			RawCommandCode: uint32To24(cmd),
+			RawCommandCode: util.Uint32To24(cmd),
 			ApplicationId:  appid,
 			HopByHopId:     hopbyhop,
 			EndToEndId:     endtoend,
@@ -40,7 +47,8 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, d *di
 	}
 }
 
-// Answer creates an answer for the current Message with the Result-Code AVP.
+// Answer creates an answer for the current Message with an embedded
+// Result-Code AVP.
 func (m *Message) Answer(resultCode uint32) *Message {
 	nm := &Message{
 		Header: &Header{
@@ -53,14 +61,14 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		},
 		Dict: m.Dict,
 	}
-	nm.NewAVP("Result-Code", 0x40, 0x00, &Unsigned32{Value: resultCode})
+	nm.NewAVP("Result-Code", 0x40, 0x00,
+		&avpdata.Unsigned32{Value: resultCode})
 	return nm
 }
 
-// Append appends an AVP to the given Message and sets its internal dictionary
-// to the one in the Message.
-func (m *Message) Append(avp *AVP) {
-	// Set AVP's parent Message to this.
+// Add adds an AVP to the Message and set its internal dictionary to the same
+// used by the Message.
+func (m *Message) Add(avp *AVP) {
 	// This is required when copying AVPs from one Message to another.
 	if avp.dict != m.Dict {
 		avp.dict = m.Dict

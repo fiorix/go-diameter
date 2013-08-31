@@ -2,29 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter message, header with multiple AVPs.  Part of go-diameter.
-
 package diam
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/fiorix/go-diameter/dict"
+	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-var ErrNotFound = errors.New("Not found")
-
-// Message is a diameter message, composed of a header and multiple AVPs.
+// Message represents a diameter message.
 type Message struct {
 	Header *Header
 	AVP    []*AVP
 	Dict   *dict.Parser // Dictionary associated with this Message
 }
 
-// FindAVP is a helper that returns an AVP by looking up its code, or nil if
-// the AVP is not in the message.
-// @code can be either the AVP code (int, uint32) or name (string).
+// FindAVP looks for an AVP in the message body, and return it.
+// code can be either the AVP code (int, uint32) or name (string).
+//
+// Example:
+//
+//	avp, err := m.FindAVP(264)
+//	avp, err := m.FindAVP("Origin-Host")
 func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 	davp, err := m.Dict.FindAVP(m.Header.ApplicationId, code)
 	if err != nil {
@@ -47,7 +46,7 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 	return nil, fmt.Errorf("AVP %d (%s) not found", code, name)
 }
 
-// PrettyPrint prints messages in a human readable format.
+// PrettyPrint prints the message in a human readable format.
 func (m *Message) PrettyPrint() {
 	// Update header length and other fields.
 	m.Bytes()

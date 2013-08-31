@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter message, header with multiple AVPs.  Part of go-diameter.
-
 package diam
 
 import (
@@ -11,17 +9,24 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/fiorix/go-diameter/dict"
+	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-// ReadMessage reads an entire diameter message from the connection with
-// Header and AVPs and return it.
+// ReadMessage reads a diameter message from the connection.
+//
+// Dictionary d is used to parse message's AVPs. If set to nil, the static
+// dict.Default is used.
+//
+// Using the wrong dictionary might result in errors.
 func ReadMessage(r io.Reader, d *dict.Parser) (*Message, error) {
 	var (
 		err   error
 		avp   *AVP
 		extra uint32
 	)
+	if d == nil {
+		d = dict.Default
+	}
 	m := &Message{Dict: d}
 	if m.Header, err = readHeader(r); err != nil {
 		return nil, err

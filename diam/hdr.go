@@ -7,7 +7,11 @@
 
 package diam
 
-import "unsafe"
+import (
+	"unsafe"
+
+	"github.com/fiorix/go-diameter/diam/util"
+)
 
 type Header struct {
 	Version          uint8
@@ -23,15 +27,15 @@ const hdrSize = uint32(unsafe.Sizeof(Header{}))
 
 // MessageLength helper function returns RawMessageLength as int.
 func (hdr *Header) MessageLength() uint32 {
-	return uint24To32(hdr.RawMessageLength)
+	return util.Uint24To32(hdr.RawMessageLength)
 }
 
 // UpdateLength updates RawMessageLength from an int.
 func (hdr *Header) SetMessageLength(length uint32) {
-	hdr.RawMessageLength = uint32To24(hdrSize + length)
+	hdr.RawMessageLength = util.Uint32To24(hdrSize + length)
 }
 
 // CommandCode returns RawCommandCode as int.
 func (hdr *Header) CommandCode() uint32 {
-	return uint24To32(hdr.RawCommandCode)
+	return util.Uint24To32(hdr.RawCommandCode)
 }

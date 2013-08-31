@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// AVP parser.  Part of go-diameter.
-
 package diam
 
 import (
@@ -12,6 +10,9 @@ import (
 	"fmt"
 	"io"
 	"unsafe"
+
+	"github.com/fiorix/go-diameter/diam/avpdata"
+	"github.com/fiorix/go-diameter/diam/util"
 )
 
 type rfcHdr1 struct {
@@ -22,13 +23,16 @@ type rfcHdr1 struct {
 
 var ErrInvalidAvpHdr = errors.New("Invalid AVP header size: probably a bad dict")
 
-// ReadAVP reads an AVP and returns the number of extra bytes read and parsed
-// AVP, or an error.
+// ReadAVP reads an AVP from the connection and returns the number of extra
+// bytes read and the parsed AVP, or an error.
 //
-// Extra bytes are read when the content of the AVP is OctetString and
-// has padding. Total bytes read is each avp.Length + extra.
+// Extra bytes are read when the content of the AVP is OctetString
+// (or derivates) and has padding. Total AVP bytes is avp.Length + extra.
 //
-// A pointer to the parent Message is required.
+// For details on AVP length and padding see
+// http://tools.ietf.org/html/rfc6733#section-4
+//
+// A pointer to the parent Message of is required, otherwise it panics.
 func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	if m == nil {
 		panic("Can't read AVP without parent Message")
@@ -40,7 +44,7 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	avp := &AVP{
 		Code:   raw.Code,
 		Flags:  raw.Flags,
-		Length: uint24To32(raw.Length),
+		Length: util.Uint24To32(raw.Length),
 		dict:   m.Dict,
 	}
 	dlen := avp.Length - uint32(unsafe.Sizeof(raw))
@@ -68,15 +72,12 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	}
 	// Read grouped (embedded) AVPs.
 	//
-	// Grouped AVPs are the only reason why this function returns
+	// Grouped AVPs are the only reason why this function return
 	// "extra" bytes, otherwise callers would have to walk through
 	// these grouped AVPs and sum their padding + length to figure
 	// out the total of bytes read. The value of "extra" represents
-	// padded bytes read but not stored anywhere, but count when
+	// padded bytes read but not stored anywhere, but they count when
 	// check summing the entire message length.
-	//
-	// TODO: Double check the handling of dynamically grouped AVPs
-	//       in case of 260, 279 or 284. Should work as is.
 	if davp.Data.Type == "Grouped" {
 		for dlen != 0 {
 			ex, gravp, err := ReadAVP(m, r)
@@ -85,11 +86,11 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 			} else if avp.body == nil {
 				avp.body = &Grouped{Message: m}
 			}
-			avp.body.Put(gravp)
+			avp.body.(*Grouped).Add(gravp)
 			dlen = dlen - (gravp.Length + ex)
 		}
-		// Lesson learned: there's never extra bytes in Grouped AVPs.
-		// Only OctetString.
+		// There's never extra bytes in Grouped AVPs, only
+		// OctetString and derivates. Extra is always 0 here.
 		return 0, avp, nil
 	}
 	// Read binary data of regular (non-grouped) AVPs.
@@ -101,40 +102,40 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	switch davp.Data.Type {
 	case "OctetString":
 		pad = true
-		avp.body = new(OctetString)
+		avp.body = new(avpdata.OctetString)
 	case "Integer32":
-		avp.body = new(Integer32)
+		avp.body = new(avpdata.Integer32)
 	case "Integer64":
-		avp.body = new(Integer64)
+		avp.body = new(avpdata.Integer64)
 	case "Unsigned32":
-		avp.body = new(Unsigned32)
+		avp.body = new(avpdata.Unsigned32)
 	case "Unsigned64":
-		avp.body = new(Unsigned64)
+		avp.body = new(avpdata.Unsigned64)
 	case "Float32":
-		avp.body = new(Float32)
+		avp.body = new(avpdata.Float32)
 	case "Float64":
-		avp.body = new(Float64)
+		avp.body = new(avpdata.Float64)
 	case "Address":
 		pad = true
-		avp.body = new(Address)
+		avp.body = new(avpdata.Address)
 	case "IPv4": // To support Framed-IP-Address and alike.
-		avp.body = new(IPv4)
+		avp.body = new(avpdata.IPv4)
 	case "Time":
 		pad = true
-		avp.body = new(Time)
+		avp.body = new(avpdata.Time)
 	case "UTF8String":
 		pad = true
-		avp.body = new(UTF8String)
+		avp.body = new(avpdata.UTF8String)
 	case "DiameterIdentity":
 		pad = true
-		avp.body = new(DiameterIdentity)
+		avp.body = new(avpdata.DiameterIdentity)
 	case "DiameterURI":
-		avp.body = new(DiameterURI)
+		avp.body = new(avpdata.DiameterURI)
 	case "Enumerated":
-		avp.body = new(Enumerated)
+		avp.body = new(avpdata.Enumerated)
 	case "IPFilterRule":
 		pad = true
-		avp.body = new(IPFilterRule)
+		avp.body = new(avpdata.IPFilterRule)
 	default:
 		return 0, nil, fmt.Errorf(
 			"Unsupported avp.body type: %s", davp.Data.Type)
@@ -150,12 +151,10 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	// valued bytes are added to the end of the AVP Data field till a word
 	// boundary is reached.  The length of the padding is not reflected in
 	// the AVP Length field.
-	//
-	// This also applies to subtypes of OctetString such as Address.
 	var n uint32 // extra bytes to read
 	if pad {
 		// Read and discard pad bytes.
-		if n = pad4(dlen) - dlen; n > 0 {
+		if n = util.Pad4(dlen) - dlen; n > 0 {
 			b := make([]byte, n)
 			if _, err = io.ReadFull(r, b); err != nil {
 				return 0, nil, err
@@ -163,30 +162,4 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 		}
 	}
 	return n, avp, nil
-}
-
-// String returns the AVP in human readable format.
-// The AVP name is "guessed" by scanning the list of available AVPs in the
-// dictionary that was used to build this AVP. It might return the wrong
-// AVP name if the same code is used by different dictionaries in different
-// applications, with a different name - yet, very unlikely.
-func (avp *AVP) String() string {
-	// TODO: Lookup the vendor id from AVP in the dictionary.
-	var name string
-	if avp.dict != nil {
-		if davp, err := avp.dict.ScanAVP(avp.Code); davp != nil && err == nil {
-			name = davp.Name
-		}
-	}
-	if name == "" {
-		name = "Unknown"
-	}
-	return fmt.Sprintf("%s AVP{Code=%d,Flags=%#x,Length=%d,VendorId=%#x,%s}",
-		name,
-		avp.Code,
-		avp.Flags,
-		avp.Length,
-		avp.VendorId,
-		avp.body,
-	)
 }

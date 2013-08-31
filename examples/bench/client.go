@@ -121,7 +121,7 @@ func NewClient(ssl bool) {
 	m.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
 	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
 	StateId, _ := m.NewAVP("Origin-State-Id", 0x40, 0x0, rand.Uint32())
-	fmt.Println("OK, sending messages")
+	log.Println("OK, sending messages")
 	start := time.Now()
 	var n int
 	for ; n < BenchMessages; n++ {

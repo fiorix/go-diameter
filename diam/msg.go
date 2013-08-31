@@ -6,6 +6,7 @@ package diam
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/fiorix/go-diameter/diam/dict"
 )
@@ -50,7 +51,7 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 func (m *Message) PrettyPrint() {
 	// Update header length and other fields.
 	m.Bytes()
-	fmt.Println(m.String())
+	fmt.Fprintln(os.Stderr, m.String())
 	for _, avp := range m.AVP {
 		fmt.Printf("  %s\n", avp)
 	}

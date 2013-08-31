@@ -5,21 +5,25 @@
 
 // Diameter client.
 
-package stack
+package diam
 
 import (
 	"crypto/tls"
 	"net"
 
-	"github.com/fiorix/go-diameter/dict"
+	"github.com/fiorix/go-diameter/diam/dict"
 )
 
+// Dial connects to the peer pointed to by addr and returns the Conn that
+// can be used to send diameter messages. Incoming messages are handled
+// by the handler, which is tipically nil and DefaultServeMux is used.
+// If dict is nil, dict.Default is used.
 func Dial(addr string, handler Handler, dict *dict.Parser) (Conn, error) {
 	server := &Server{Addr: addr, Handler: handler, Dict: dict}
-	return server.Dial()
+	return server.dial()
 }
 
-func (srv *Server) Dial() (Conn, error) {
+func (srv *Server) dial() (Conn, error) {
 	addr := srv.Addr
 	if addr == "" {
 		addr = ":3868"
@@ -36,12 +40,13 @@ func (srv *Server) Dial() (Conn, error) {
 	return &response{conn: c}, nil
 }
 
+// DialTLS is the same as Dial, but for TLS.
 func DialTLS(addr, certFile, keyFile string, handler Handler, dict *dict.Parser) (Conn, error) {
 	server := &Server{Addr: addr, Handler: handler, Dict: dict}
-	return server.DialTLS(certFile, keyFile)
+	return server.dialTLS(certFile, keyFile)
 }
 
-func (srv *Server) DialTLS(certFile, keyFile string) (Conn, error) {
+func (srv *Server) dialTLS(certFile, keyFile string) (Conn, error) {
 	addr := srv.Addr
 	if addr == "" {
 		addr = ":3868"

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Diameter AVP.  http://tools.ietf.org/html/rfc6733#section-4
+
 package diam
 
 import (

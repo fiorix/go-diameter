@@ -2,4 +2,3 @@ Sanity check (functions to check for required and optional AVPs in messages)
 Add automatic sanity check in the stack (maybe)
 Add test cases for msg parsing with real captures
 Benchmarks
-Test cases for the stack

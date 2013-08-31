@@ -7,6 +7,7 @@
 package diam
 
 import (
+	"bufio"
 	"crypto/tls"
 	"errors"
 	"io"
@@ -49,10 +50,26 @@ type Conn interface {
 	TLS() *tls.ConnectionState   // or nil when not using TLS
 }
 
+// A liveSwitchReader is a switchReader that's safe for concurrent
+// reads and switches, if its mutex is held.
+type liveSwitchReader struct {
+	sync.Mutex
+	r io.Reader
+}
+
+func (sr *liveSwitchReader) Read(p []byte) (n int, err error) {
+	sr.Lock()
+	r := sr.r
+	sr.Unlock()
+	return r.Read(p)
+}
+
 // A conn represents the server side of a diameter connection.
 type conn struct {
 	server   *Server              // the Server on which the connection arrived
 	rwc      net.Conn             // i/o connection
+	sr       liveSwitchReader     // reads from rwc
+	buf      *bufio.ReadWriter    // reads from sr, writes to rwc
 	tlsState *tls.ConnectionState // or nil when not using TLS
 
 	mu           sync.Mutex // guards the following
@@ -65,8 +82,12 @@ func (c *conn) closeNotify() <-chan bool {
 	defer c.mu.Unlock()
 	if c.closeNotifyc == nil {
 		c.closeNotifyc = make(chan bool, 1)
-		_, pw := io.Pipe()
-		readSource := c.rwc
+		// Took me a while to figure all this out. 8D
+		pr, pw := io.Pipe()
+		readSource := c.sr.r
+		c.sr.Lock()
+		c.sr.r = pr
+		c.sr.Unlock()
 		go func() {
 			_, err := io.Copy(pw, readSource)
 			if err == nil {
@@ -98,6 +119,11 @@ func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
 	c = new(conn)
 	c.server = srv
 	c.rwc = rwc
+	c.sr = liveSwitchReader{r: c.rwc}
+	c.buf = bufio.NewReadWriter(
+		bufio.NewReader(&c.sr),
+		bufio.NewWriter(rwc),
+	)
 	return c, nil
 }
 
@@ -115,7 +141,7 @@ func (c *conn) readMessage() (*Message, *response, error) {
 	if dp == nil {
 		dp = dict.Default
 	}
-	m, err := ReadMessage(c.rwc, dp)
+	m, err := ReadMessage(c.buf, dp)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -124,7 +150,9 @@ func (c *conn) readMessage() (*Message, *response, error) {
 
 // Write writes the message m to the connection.
 func (w *response) Write(m *Message) (int, error) {
-	return w.conn.rwc.Write(m.Bytes())
+	n, err := w.conn.buf.Write(m.Bytes())
+	w.conn.buf.Flush()
+	return n, err
 }
 
 // Close closes the connection.
@@ -177,7 +205,7 @@ func (c *conn) serve() {
 		if err != nil {
 			c.rwc.Close()
 			// Report errors to the channel, except EOF.
-			if err != io.EOF {
+			if err != io.EOF && err != io.ErrUnexpectedEOF {
 				h := c.server.Handler
 				if h == nil {
 					h = DefaultServeMux

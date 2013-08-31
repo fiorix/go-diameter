@@ -45,7 +45,7 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 		Code:   raw.Code,
 		Flags:  raw.Flags,
 		Length: util.Uint24To32(raw.Length),
-		dict:   m.Dict,
+		msg:    m,
 	}
 	dlen := avp.Length - uint32(unsafe.Sizeof(raw))
 	if dlen >= m.Header.MessageLength() {

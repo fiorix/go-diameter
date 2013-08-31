@@ -66,12 +66,11 @@ func (m *Message) Answer(resultCode uint32) *Message {
 	return nm
 }
 
-// Add adds an AVP to the Message and set its internal dictionary to the same
-// used by the Message.
+// Add adds an AVP to the Message and set its parent Message to the current.
 func (m *Message) Add(avp *AVP) {
 	// This is required when copying AVPs from one Message to another.
-	if avp.dict != m.Dict {
-		avp.dict = m.Dict
+	if avp.msg != m {
+		avp.msg = m
 	}
 	m.AVP = append(m.AVP, avp)
 }

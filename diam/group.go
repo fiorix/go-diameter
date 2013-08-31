@@ -32,8 +32,8 @@ func (gr *Grouped) Put(d []byte) {
 // Add adds an AVP to the group.
 func (gr *Grouped) Add(avp *AVP) {
 	gr.length += avp.Length
-	if avp.dict != gr.Message.Dict {
-		avp.dict = gr.Message.Dict
+	if gr.Message != nil && avp.msg != gr.Message {
+		avp.msg = gr.Message
 	}
 	gr.AVP = append(gr.AVP, avp)
 	gr.Buffer = bytes.Join([][]byte{gr.Buffer, avp.Bytes()}, []byte{})
@@ -63,11 +63,10 @@ func (gr *Grouped) String() string {
 // @code can be either the AVP code (int, uint32) or name (string).
 func (gr *Grouped) NewAVP(code interface{}, flags uint8, vendor uint32, data avpdata.Generic) (*AVP, error) {
 	if gr.Message == nil {
-		panic("Grouped.NewAVP requires a parent Message, not nil")
+		return nil, ErrNoParentMessage
 	}
 	avp, err := newAVP(
-		gr.Message.Header.ApplicationId,
-		gr.Message.Dict,
+		gr.Message,
 		code,
 		flags,
 		vendor,

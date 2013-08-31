@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/fiorix/go-diameter/diam/avpdata"
-	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 // AVP represents an AVP header and data.
@@ -19,8 +18,8 @@ type AVP struct {
 	Flags    uint8
 	Length   uint32
 	VendorId uint32
-	body     Codec        // AVP body
-	dict     *dict.Parser // Dictionary associated with this AVP
+	body     Codec    // AVP body
+	msg      *Message // Parent message
 }
 
 // Data returns internal AVP body data.  It's a short for AVP.Body().Data().
@@ -42,8 +41,8 @@ func (avp *AVP) Body() Codec {
 func (avp *AVP) String() string {
 	// TODO: Lookup the vendor id from AVP in the dictionary.
 	var name string
-	if avp.dict != nil {
-		if davp, err := avp.dict.ScanAVP(avp.Code); davp != nil && err == nil {
+	if avp.msg != nil && avp.msg.Dict != nil {
+		if davp, err := avp.msg.Dict.ScanAVP(avp.Code); davp != nil && err == nil {
 			name = davp.Name
 		}
 	}

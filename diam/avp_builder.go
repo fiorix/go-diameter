@@ -7,6 +7,7 @@ package diam
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 	"time"
@@ -24,11 +25,55 @@ type rfcHdr2 struct {
 	VendorId uint32
 }
 
-func newAVP(appid uint32, d *dict.Parser, code interface{}, flags uint8, vendor uint32, data avpdata.Generic) (*AVP, error) {
-	davp, err := d.FindAVP(appid, code)
+func newAVP(msg *Message, code interface{}, flags uint8, vendor uint32, data avpdata.Generic) (*AVP, error) {
+	davp, err := msg.Dict.FindAVP(msg.Header.ApplicationId, code)
 	if err != nil {
 		return nil, err
 	}
+	avp := &AVP{
+		Code:     davp.Code,
+		Flags:    flags,
+		VendorId: vendor,
+		msg:      msg,
+	}
+	if flags&0x80 > 0 {
+		avp.Length = uint32(unsafe.Sizeof(rfcHdr2{}))
+	} else {
+		avp.Length = uint32(unsafe.Sizeof(rfcHdr1{}))
+	}
+	// Set the body.
+	if err = avp.set(davp, data); err != nil {
+		return nil, err
+	}
+	return avp, nil
+}
+
+// NewAVP allocates and returns a new AVP.
+// @code can be either the AVP code (int, uint32) or name (string).
+func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data avpdata.Generic) (*AVP, error) {
+	avp, err := newAVP(m, code, flags, vendor, data)
+	if err != nil {
+		return nil, err
+	}
+	m.AVP = append(m.AVP, avp)
+	return avp, nil
+}
+
+var ErrNoParentMessage = errors.New("This AVP has no parent message")
+
+// Set updates the internal AVP data (the body) with a new value.
+func (avp *AVP) Set(data interface{}) error {
+	if avp.msg == nil {
+		return ErrNoParentMessage
+	}
+	davp, err := avp.msg.Dict.FindAVP(avp.msg.Header.ApplicationId, avp.Code)
+	if err != nil {
+		return err
+	}
+	return avp.set(davp, data)
+}
+
+func (avp *AVP) set(davp *dict.AVP, data interface{}) error {
 	var body Codec
 	switch davp.Data.Type {
 	case "OctetString":
@@ -191,49 +236,14 @@ func newAVP(appid uint32, d *dict.Parser, code interface{}, flags uint8, vendor 
 		}
 	}
 	if body == nil {
-		return nil, fmt.Errorf("Unsupported data type: %s", data)
+		fmt.Errorf("Unsupported data type: %s", data)
 	}
-	avp := &AVP{
-		Code:     davp.Code,
-		Flags:    flags,
-		VendorId: vendor,
-		body:     body,
-		dict:     d,
-	}
-	if flags&0x80 > 0 {
-		avp.Length = uint32(unsafe.Sizeof(rfcHdr2{}))
-	} else {
-		avp.Length = uint32(unsafe.Sizeof(rfcHdr1{}))
-	}
-	avp.Length += body.Length()
-	return avp, nil
-}
-
-// NewAVP allocates and returns a new AVP.
-// @code can be either the AVP code (int, uint32) or name (string).
-func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data avpdata.Generic) (*AVP, error) {
-	avp, err := newAVP(
-		m.Header.ApplicationId,
-		m.Dict,
-		code,
-		flags,
-		vendor,
-		data,
-	)
-	if err != nil {
-		return nil, err
-	}
-	m.AVP = append(m.AVP, avp)
-	return avp, nil
-}
-
-// Set updates the internal AVP data (the body) with a new value.
-func (avp *AVP) Set(body Codec) {
 	if avp.body != nil {
 		avp.Length -= avp.body.Length()
 	}
 	avp.body = body
 	avp.Length += body.Length()
+	return nil
 }
 
 // Bytes returns an AVP in binary form so it can be attached to a Message

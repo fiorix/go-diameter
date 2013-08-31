@@ -24,13 +24,16 @@ const (
 	ProductName = "go-diameter"
 )
 
+var Quiet bool
+
 func main() {
 	addr := flag.String("l", ":3868", "listen address and port")
 	cert := flag.String("cert", "", "SSL cert file (e.g. cert.pem)")
 	key := flag.String("key", "", "SSL key file (e.g. key.pem)")
+	q := flag.Bool("q", false, "quiet, do not print messages")
 	flag.Parse()
+	Quiet = *q
 	diam.HandleFunc("CER", OnCER)
-	diam.HandleFunc("DWR", OnDWR)
 	diam.HandleFunc("ALL", OnMSG) // Catch all
 	// Handle server errors.
 	go func() {
@@ -75,13 +78,15 @@ func OnCER(c diam.Conn, m *diam.Message) {
 		c.Close()
 		return
 	}
-	//log.Println("Receiving message from %s", c.RemoteAddr().String())
-	log.Printf("Receiving message from %s.%s (%s)",
-		host.Data().(string),
-		realm.Data().(string),
-		ipaddr.Data().(net.IP).String(),
-	)
-	m.PrettyPrint()
+	if !Quiet {
+		//log.Println("Receiving message from %s", c.RemoteAddr().String())
+		log.Printf("Receiving message from %s.%s (%s)",
+			host.Data().(string),
+			realm.Data().(string),
+			ipaddr.Data().(net.IP).String(),
+		)
+		m.PrettyPrint()
+	}
 	// Craft CEA with result code 2001 (OK).
 	a := m.Answer(2001)
 	a.NewAVP("Origin-Host", 0x40, 0x00, Identity)
@@ -92,8 +97,10 @@ func OnCER(c diam.Conn, m *diam.Message) {
 	a.NewAVP("Product-Name", 0x40, 0x0, ProductName)
 	// Copy origin Origin-State-Id.
 	a.Add(stateId)
-	log.Printf("Sending message to %s", c.RemoteAddr().String())
-	a.PrettyPrint()
+	if !Quiet {
+		log.Printf("Sending message to %s", c.RemoteAddr().String())
+		a.PrettyPrint()
+	}
 	// Send message to the connection
 	if _, err := c.Write(a); err != nil {
 		log.Println("Write failed:", err)
@@ -105,32 +112,31 @@ func OnCER(c diam.Conn, m *diam.Message) {
 	}()
 }
 
-// OnDWR handles Device-Watchdog-Request messages.
-func OnDWR(c diam.Conn, m *diam.Message) {
-	// Reject client if there's no Origin-State-Id.
+// OnMSG handles all other messages and replies to them
+// with a generic 2001 (OK) answer.
+func OnMSG(c diam.Conn, m *diam.Message) {
+	// Ignored message if there's no Origin-State-Id.
 	stateId, err := m.FindAVP("Origin-State-Id")
 	if err != nil {
-		c.Close()
 		return
 	}
-	log.Printf("Receiving message from %s", c.RemoteAddr().String())
-	m.PrettyPrint()
+	if !Quiet {
+		log.Printf(
+			"Receiving message from %s", c.RemoteAddr().String())
+		m.PrettyPrint()
+	}
 	// Craft DWA with result code 2001 (OK).
 	a := m.Answer(2001)
 	a.NewAVP("Origin-Host", 0x40, 0x00, Identity)
 	a.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
 	a.Add(stateId)
-	log.Printf("Sending message to %s", c.RemoteAddr().String())
-	a.PrettyPrint()
+	if !Quiet {
+		log.Printf("Sending message to %s", c.RemoteAddr().String())
+		a.PrettyPrint()
+	}
 	// Send message to the connection
 	if _, err := c.Write(a); err != nil {
 		log.Println("Write failed:", err)
 		c.Close()
 	}
-}
-
-// OnMSG handles all other messages. Catch all.
-func OnMSG(c diam.Conn, m *diam.Message) {
-	log.Printf("Receiving message from %s", c.RemoteAddr().String())
-	m.PrettyPrint()
 }

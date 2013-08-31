@@ -26,7 +26,7 @@ const (
 )
 
 func main() {
-	ssl := flag.Bool("ssl", false, "Use SSL/TLS")
+	ssl := flag.Bool("ssl", false, "connect using SSL/TLS")
 	flag.Parse()
 	if len(os.Args) < 2 {
 		fmt.Println("Use: client [-ssl] host:port")
@@ -85,9 +85,9 @@ func NewClient(c diam.Conn) {
 		log.Println("Write failed:", err)
 		return
 	}
-	// Send watchdog messages every 10 seconds
+	// Send watchdog messages every 5 seconds
 	for {
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Second)
 		m = diam.NewMessage(280, 0x80, 0, 0, 0, nil)
 		m.NewAVP("Origin-Host", 0x40, 0x00, Identity)
 		m.NewAVP("Origin-Realm", 0x40, 0x00, Realm)

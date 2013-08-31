@@ -112,7 +112,10 @@ func OnCER(c diam.Conn, m *diam.Message) {
 	}
 	go func() {
 		<-c.(diam.CloseNotifier).CloseNotify()
-		log.Printf("Client %s disconnected", c.RemoteAddr().String())
+		if !Quiet {
+			log.Printf("Client %s disconnected",
+				c.RemoteAddr().String())
+		}
 	}()
 }
 

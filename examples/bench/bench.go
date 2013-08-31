@@ -82,11 +82,6 @@ func NewClient(ssl bool) {
 		log.Fatal(err)
 		WG.Done()
 	}
-	go func() {
-		// Wait until the connection is closed.
-		<-c.(diam.CloseNotifier).CloseNotify()
-		WG.Done()
-	}()
 	// Build CER
 	m := diam.NewMessage(
 		257,  // CER
@@ -127,8 +122,17 @@ func NewClient(ssl bool) {
 	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
 	StateId, _ := m.NewAVP("Origin-State-Id", 0x40, 0x0, rand.Uint32())
 	log.Println("OK, sending messages")
-	start := time.Now()
 	var n int
+	start := time.Now()
+	go func() {
+		// Wait until the connection is closed.
+		<-c.(diam.CloseNotifier).CloseNotify()
+		elapsed := time.Since(start)
+		mps := int(float64(n) / elapsed.Seconds())
+		log.Printf("%d messages in %s seconds, %d msg/s",
+			n, elapsed, mps)
+		WG.Done()
+	}()
 	for ; n < BenchMessages; n++ {
 		// Send message to the connection
 		if _, err := c.Write(m); err != nil {
@@ -138,8 +142,4 @@ func NewClient(ssl bool) {
 		SessId.Set(fmt.Sprintf("%d", rand.Uint32()))
 		StateId.Set(rand.Uint32())
 	}
-	elapsed := time.Since(start)
-	mps := int(float64(n) / elapsed.Seconds())
-	log.Printf("%d messages in %s seconds, %d msg/s",
-		n, elapsed, mps)
 }

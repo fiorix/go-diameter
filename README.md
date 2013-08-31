@@ -22,3 +22,15 @@ details.
 - Human readable AVP representation
 - TLS support
 - Stack based on [net/http](http://golang.org/pkg/net/http/) for simplicity
+
+## Install
+
+Make sure Go is installed, and both $GOPATH and $GOROOT are set.
+
+Install:
+
+	go get github.com/fiorix/go-diameter/diam
+
+Check out the examples:
+
+	cd $GOPATH/src/github.com/fiorix/go-diameter/examples

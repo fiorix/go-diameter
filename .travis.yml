@@ -1,2 +1,2 @@
 language: go
-script: go test -v ./base ./dict
+script: go test -v ./diam/ ./diam/avpdata ./diam/dict ./diam/util

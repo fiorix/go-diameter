@@ -13,6 +13,7 @@ import (
 	"flag"
 	"log"
 	"net"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -36,6 +37,7 @@ func main() {
 	remote := flag.String("remote", "", "set remote addr")
 	files := flag.String("dict", "", "comma separated list of dictionaries")
 	flag.Parse()
+	UpstreamAddr = *remote
 	log.Println("Diameter sn🔍 op agent")
 	if len(*remote) == 0 {
 		log.Fatal("Missing argument --remote")
@@ -52,8 +54,9 @@ func main() {
 			}
 		}
 	}
-	UpstreamAddr = *remote
-	log.Printf("Starting server on %s", *local)
+	// Use all CPUs.
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	// Prepare the server.
 	diam.HandleFunc("ALL", func(c diam.Conn, m *diam.Message) {
 		// Forward incoming messages to the upstream server.
 		if b := GetBridge(c); b != nil {
@@ -64,6 +67,7 @@ func main() {
 		}
 	})
 	// Start the server using default handler and dict.
+	log.Printf("Starting server on %s", *local)
 	diam.ListenAndServe(*local, nil, nil)
 }
 

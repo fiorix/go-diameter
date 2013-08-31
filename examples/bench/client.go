@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
@@ -42,6 +43,8 @@ func main() {
 		flag.Usage()
 		return
 	}
+	// Use all CPUs.
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	// Launch clients.
 	for n := 0; n < *c; n++ {
 		WG.Add(1)

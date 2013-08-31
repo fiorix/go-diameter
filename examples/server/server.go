@@ -13,6 +13,7 @@ import (
 	"flag"
 	"log"
 	"net"
+	"runtime"
 
 	"github.com/fiorix/go-diameter/diam"
 )
@@ -33,8 +34,11 @@ func main() {
 	q := flag.Bool("q", false, "quiet, do not print messages")
 	flag.Parse()
 	Quiet = *q
+	// Use all CPUs.
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	// Message handlers:
 	diam.HandleFunc("CER", OnCER)
-	diam.HandleFunc("ALL", OnMSG) // Catch all
+	diam.HandleFunc("ALL", OnMSG) // Catch-all
 	// Handle server errors.
 	go func() {
 		for {

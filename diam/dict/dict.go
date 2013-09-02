@@ -16,10 +16,12 @@ type File struct {
 
 // App defines a diameter application in XML and its multiple AVPs.
 type App struct {
-	Id     uint32    `xml:"id,attr"` // Application Id
-	Vendor []*Vendor `xml:"vendor"`  // Support for multiple vendors
-	Cmd    []*Cmd    `xml:"command"` // Diameter commands
-	AVP    []*AVP    `xml:"avp"`     // Each application support multiple AVPs
+	Id     uint32    `xml:"id,attr"`   // Application Id
+	Type   string    `xml:"type,attr"` // Application type
+	Name   string    `xml:"name,attr"` // Application name
+	Vendor []*Vendor `xml:"vendor"`    // Support for multiple vendors
+	Cmd    []*Cmd    `xml:"command"`   // Diameter commands
+	AVP    []*AVP    `xml:"avp"`       // Each application support multiple AVPs
 }
 
 // Vendor defines diameter vendors in XML, that can be used to translate
@@ -31,9 +33,15 @@ type Vendor struct {
 
 // Cmd defines a diameter command (CE, CC, etc)
 type Cmd struct {
-	Code  uint32 `xml:"code,attr"`
-	Name  string `xml:"name,attr"`
-	Short string `xml:"short,attr"`
+	Code    uint32  `xml:"code,attr"`
+	Name    string  `xml:"name,attr"`
+	Short   string  `xml:"short,attr"`
+	Request CmdRule `xml:"request"`
+	Answer  CmdRule `xml:"answer"`
+}
+
+type CmdRule struct {
+	Rule []*Rule `xml:"rule"`
 }
 
 // AVP represents a dictionary AVP that is loaded from XML.
@@ -63,6 +71,6 @@ type Enum struct {
 type Rule struct {
 	AVP      string `xml:"avp,attr"` // AVP Name
 	Required bool   `xml:"required,attr"`
-	Min      int    `xml:"min"`
-	Max      int    `xml:"max"`
+	Min      int    `xml:"min,attr"`
+	Max      int    `xml:"max,attr"`
 }

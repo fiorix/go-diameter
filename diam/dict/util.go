@@ -153,8 +153,7 @@ func (p *Parser) PrettyPrint() {
 			}
 			fmt.Printf("  Commands:\n")
 			for _, cmd := range app.Cmd {
-				fmt.Printf("    Code=%d %s %s\n",
-					cmd.Code, cmd.Name, cmd.Short)
+				printCmd(cmd)
 			}
 			fmt.Printf("  AVPs:\n")
 			for _, avp := range app.AVP {
@@ -164,22 +163,41 @@ func (p *Parser) PrettyPrint() {
 	}
 }
 
+func printCmd(cmd *Cmd) {
+	fmt.Printf("    % -4d %s\n", cmd.Code, cmd.Name)
+	fmt.Printf("      %sR:\n", cmd.Short)
+	for _, rule := range cmd.Request.Rule {
+		if rule.Required && rule.Min == 0 {
+			rule.Min = 1
+		}
+		fmt.Printf("        % -40s required=% -5t min=%d max=%d\n",
+			rule.AVP, rule.Required, rule.Min, rule.Max)
+	}
+	fmt.Printf("      %sA:\n", cmd.Short)
+	for _, rule := range cmd.Answer.Rule {
+		if rule.Required && rule.Min == 0 {
+			rule.Min = 1
+		}
+		fmt.Printf("        % -40s required=% -5t min=%d max=%d\n",
+			rule.AVP, rule.Required, rule.Min, rule.Max)
+	}
+}
+
 func printAVP(avp *AVP) {
-	var space string
-	fmt.Printf("    %s%s AVP{Code=%d,Type=%s}\n",
-		space, avp.Name, avp.Code, avp.Data.Type)
+	fmt.Printf("   % -4d %s: %s\n",
+		avp.Code, avp.Name, avp.Data.Type)
 	// Enumerated
 	if len(avp.Data.Enum) > 0 {
 		fmt.Printf("    Items:\n")
 		for _, item := range avp.Data.Enum {
-			fmt.Printf("      %d %s\n", item.Code, item.Name)
+			fmt.Printf("      % -2d %s\n", item.Code, item.Name)
 		}
 	}
 	// Grouped AVPs
 	if len(avp.Data.Rule) > 0 {
 		fmt.Printf("    Rules:\n")
 		for _, rule := range avp.Data.Rule {
-			fmt.Printf("      AVP=%s required=%t min=%d max=%d\n",
+			fmt.Printf("      % -40s required=% -5t min=%d max=%d\n",
 				rule.AVP, rule.Required, rule.Min, rule.Max)
 		}
 	}

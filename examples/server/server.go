@@ -122,7 +122,7 @@ func OnCER(c diam.Conn, m *diam.Message) {
 // OnMSG handles all other messages and replies to them
 // with a generic 2001 (OK) answer.
 func OnMSG(c diam.Conn, m *diam.Message) {
-	// Ignored message if there's no Origin-State-Id.
+	// Ignore message if there's no Origin-State-Id.
 	stateId, err := m.FindAVP("Origin-State-Id")
 	if err != nil {
 		return
@@ -141,7 +141,7 @@ func OnMSG(c diam.Conn, m *diam.Message) {
 		log.Printf("Sending message to %s", c.RemoteAddr().String())
 		a.PrettyPrint()
 	}
-	// Send message to the connection
+	// Send message to the connection.
 	if _, err := c.Write(a); err != nil {
 		log.Println("Write failed:", err)
 		c.Close()

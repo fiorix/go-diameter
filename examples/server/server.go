@@ -132,7 +132,7 @@ func OnMSG(c diam.Conn, m *diam.Message) {
 			"Receiving message from %s", c.RemoteAddr().String())
 		m.PrettyPrint()
 	}
-	// Craft DWA with result code 2001 (OK).
+	// Craft answer with result code 2001 (OK).
 	a := m.Answer(2001)
 	a.NewAVP("Origin-Host", 0x40, 0x00, Identity)
 	a.NewAVP("Origin-Realm", 0x40, 0x00, Realm)

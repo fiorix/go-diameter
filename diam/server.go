@@ -150,7 +150,7 @@ func (c *conn) readMessage() (*Message, *response, error) {
 
 // Write writes the message m to the connection.
 func (w *response) Write(m *Message) (int, error) {
-	n, err := w.conn.buf.Write(m.Bytes())
+	n, err := w.conn.buf.Write(m.Pack())
 	w.conn.buf.Flush()
 	return n, err
 }

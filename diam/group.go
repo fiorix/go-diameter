@@ -36,7 +36,7 @@ func (gr *Grouped) Add(avp *AVP) {
 		avp.msg = gr.Message
 	}
 	gr.AVP = append(gr.AVP, avp)
-	gr.Buffer = bytes.Join([][]byte{gr.Buffer, avp.Bytes()}, []byte{})
+	gr.Buffer = bytes.Join([][]byte{gr.Buffer, avp.Pack()}, []byte{})
 }
 
 // Bytes implement the Codec interface. Bytes are always returned from

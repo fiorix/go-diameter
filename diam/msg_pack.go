@@ -75,12 +75,12 @@ func (m *Message) Add(avp *AVP) {
 	m.AVP = append(m.AVP, avp)
 }
 
-// Bytes returns the Message in binary form to be sent to a connection.
-func (m *Message) Bytes() []byte {
+// Pack returns the Message in binary form to be sent to a connection.
+func (m *Message) Pack() []byte {
 	var buf [][]byte
 	var length uint32
 	for _, avp := range m.AVP {
-		b := avp.Bytes()
+		b := avp.Pack()
 		length += uint32(len(b))
 		buf = append(buf, b)
 	}

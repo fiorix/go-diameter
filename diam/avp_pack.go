@@ -246,9 +246,9 @@ func (avp *AVP) set(davp *dict.AVP, data interface{}) error {
 	return nil
 }
 
-// Bytes returns an AVP in binary form so it can be attached to a Message
+// Pack returns an AVP in binary form so it can be attached to a Message
 // before sent to a connection.
-func (avp *AVP) Bytes() []byte {
+func (avp *AVP) Pack() []byte {
 	b := bytes.NewBuffer(nil)
 	if avp.Flags&0x80 > 0 {
 		hdr := rfcHdr2{

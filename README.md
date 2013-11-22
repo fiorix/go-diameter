@@ -7,8 +7,6 @@ and a stack for the [Go programming language](http://golang.org).
 
 ### Status
 
-- v0.5
-
 It can currently send and receive messages and build and parse AVPs based on
 dictionaries. API is subject to changes. See the [TODO](./TODO) list for
 details.

@@ -1,3 +1,8 @@
 *.swp
 *.pcap
 *.test
+examples/bare/bare
+examples/bench/bench
+examples/client/client
+examples/server/server
+examples/snoop/snoop

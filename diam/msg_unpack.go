@@ -20,9 +20,9 @@ import (
 // Using the wrong dictionary might result in errors.
 func ReadMessage(r io.Reader, d *dict.Parser) (*Message, error) {
 	var (
-		err   error
-		avp   *AVP
-		extra uint32
+		err     error
+		avp     *AVP
+		padding uint32
 	)
 	if d == nil {
 		d = dict.Default
@@ -35,10 +35,10 @@ func ReadMessage(r io.Reader, d *dict.Parser) (*Message, error) {
 	n := int32(m.Header.MessageLength() - hdrSize)
 	// Read all AVPs in this message.
 	for n != 0 {
-		if extra, avp, err = ReadAVP(m, r); err != nil {
+		if padding, avp, err = ReadAVP(m, r); err != nil {
 			return nil, err
 		} else {
-			n = n - int32(avp.Length+extra)
+			n = n - int32(avp.Length+padding)
 			if n < 0 {
 				return nil, fmt.Errorf(
 					"Malformed AVP: %s", avp.String())

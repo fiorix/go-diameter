@@ -23,16 +23,15 @@ type rfcHdr1 struct {
 
 var ErrInvalidAvpHdr = errors.New("Invalid AVP header size: probably a bad dict")
 
-// ReadAVP reads an AVP from the connection and returns the number of extra
-// bytes read and the parsed AVP, or an error.
+// ReadAVP reads an AVP from the connection and returns the total number of
+// padding bytes read and the parsed AVP, or an error.
 //
-// Extra bytes are read when the content of the AVP is OctetString
-// (or derivates) and has padding. Total AVP bytes is avp.Length + extra.
+// Total AVP bytes is avp.Length + padding.
 //
 // For details on AVP length and padding see
 // http://tools.ietf.org/html/rfc6733#section-4
 //
-// A pointer to the parent Message of is required, otherwise it panics.
+// A pointer to the parent Message is required, otherwise it panics.
 func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	if m == nil {
 		panic("Can't read AVP without parent Message")
@@ -151,7 +150,7 @@ func ReadAVP(m *Message, r io.Reader) (uint32, *AVP, error) {
 	// valued bytes are added to the end of the AVP Data field till a word
 	// boundary is reached.  The length of the padding is not reflected in
 	// the AVP Length field.
-	var n uint32 // extra bytes to read
+	var n uint32
 	if pad {
 		// Read and discard pad bytes.
 		if n = util.Pad4(dlen) - dlen; n > 0 {

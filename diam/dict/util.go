@@ -170,7 +170,7 @@ func printCmd(cmd *Cmd) {
 		if rule.Required && rule.Min == 0 {
 			rule.Min = 1
 		}
-		fmt.Printf("        % -40s required=% -5t min=%d max=%d\n",
+		fmt.Printf("        % -40s required=%-5t min=%d max=%d\n",
 			rule.AVP, rule.Required, rule.Min, rule.Max)
 	}
 	fmt.Printf("      %sA:\n", cmd.Short)
@@ -178,7 +178,7 @@ func printCmd(cmd *Cmd) {
 		if rule.Required && rule.Min == 0 {
 			rule.Min = 1
 		}
-		fmt.Printf("        % -40s required=% -5t min=%d max=%d\n",
+		fmt.Printf("        % -40s required=%-5t min=%d max=%d\n",
 			rule.AVP, rule.Required, rule.Min, rule.Max)
 	}
 }
@@ -197,7 +197,7 @@ func printAVP(avp *AVP) {
 	if len(avp.Data.Rule) > 0 {
 		fmt.Printf("    Rules:\n")
 		for _, rule := range avp.Data.Rule {
-			fmt.Printf("      % -40s required=% -5t min=%d max=%d\n",
+			fmt.Printf("      % -40s required=%-5t min=%d max=%d\n",
 				rule.AVP, rule.Required, rule.Min, rule.Max)
 		}
 	}

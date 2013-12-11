@@ -184,22 +184,34 @@ func (avp *AVP) set(davp *dict.AVP, data interface{}) error {
 		case *avpdata.UTF8String:
 			body = data.(*avpdata.UTF8String)
 		case []byte:
-			body = &avpdata.UTF8String{avpdata.OctetString{
-				Value: string(data.([]byte))}}
+			body = &avpdata.UTF8String{
+				OctetString: avpdata.OctetString{
+					Value: string(data.([]byte)),
+				},
+			}
 		case string:
 			body = &avpdata.UTF8String{
-				avpdata.OctetString{Value: data.(string)}}
+				OctetString: avpdata.OctetString{
+					Value: data.(string),
+				},
+			}
 		}
 	case "DiameterIdentity":
 		switch data.(type) {
 		case *avpdata.DiameterIdentity:
 			body = data.(*avpdata.DiameterIdentity)
 		case []byte:
-			body = &avpdata.DiameterIdentity{avpdata.OctetString{
-				Value: string(data.([]byte))}}
+			body = &avpdata.DiameterIdentity{
+				OctetString: avpdata.OctetString{
+					Value: string(data.([]byte)),
+				},
+			}
 		case string:
 			body = &avpdata.DiameterIdentity{
-				avpdata.OctetString{Value: data.(string)}}
+				OctetString: avpdata.OctetString{
+					Value: data.(string),
+				},
+			}
 		}
 	case "DiameterURI":
 		switch data.(type) {
@@ -217,18 +229,27 @@ func (avp *AVP) set(davp *dict.AVP, data interface{}) error {
 			body = data.(*avpdata.Enumerated)
 		case int:
 			body = &avpdata.Enumerated{
-				avpdata.Integer32{Value: int32(data.(int))}}
+				Integer32: avpdata.Integer32{
+					Value: int32(data.(int)),
+				},
+			}
 		}
 	case "IPFilterRule":
 		switch data.(type) {
 		case *avpdata.IPFilterRule:
 			body = data.(*avpdata.IPFilterRule)
 		case []byte:
-			body = &avpdata.IPFilterRule{avpdata.OctetString{
-				Value: string(data.([]byte))}}
+			body = &avpdata.IPFilterRule{
+				OctetString: avpdata.OctetString{
+					Value: string(data.([]byte)),
+				},
+			}
 		case string:
 			body = &avpdata.IPFilterRule{
-				avpdata.OctetString{Value: data.(string)}}
+				OctetString: avpdata.OctetString{
+					Value: data.(string),
+				},
+			}
 		}
 	case "Grouped":
 		if gr, ok := data.(*Grouped); ok {

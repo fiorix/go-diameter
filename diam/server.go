@@ -419,7 +419,6 @@ func (srv *Server) Serve(l net.Listener) error {
 		}
 		go c.serve()
 	}
-	return nil
 }
 
 // ListenAndServe listens on the TCP network address addr

@@ -63,6 +63,6 @@ func TestRule(t *testing.T) {
 		t.Error(err)
 		return
 	} else if !rule.Required {
-		t.Error(fmt.Errorf("Unexpected rule %s", rule))
+		t.Error(fmt.Errorf("Unexpected rule %#v", rule))
 	}
 }

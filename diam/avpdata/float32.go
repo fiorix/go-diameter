@@ -40,5 +40,5 @@ func (n *Float32) Length() uint32 {
 
 // String returns a human readable version of the AVP.
 func (n *Float32) String() string {
-	return fmt.Sprintf("Float32{Value:%d}", n.Value)
+	return fmt.Sprintf("Float32{Value:%f}", n.Value)
 }

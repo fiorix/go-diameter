@@ -21,7 +21,7 @@ func TestFloat32(t *testing.T) {
 	}
 	n.Put(b)
 	if d := n.Data(); d != s {
-		t.Error(fmt.Errorf("Data is 0x%x, expected 0x%x", d, s))
+		t.Error(fmt.Errorf("Data is %f, expected %f", d, s))
 		return
 	}
 }

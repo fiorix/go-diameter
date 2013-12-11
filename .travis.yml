@@ -1,2 +1,8 @@
 language: go
-script: go test -v ./diam/ ./diam/avpdata ./diam/dict ./diam/util
+go:
+        - 1.1
+        - 1.2
+        - release
+        - tip
+script:
+        - go test -v ./diam/ ./diam/avpdata ./diam/dict ./diam/util

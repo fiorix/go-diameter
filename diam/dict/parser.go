@@ -8,7 +8,8 @@ package dict
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"io"
+	"os"
 	"sync"
 )
 
@@ -56,17 +57,19 @@ func New(filename ...string) (*Parser, error) {
 
 // LoadFile loads a dictionary XML file. May be used multiple times.
 func (p *Parser) LoadFile(filename string) error {
-	buf, err := ioutil.ReadFile(filename)
+	fd, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
-	return p.Load(buf)
+	defer fd.Close()
+	return p.Load(fd)
 }
 
 // Load loads a dictionary from byte array. May be used multiple times.
-func (p *Parser) Load(buf []byte) error {
+func (p *Parser) Load(r io.Reader) error {
 	f := new(File)
-	if err := xml.Unmarshal(buf, f); err != nil {
+	d := xml.NewDecoder(r)
+	if err := d.Decode(f); err != nil {
 		return err
 	}
 	p.mu.Lock()

@@ -46,14 +46,14 @@ type CmdRule struct {
 
 // AVP represents a dictionary AVP that is loaded from XML.
 type AVP struct {
-	Name    string `xml:"name,attr"`
-	Code    uint32 `xml:"code,attr"`
-	Must    string `xml:"must,attr"`
-	May     string `xml:"may,attr"`
-	MustNot string `xml:"must-not,attr"`
-	Encr    string `xml:"encr,attr"`
-	Data    Data   `xml:"data"`
-	App     *App   `xml:"none"` // Link back to diameter application
+	Name       string `xml:"name,attr"`
+	Code       uint32 `xml:"code,attr"`
+	Must       string `xml:"must,attr"`
+	May        string `xml:"may,attr"`
+	MustNot    string `xml:"must-not,attr"`
+	MayEncrypt string `xml:"may-encrypt,attr"`
+	Data       Data   `xml:"data"`
+	App        *App   `xml:"none"` // Link back to diameter application
 }
 
 // Data of an AVP can be EnumItem or a Parser of multiple AVPs.

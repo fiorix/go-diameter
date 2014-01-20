@@ -6,12 +6,14 @@
 
 package dict
 
+import "bytes"
+
 // Default is a static Parser with a pre-loaded Base Protocol.
 var Default *Parser
 
 func init() {
 	Default, _ = New()
-	Default.Load(DefaultXML)
+	Default.Load(bytes.NewReader(DefaultXML))
 }
 
 // DefaultXML is an embedded version of the Diameter Base Protocol.
@@ -32,11 +34,11 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     <command code="280" short="DW" name="Device-Watchdog"/>
     <command code="282" short="DP" name="Disconnect-Peer"/>
 
-    <avp name="Acct-Interim-Interval" code="85" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Acct-Interim-Interval" code="85" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Accounting-Realtime-Required" code="483" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Accounting-Realtime-Required" code="483" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Enumerated">
         <item code="1" name="DELIVER_AND_GRANT"/>
         <item code="2" name="GRANT_AND_STORE"/>
@@ -44,15 +46,15 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
       </data>
     </avp>
 
-    <avp name="Acct-Multi-Session-Id" code="50" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Acct-Multi-Session-Id" code="50" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Accounting-Record-Number" code="485" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Accounting-Record-Number" code="485" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Accounting-Record-Type" code="480" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Accounting-Record-Type" code="480" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Enumerated">
         <item code="1" name="EVENT_RECORD"/>
         <item code="2" name="START_RECORD"/>
@@ -61,23 +63,23 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
       </data>
     </avp>
 
-    <avp name="Accounting-Session-Id" code="44" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Accounting-Session-Id" code="44" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="OctetString"/>
     </avp>
 
-    <avp name="Accounting-Sub-Session-Id" code="287" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Accounting-Sub-Session-Id" code="287" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Unsigned64"/>
     </avp>
 
-    <avp name="Acct-Application-Id" code="259" must="M" may="P" must-not="V" encr="-">
+    <avp name="Acct-Application-Id" code="259" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Auth-Application-Id" code="258" must="M" may="P" must-not="V" encr="-">
+    <avp name="Auth-Application-Id" code="258" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Auth-Request-Type" code="274" must="M" may="P" must-not="V" encr="-">
+    <avp name="Auth-Request-Type" code="274" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Enumerated">
         <item code="1" name="AUTHENTICATE_ONLY"/>
         <item code="2" name="AUTHORIZE_ONLY"/>
@@ -85,41 +87,41 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
       </data>
     </avp>
 
-    <avp name="Authorization-Lifetime" code="291" must="M" may="P" must-not="V" encr="-">
+    <avp name="Authorization-Lifetime" code="291" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Auth-Grace-Period" code="276" must="M" may="P" must-not="V" encr="-">
+    <avp name="Auth-Grace-Period" code="276" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Auth-Session-State" code="277" must="M" may="P" must-not="V" encr="-">
+    <avp name="Auth-Session-State" code="277" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Enumerated">
         <item code="0" name="STATE_MAINTAINED"/>
         <item code="1" name="NO_STATE_MAINTAINED"/>
       </data>
     </avp>
 
-    <avp name="Re-Auth-Request-Type" code="285" must="M" may="P" must-not="V" encr="-">
+    <avp name="Re-Auth-Request-Type" code="285" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Enumerated">
         <item code="0" name="AUTHORIZE_ONLY"/>
         <item code="1" name="AUTHORIZE_AUTHENTICATE"/>
       </data>
     </avp>
 
-    <avp name="Class" code="25" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Class" code="25" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="OctetString"/>
     </avp>
 
-    <avp name="Destination-Host" code="293" must="M" may="P" must-not="V" encr="-">
+    <avp name="Destination-Host" code="293" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Destination-Realm" code="283" must="M" may="P" must-not="V" encr="-">
+    <avp name="Destination-Realm" code="283" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Disconnect-Cause" code="273" must="M" may="P" must-not="V" encr="-">
+    <avp name="Disconnect-Cause" code="273" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Enumerated">
         <item code="0" name="REBOOTING"/>
         <item code="1" name="BUSY"/>
@@ -127,85 +129,85 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
       </data>
     </avp>
 
-    <avp name="Error-Message" code="281" must="-" may="P" must-not="V,M" encr="-">
+    <avp name="Error-Message" code="281" must="-" may="P" must-not="V,M" may-encrypt="-">
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Error-Reporting-Host" code="294" must="-" may="P" must-not="V,M" encr="-">
+    <avp name="Error-Reporting-Host" code="294" must="-" may="P" must-not="V,M" may-encrypt="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Event-Timestamp" code="55" must="M" may="P" must-not="V" encr="-">
+    <avp name="Event-Timestamp" code="55" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Time"/>
     </avp>
 
-    <avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" encr="-">
+    <avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Grouped">
         <rule avp="Vendor-Id" required="true" max="1"/>
         <rule avp="Experimental-Result-Code" required="true" max="1"/>
       </data>
     </avp>
 
-    <avp name="Experimental-Result-Code" code="298" must="M" may="P" must-not="V" encr="-">
+    <avp name="Experimental-Result-Code" code="298" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Failed-AVP" code="279" must="M" may="P" must-not="V" encr="-">
+    <avp name="Failed-AVP" code="279" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Grouped"/>
     </avp>
 
-    <avp name="Firmware-Revision" code="267" must="-" may="-" must-not="P,V,M" encr="-">
+    <avp name="Firmware-Revision" code="267" must="-" may="-" must-not="P,V,M" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Host-IP-Address" code="257" must="M" may="P" must-not="V" encr="-">
+    <avp name="Host-IP-Address" code="257" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Address"/>
     </avp>
 
-    <avp name="Inband-Security-Id" code="299" must="M" may="P" must-not="V" encr="-">
+    <avp name="Inband-Security-Id" code="299" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Multi-Round-Time-Out" code="272" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Multi-Round-Time-Out" code="272" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Origin-Host" code="264" must="M" may="P" must-not="V" encr="-">
+    <avp name="Origin-Host" code="264" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Origin-Realm" code="296" must="M" may="P" must-not="V" encr="-">
+    <avp name="Origin-Realm" code="296" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Origin-State-Id" code="278" must="M" may="P" must-not="V" encr="-">
+    <avp name="Origin-State-Id" code="278" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Product-Name" code="269" must="-" may="-" must-not="P,V,M" encr="-">
+    <avp name="Product-Name" code="269" must="-" may="-" must-not="P,V,M" may-encrypt="-">
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Proxy-Host" code="280" must="M" may="-" must-not="P,V" encr="-">
+    <avp name="Proxy-Host" code="280" must="M" may="-" must-not="P,V" may-encrypt="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Proxy-Info" code="284" must="M" may="-" must-not="P,V" encr="-">
+    <avp name="Proxy-Info" code="284" must="M" may="-" must-not="P,V" may-encrypt="-">
       <data type="Grouped">
         <rule avp="Proxy-Host" required="true" max="1"/>
         <rule avp="Proxy-State" required="true" max="1"/>
       </data>
     </avp>
 
-    <avp name="Proxy-State" code="33" must="M" may="-" must-not="P,V" encr="-">
+    <avp name="Proxy-State" code="33" must="M" may="-" must-not="P,V" may-encrypt="-">
       <data type="OctetString"/>
     </avp>
 
-    <avp name="Redirect-Host" code="292" must="M" may="P" must-not="V" encr="-">
+    <avp name="Redirect-Host" code="292" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="DiameterURI"/>
     </avp>
 
-    <avp name="Redirect-Host-Usage" code="261" must="M" may="P" must-not="V" encr="-">
+    <avp name="Redirect-Host-Usage" code="261" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Enumerated">
         <item code="0" name="DONT_CACHE"/>
         <item code="1" name="ALL_SESSION"/>
@@ -217,31 +219,31 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
       </data>
     </avp>
 
-    <avp name="Redirect-Max-Cache-Time" code="262" must="M" may="P" must-not="V" encr="-">
+    <avp name="Redirect-Max-Cache-Time" code="262" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Result-Code" code="268" must="M" may="P" must-not="V" encr="-">
+    <avp name="Result-Code" code="268" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Route-Record" code="282" must="M" may="-" must-not="P,V" encr="-">
+    <avp name="Route-Record" code="282" must="M" may="-" must-not="P,V" may-encrypt="-">
       <data type="DiameterIdentity"/>
     </avp>
 
-    <avp name="Session-Id" code="263" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Session-Id" code="263" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Session-Timeout" code="27" must="M" may="P" must-not="V" encr="-">
+    <avp name="Session-Timeout" code="27" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Session-Binding" code="270" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Session-Binding" code="270" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Session-Server-Failover" code="271" must="M" may="P" must-not="V" encr="Y">
+    <avp name="Session-Server-Failover" code="271" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Enumerated">
         <item code="0" name="REFUSE_SERVICE"/>
         <item code="1" name="TRY_AGAIN"/>
@@ -250,11 +252,11 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
       </data>
     </avp>
 
-    <avp name="Supported-Vendor-Id" code="265" must="M" may="P" must-not="V" encr="-">
+    <avp name="Supported-Vendor-Id" code="265" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Termination-Cause" code="295" must="M" may="P" must-not="V" encr="-">
+    <avp name="Termination-Cause" code="295" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Enumerated">
         <item code="1" name="DIAMETER_LOGOUT"/>
         <item code="2" name="DIAMETER_SERVICE_NOT_PROVIDED"/>
@@ -267,15 +269,15 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
       </data>
     </avp>
 
-    <avp name="User-Name" code="1" must="M" may="P" must-not="V" encr="Y">
+    <avp name="User-Name" code="1" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="UTF8String"/>
     </avp>
 
-    <avp name="Vendor-Id" code="266" must="M" may="P" must-not="V" encr="-">
+    <avp name="Vendor-Id" code="266" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Unsigned32"/>
     </avp>
 
-    <avp name="Vendor-Specific-Application-Id" code="260" must="M" may="P" must-not="V" encr="-">
+    <avp name="Vendor-Specific-Application-Id" code="260" must="M" may="P" must-not="V" may-encrypt="-">
       <data type="Grouped">
         <rule avp="Vendor-Id" required="false" max="1"/>
         <rule avp="Auth-Application-Id" required="true" max="1"/>

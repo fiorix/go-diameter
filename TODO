@@ -2,3 +2,4 @@ Sanity check (functions to check for required and optional AVPs in messages)
 Add automatic sanity check in the stack (maybe)
 Add test cases for msg parsing with real captures
 Benchmarks
+Fix AVP properties in the dict format (must, may, may-not and may-encrypt)

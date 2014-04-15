@@ -31,17 +31,17 @@ type Parser struct {
 }
 
 type codeIdx struct {
-	AppId uint32
-	Code  uint32
+	appId uint32
+	code  uint32
 }
 
 type nameIdx struct {
-	AppId uint32
-	Name  string
+	appId uint32
+	name  string
 }
 
 // New allocates a new Parser optionally loading dictionary XML files.
-func New(filename ...string) (*Parser, error) {
+func NewParser(filename ...string) (*Parser, error) {
 	p := new(Parser)
 	p.avpname = make(map[nameIdx]*AVP)
 	p.avpcode = make(map[codeIdx]*AVP)

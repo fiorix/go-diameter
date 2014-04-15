@@ -12,7 +12,7 @@ import "bytes"
 var Default *Parser
 
 func init() {
-	Default, _ = New()
+	Default, _ = NewParser()
 	Default.Load(bytes.NewReader(DefaultXML))
 }
 

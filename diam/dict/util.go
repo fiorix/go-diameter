@@ -6,7 +6,11 @@
 
 package dict
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"io"
+)
 
 // Apps return a list of all applications loaded in the Dict instance.
 func (p Parser) Apps() []*App {
@@ -67,14 +71,14 @@ func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
 	switch code.(type) {
 	case string:
 		for idx, avp := range p.avpname {
-			if idx.Name == code.(string) {
+			if idx.name == code.(string) {
 				return avp, nil
 			}
 		}
 		return nil, fmt.Errorf("Could not find AVP %s", code.(string))
 	case uint32:
 		for idx, avp := range p.avpcode {
-			if idx.Code == code.(uint32) {
+			if idx.code == code.(uint32) {
 				return avp, nil
 			}
 		}
@@ -142,62 +146,64 @@ func (p *Parser) Rule(appid, code uint32, n string) (*Rule, error) {
 		n, avp.Name, avp.Code)
 }
 
-// PrettyPrint prints the Dict in a human readable form.
-func (p *Parser) PrettyPrint() {
+// String returns the Dict in a human readable form.
+func (p *Parser) String() string {
+	var b bytes.Buffer
 	for _, f := range p.file {
 		for _, app := range f.App {
-			fmt.Printf("Application Id: %d\n", app.Id)
-			fmt.Printf("  Vendors:\n")
+			fmt.Fprintf(&b, "Application Id: %d\n", app.Id)
+			fmt.Fprintf(&b, "  Vendors:\n")
 			for _, vendor := range app.Vendor {
-				fmt.Printf("    Id=%d Name=%s\n", vendor.Id, vendor.Name)
+				fmt.Fprintf(&b, "    Id=%d Name=%s\n", vendor.Id, vendor.Name)
 			}
-			fmt.Printf("  Commands:\n")
+			fmt.Fprintf(&b, "  Commands:\n")
 			for _, cmd := range app.Cmd {
-				printCmd(cmd)
+				printCmd(&b, cmd)
 			}
-			fmt.Printf("  AVPs:\n")
+			fmt.Fprintf(&b, "  AVPs:\n")
 			for _, avp := range app.AVP {
-				printAVP(avp)
+				printAVP(&b, avp)
 			}
 		}
 	}
+	return b.String()
 }
 
-func printCmd(cmd *Cmd) {
-	fmt.Printf("    % -4d %s\n", cmd.Code, cmd.Name)
-	fmt.Printf("      %sR:\n", cmd.Short)
+func printCmd(w io.Writer, cmd *Cmd) {
+	fmt.Fprintf(w, "    % -4d %s\n", cmd.Code, cmd.Name)
+	fmt.Fprintf(w, "      %sR:\n", cmd.Short)
 	for _, rule := range cmd.Request.Rule {
 		if rule.Required && rule.Min == 0 {
 			rule.Min = 1
 		}
-		fmt.Printf("        % -40s required=%-5t min=%d max=%d\n",
+		fmt.Fprintf(w, "        % -40s required=%-5t min=%d max=%d\n",
 			rule.AVP, rule.Required, rule.Min, rule.Max)
 	}
-	fmt.Printf("      %sA:\n", cmd.Short)
+	fmt.Fprintf(w, "      %sA:\n", cmd.Short)
 	for _, rule := range cmd.Answer.Rule {
 		if rule.Required && rule.Min == 0 {
 			rule.Min = 1
 		}
-		fmt.Printf("        % -40s required=%-5t min=%d max=%d\n",
+		fmt.Fprintf(w, "        % -40s required=%-5t min=%d max=%d\n",
 			rule.AVP, rule.Required, rule.Min, rule.Max)
 	}
 }
 
-func printAVP(avp *AVP) {
-	fmt.Printf("   % -4d %s: %s\n",
+func printAVP(w io.Writer, avp *AVP) {
+	fmt.Fprintf(w, "   % -4d %s: %s\n",
 		avp.Code, avp.Name, avp.Data.Type)
 	// Enumerated
 	if len(avp.Data.Enum) > 0 {
-		fmt.Printf("    Items:\n")
+		fmt.Fprintf(w, "    Items:\n")
 		for _, item := range avp.Data.Enum {
-			fmt.Printf("      % -2d %s\n", item.Code, item.Name)
+			fmt.Fprintf(w, "      % -2d %s\n", item.Code, item.Name)
 		}
 	}
 	// Grouped AVPs
 	if len(avp.Data.Rule) > 0 {
-		fmt.Printf("    Rules:\n")
+		fmt.Fprintf(w, "    Rules:\n")
 		for _, rule := range avp.Data.Rule {
-			fmt.Printf("      % -40s required=%-5t min=%d max=%d\n",
+			fmt.Fprintf(w, "      % -40s required=%-5t min=%d max=%d\n",
 				rule.AVP, rule.Required, rule.Min, rule.Max)
 		}
 	}

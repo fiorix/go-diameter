@@ -1,4 +1,4 @@
-// Copyright 2013 Alexandre Fiori
+// Copyright 2013-2014 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,9 +93,9 @@ func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
 func (p Parser) FindCmd(appid, code uint32) (*Cmd, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	if cmd, ok := p.cmd[codeIdx{appid, code}]; ok {
+	if cmd, ok := p.command[codeIdx{appid, code}]; ok {
 		return cmd, nil
-	} else if cmd, ok = p.cmd[codeIdx{0, code}]; ok {
+	} else if cmd, ok = p.command[codeIdx{0, code}]; ok {
 		// Always fall back to base dict.
 		return cmd, nil
 	}
@@ -104,7 +104,7 @@ func (p Parser) FindCmd(appid, code uint32) (*Cmd, error) {
 
 // Enum is a helper function that returns a pre-loaded Enum item for the
 // given AVP appid, code and n. (n is the enum code in the dictionary)
-func (p *Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
+func (p Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
 	avp, err := p.FindAVP(appid, code)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (p *Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
 
 // Rule is a helper function that returns a pre-loaded Rule item for the
 // given AVP code and name.
-func (p *Parser) Rule(appid, code uint32, n string) (*Rule, error) {
+func (p Parser) Rule(appid, code uint32, n string) (*Rule, error) {
 	avp, err := p.FindAVP(appid, code)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func (p *Parser) Rule(appid, code uint32, n string) (*Rule, error) {
 }
 
 // String returns the Dict in a human readable form.
-func (p *Parser) String() string {
+func (p Parser) String() string {
 	var b bytes.Buffer
 	for _, f := range p.file {
 		for _, app := range f.App {

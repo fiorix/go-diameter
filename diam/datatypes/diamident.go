@@ -9,7 +9,7 @@ import "fmt"
 // DiameterIdentity Diameter Type.
 type DiameterIdentity OctetString
 
-func DecodeDiameterIdentity(b []byte) (DiameterIdentity, error) {
+func DecodeDiameterIdentity(b []byte) (DataType, error) {
 	return DiameterIdentity(OctetString(b)), nil
 }
 

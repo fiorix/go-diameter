@@ -13,7 +13,7 @@ import (
 // Time Diameter Type.
 type Time time.Time
 
-func DecodeTime(b []byte) (Time, error) {
+func DecodeTime(b []byte) (DataType, error) {
 	return Time(time.Unix(int64(binary.BigEndian.Uint32(b)), 0)), nil
 }
 

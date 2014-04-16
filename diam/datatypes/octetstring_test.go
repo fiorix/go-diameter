@@ -30,7 +30,7 @@ func TestDecodeOctetString(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal([]byte(s), b) {
+	if !bytes.Equal([]byte(s.(OctetString)), b) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, s)
 	}
 	t.Log(s)

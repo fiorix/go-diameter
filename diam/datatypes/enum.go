@@ -9,9 +9,9 @@ import "fmt"
 // Enumerated Diameter Type
 type Enumerated Integer32
 
-func DecodeEnumerated(b []byte) (Enumerated, error) {
+func DecodeEnumerated(b []byte) (DataType, error) {
 	v, err := DecodeInteger32(b)
-	return Enumerated(v), err
+	return Enumerated(v.(Integer32)), err
 }
 
 func (n Enumerated) Serialize() []byte {

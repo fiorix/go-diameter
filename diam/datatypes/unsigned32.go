@@ -12,7 +12,7 @@ import (
 // Unsigned32 Diameter Type
 type Unsigned32 uint32
 
-func DecodeUnsigned32(b []byte) (Unsigned32, error) {
+func DecodeUnsigned32(b []byte) (DataType, error) {
 	return Unsigned32(binary.BigEndian.Uint32(b)), nil
 }
 

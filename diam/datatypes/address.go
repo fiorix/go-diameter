@@ -17,7 +17,7 @@ type Address net.IP
 // DecodeAddress decodes the byte representation of a Diameter Address.
 // Example:
 // 	b := Address(net.ParseIP("10.0.0.1"))
-func DecodeAddress(b []byte) (Address, error) {
+func DecodeAddress(b []byte) (DataType, error) {
 	if len(b) < 6 {
 		return nil, errors.New("Not enough data to make an Address")
 	}

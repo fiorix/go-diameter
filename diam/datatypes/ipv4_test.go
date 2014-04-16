@@ -25,7 +25,7 @@ func TestDecodeIPv4(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ip := net.IP(ip4).String(); ip != "10.0.0.1" {
+	if ip := net.IP(ip4.(IPv4)).String(); ip != "10.0.0.1" {
 		t.Fatalf("Unexpected value. Want 10.0.0.1, have %s", ip)
 	}
 	t.Log(ip4)

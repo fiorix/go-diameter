@@ -12,7 +12,7 @@ import (
 // IPv4 Diameter Type for Framed-IP-Address AVP.
 type IPv4 net.IP
 
-func DecodeIPv4(b []byte) (IPv4, error) {
+func DecodeIPv4(b []byte) (DataType, error) {
 	return IPv4(b), nil
 }
 

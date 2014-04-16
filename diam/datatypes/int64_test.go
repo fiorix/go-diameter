@@ -25,7 +25,7 @@ func TestDecodeInteger64(t *testing.T) {
 		t.Fatal(err)
 	}
 	z := int64((1 << 63) - 1)
-	if int64(n) != z {
+	if int64(n.(Integer64)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
 	t.Log(n)

@@ -25,7 +25,7 @@ func TestDecodeUnsigned64(t *testing.T) {
 		t.Fatal(err)
 	}
 	z := uint64(0xffffffffffc0ffee)
-	if uint64(n) != z {
+	if uint64(n.(Unsigned64)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
 	t.Log(n)

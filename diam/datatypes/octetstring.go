@@ -9,7 +9,7 @@ import "fmt"
 // OctetString Diameter Type.
 type OctetString string
 
-func DecodeOctetString(b []byte) (OctetString, error) {
+func DecodeOctetString(b []byte) (DataType, error) {
 	return OctetString(b), nil
 }
 

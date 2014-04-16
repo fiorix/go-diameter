@@ -9,7 +9,7 @@ import "fmt"
 // IPFilterRule Diameter Type.
 type IPFilterRule OctetString
 
-func DecodeIPFilterRule(b []byte) (IPFilterRule, error) {
+func DecodeIPFilterRule(b []byte) (DataType, error) {
 	return IPFilterRule(OctetString(b)), nil
 }
 

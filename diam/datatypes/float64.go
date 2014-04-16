@@ -13,7 +13,7 @@ import (
 // Float64 Diameter Type
 type Float64 float64
 
-func DecodeFloat64(b []byte) (Float64, error) {
+func DecodeFloat64(b []byte) (DataType, error) {
 	var n float64
 	err := binary.Read(bytes.NewReader(b), binary.BigEndian, &n)
 	return Float64(n), err

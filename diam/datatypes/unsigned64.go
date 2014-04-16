@@ -12,7 +12,7 @@ import (
 // Unsigned64 Diameter Type
 type Unsigned64 uint64
 
-func DecodeUnsigned64(b []byte) (Unsigned64, error) {
+func DecodeUnsigned64(b []byte) (DataType, error) {
 	return Unsigned64(binary.BigEndian.Uint64(b)), nil
 }
 

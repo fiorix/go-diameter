@@ -25,7 +25,7 @@ func TestDecodeAddressIPv4(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ip := net.IP(address).String(); ip != "10.0.0.1" {
+	if ip := net.IP(address.(Address)).String(); ip != "10.0.0.1" {
 		t.Fatalf("Unexpected value. Want 10.0.0.1, have %s", ip)
 	}
 	t.Log(address)
@@ -53,7 +53,7 @@ func TestDecodeAddressIPv6(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := "2001:db8::ff00:42:8329"
-	if ip := net.IP(address).String(); ip != want {
+	if ip := net.IP(address.(Address)).String(); ip != want {
 		t.Fatalf("Unexpected value. Want %s, have %s", want, ip)
 	}
 	t.Log(address)

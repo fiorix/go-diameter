@@ -25,7 +25,7 @@ func TestDecodeInteger32(t *testing.T) {
 		t.Fatal(err)
 	}
 	z := int32((1 << 31) - 1)
-	if int32(n) != z {
+	if int32(n.(Integer32)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
 	t.Log(n)

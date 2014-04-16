@@ -13,7 +13,7 @@ import (
 // Integer32 Diameter Type
 type Integer32 int32
 
-func DecodeInteger32(b []byte) (Integer32, error) {
+func DecodeInteger32(b []byte) (DataType, error) {
 	var n int32
 	err := binary.Read(bytes.NewReader(b), binary.BigEndian, &n)
 	return Integer32(n), err

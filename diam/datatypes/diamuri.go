@@ -9,7 +9,7 @@ import "fmt"
 // DiameterURI Diameter Type.
 type DiameterURI OctetString
 
-func DecodeDiameterURI(b []byte) (DiameterURI, error) {
+func DecodeDiameterURI(b []byte) (DataType, error) {
 	return DiameterURI(OctetString(b)), nil
 }
 

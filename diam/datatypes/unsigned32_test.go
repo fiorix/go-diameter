@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+type zz struct{ uint32 }
+
 func TestUnsigned32(t *testing.T) {
 	n := Unsigned32(0xffc0ffee)
 	b := []byte{0xff, 0xc0, 0xff, 0xee}
@@ -25,7 +27,7 @@ func TestDecodeUnsigned32(t *testing.T) {
 		t.Fatal(err)
 	}
 	z := uint32(0xffc0ffee)
-	if uint32(n) != z {
+	if uint32(n.(Unsigned32)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
 	t.Log(n)

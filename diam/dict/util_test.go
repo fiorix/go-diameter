@@ -7,13 +7,13 @@ package dict
 import "testing"
 
 func TestFindAVP(t *testing.T) {
-	if _, err := testParser.FindAVP(0, 263); err != nil {
+	if _, err := Default.FindAVP(0, 263); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestScanAVP(t *testing.T) {
-	if avp, err := testParser.ScanAVP("Session-Id"); err != nil {
+	if avp, err := Default.ScanAVP("Session-Id"); err != nil {
 		t.Error(err)
 	} else if avp.Code != 263 {
 		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
@@ -21,7 +21,7 @@ func TestScanAVP(t *testing.T) {
 }
 
 func TestFindCmd(t *testing.T) {
-	if cmd, err := testParser.FindCmd(0, 257); err != nil {
+	if cmd, err := Default.FindCmd(0, 257); err != nil {
 		t.Error(err)
 	} else if cmd.Short != "CE" {
 		t.Fatalf("Unexpected command: %#v", cmd)
@@ -29,7 +29,7 @@ func TestFindCmd(t *testing.T) {
 }
 
 func TestEnum(t *testing.T) {
-	if item, err := testParser.Enum(0, 274, 1); err != nil {
+	if item, err := Default.Enum(0, 274, 1); err != nil {
 		t.Fatal(err)
 	} else if item.Name != "AUTHENTICATE_ONLY" {
 		t.Errorf(
@@ -40,7 +40,7 @@ func TestEnum(t *testing.T) {
 }
 
 func TestRule(t *testing.T) {
-	if rule, err := testParser.Rule(0, 284, "Proxy-Host"); err != nil {
+	if rule, err := Default.Rule(0, 284, "Proxy-Host"); err != nil {
 		t.Fatal(err)
 	} else if !rule.Required {
 		t.Errorf("Unexpected rule %#v", rule)

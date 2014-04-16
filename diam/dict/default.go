@@ -26,13 +26,210 @@ var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 
     <vendor id="10415" name="3GPP"/>
 
-    <command code="257" short="CE" name="Capabilities-Exchange"/>
-    <command code="258" short="RA" name="Re-Auth"/>
-    <command code="271" short="AC" name="Accounting"/>
-    <command code="274" short="AS" name="Abort-Session"/>
-    <command code="275" short="ST" name="Session-Termination"/>
-    <command code="280" short="DW" name="Device-Watchdog"/>
-    <command code="282" short="DP" name="Disconnect-Peer"/>
+    <command code="257" short="CE" name="Capabilities-Exchange">
+      <request>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Host-IP-Address" required="true" max="1"/>
+        <rule avp="Vendor-Id" required="true" max="1"/>
+        <rule avp="Product-Name" required="true" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Supported-Vendor-Id" required="False"/>
+        <rule avp="Auth-Application-Id" required="False"/>
+        <rule avp="Inband-Security-Id" required="False"/>
+        <rule avp="Acct-Application-Id" required="False"/>
+        <rule avp="Vendor-Specific-Application-Id" required="False"/>
+        <rule avp="Firmware-Revision" required="False" max="1"/>
+      </request>
+      <answer>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Host-IP-Address" required="true" max="1"/>
+        <rule avp="Vendor-Id" required="true" max="1"/>
+        <rule avp="Product-Name" required="true" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Error-Message" required="false" max="1"/>
+        <rule avp="Failed-AVP" required="false" max="1"/>
+        <rule avp="Supported-Vendor-Id" required="False"/>
+        <rule avp="Auth-Application-Id" required="False"/>
+        <rule avp="Inband-Security-Id" required="False"/>
+        <rule avp="Acct-Application-Id" required="False"/>
+        <rule avp="Vendor-Specific-Application-Id" required="False"/>
+        <rule avp="Firmware-Revision" required="False" max="1"/>
+      </answer>
+    </command>
+
+    <command code="258" short="RA" name="Re-Auth">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="Destination-Host" required="true" max="1"/>
+        <rule avp="Auth-Application-Id" required="true" max="1"/>
+        <rule avp="Re-Auth-Request-Type" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Error-Message" required="false" max="1"/>
+        <rule avp="Error-Reporting-Host" required="false" max="1"/>
+        <rule avp="Failed-AVP" required="false" max="1"/>
+        <rule avp="Redirect-Host" required="false"/>
+        <rule avp="Redirect-Host-Usage" required="false" max="1"/>
+        <rule avp="Redirect-Max-Cache-Time" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false"/>
+      </answer>
+    </command>
+
+    <command code="271" short="AC" name="Accounting">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="Accounting-Record-Type" required="true" max="1"/>
+        <rule avp="Accounting-Record-Number" required="true" max="1"/>
+        <rule avp="Acct-Application-Id" required="false" max="1"/>
+        <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Destination-Host" required="false" max="1"/>
+        <rule avp="Accounting-Sub-Session-Id" required="false" max="1"/>
+        <rule avp="Acct-Session-Id" required="false" max="1"/>
+        <rule avp="Acct-Multi-Session-Id" required="false" max="1"/>
+        <rule avp="Acct-Interim-Interval" required="false" max="1"/>
+        <rule avp="Accounting-Realtime-Required" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Event-Timestamp" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Accounting-Record-Type" required="true" max="1"/>
+        <rule avp="Accounting-Record-Number" required="true" max="1"/>
+        <rule avp="Acct-Application-Id" required="false" max="1"/>
+        <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Accounting-Sub-Session-Id" required="false" max="1"/>
+        <rule avp="Acct-Session-Id" required="false" max="1"/>
+        <rule avp="Acct-Multi-Session-Id" required="false" max="1"/>
+        <rule avp="Error-Message" required="false" max="1"/>
+        <rule avp="Error-Reporting-Host" required="false" max="1"/>
+        <rule avp="Failed-AVP" required="false" max="1"/>
+        <rule avp="Acct-Interim-Interval" required="false" max="1"/>
+        <rule avp="Accounting-Realtime-Required" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Event-Timestamp" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false"/>
+      </answer>
+    </command>
+
+    <command code="274" short="AS" name="Abort-Session">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="Destination-Host" required="true" max="1"/>
+        <rule avp="Auth-Application-Id" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Error-Message" required="false" max="1"/>
+        <rule avp="Error-Reporting-Host" required="false" max="1"/>
+        <rule avp="Failed-AVP" required="false" max="1"/>
+        <rule avp="Redirect-Host" required="false"/>
+        <rule avp="Redirect-Host-Usage" required="false" max="1"/>
+        <rule avp="Redirect-Max-Cache-Time" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false"/>
+      </answer>
+    </command>
+
+    <command code="275" short="ST" name="Session-Termination">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="Auth-Application-Id" required="true" max="1"/>
+        <rule avp="Termination-Cause" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Destination-Host" required="false" max="1"/>
+        <rule avp="Class" required="false"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Class" required="false"/>
+        <rule avp="Error-Message" required="false" max="1"/>
+        <rule avp="Error-Reporting-Host" required="false" max="1"/>
+        <rule avp="Failed-AVP" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Redirect-Host" required="false"/>
+        <rule avp="Redirect-Host-Usage" required="false" max="1"/>
+        <rule avp="Redirect-Max-Cache-Time" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false"/>
+      </answer>
+    </command>
+
+    <command code="280" short="DW" name="Device-Watchdog">
+      <request>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+      </request>
+      <answer>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Error-Message" required="false" max="1"/>
+        <rule avp="Failed-AVP" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+      </answer>
+    </command>
+
+    <command code="282" short="DP" name="Disconnect-Peer">
+      <request>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Disconnect-Cause" required="false" max="1"/>
+      </request>
+      <answer>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Error-Message" required="false" max="1"/>
+        <rule avp="Failed-AVP" required="false" max="1"/>
+      </answer>
+    </command>
 
     <avp name="Acct-Interim-Interval" code="85" must="M" may="P" must-not="V" may-encrypt="Y">
       <data type="Unsigned32"/>

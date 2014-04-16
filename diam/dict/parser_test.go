@@ -9,16 +9,14 @@ import (
 	"testing"
 )
 
-var testParser *Parser
-
 const testDict = "./testdata/base.xml"
 
 func TestNewParser(t *testing.T) {
-	var err error
-	if testParser, err = NewParser(testDict); err != nil {
+	p, err := NewParser(testDict)
+	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(testParser)
+	t.Log(p)
 }
 
 func TestLoadFile(t *testing.T) {
@@ -38,4 +36,13 @@ func TestLoad(t *testing.T) {
 	if err = p.Load(f); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestDecode(t *testing.T) {
+	p, _ := NewParser(testDict)
+	d, err := p.Decode("DiameterIdentity", []byte("Hello world"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("Decoded AVP bytes: %s", d)
 }

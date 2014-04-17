@@ -25,7 +25,7 @@ type DecoderFunc func([]byte) (DataType, error)
 
 func Decode(datatype DataTypeId, b []byte) (DataType, error) {
 	if f, exists := Decoder[datatype]; !exists {
-		return nil, fmt.Errorf("Unknown data type: %s", datatype)
+		return nil, fmt.Errorf("Unknown data type: %d", datatype)
 	} else {
 		return f(b)
 	}

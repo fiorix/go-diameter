@@ -25,8 +25,8 @@ func TestDecodeTime(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if time.Time(v.(Time)).Unix() != 1377093974 {
-		t.Fatalf("Unexpected value. Want 1377093974, have %d", v)
+	if n := time.Time(v.(Time)).Unix(); n != 1377093974 {
+		t.Fatalf("Unexpected value. Want 1377093974, have %d", n)
 	}
 	t.Log(v)
 }

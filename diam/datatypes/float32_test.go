@@ -24,8 +24,8 @@ func TestDecodeFloat32(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if n.(Float32) != 3.1415 {
-		t.Fatalf("Unexpected value. Want 3.1414, have %0.4f", n)
+	if v := n.(Float32); v != 3.1415 {
+		t.Fatalf("Unexpected value. Want 3.1414, have %0.4f", v)
 	}
 	t.Log(n)
 }

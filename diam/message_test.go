@@ -43,7 +43,7 @@ func TestNewMessage(t *testing.T) {
 		t.Fatalf("Unexpected message.\nWant:\n%s\n%s\nHave:\n%s\n%s",
 			want, hex.Dump(b), m, hex.Dump(a))
 	}
-	t.Log(m)
+	t.Log(len(a), "bytes\n", m)
 	t.Log(hex.Dump(a))
 }
 

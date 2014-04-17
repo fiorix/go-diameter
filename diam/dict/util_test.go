@@ -21,7 +21,7 @@ func TestScanAVP(t *testing.T) {
 }
 
 func TestFindCmd(t *testing.T) {
-	if cmd, err := Default.FindCmd(0, 257); err != nil {
+	if cmd, err := Default.FindCMD(0, 257); err != nil {
 		t.Error(err)
 	} else if cmd.Short != "CE" {
 		t.Fatalf("Unexpected command: %#v", cmd)

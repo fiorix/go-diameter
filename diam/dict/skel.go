@@ -20,7 +20,7 @@ type App struct {
 	Type   string    `xml:"type,attr"` // Application type
 	Name   string    `xml:"name,attr"` // Application name
 	Vendor []*Vendor `xml:"vendor"`    // Support for multiple vendors
-	Cmd    []*Cmd    `xml:"command"`   // Diameter commands
+	CMD    []*CMD    `xml:"command"`   // Diameter commands
 	AVP    []*AVP    `xml:"avp"`       // Each application support multiple AVPs
 }
 
@@ -31,16 +31,16 @@ type Vendor struct {
 	Name string `xml:"name,attr"`
 }
 
-// Cmd defines a diameter command (CE, CC, etc)
-type Cmd struct {
+// CMD defines a diameter command (CE, CC, etc)
+type CMD struct {
 	Code    uint32  `xml:"code,attr"`
 	Name    string  `xml:"name,attr"`
 	Short   string  `xml:"short,attr"`
-	Request CmdRule `xml:"request"`
-	Answer  CmdRule `xml:"answer"`
+	Request CMDRule `xml:"request"`
+	Answer  CMDRule `xml:"answer"`
 }
 
-type CmdRule struct {
+type CMDRule struct {
 	Rule []*Rule `xml:"rule"`
 }
 

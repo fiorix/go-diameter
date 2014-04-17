@@ -37,12 +37,3 @@ func TestLoad(t *testing.T) {
 		t.Fatal(err)
 	}
 }
-
-func TestDecode(t *testing.T) {
-	p, _ := NewParser(testDict)
-	d, err := p.Decode("DiameterIdentity", []byte("Hello world"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("Decoded AVP bytes: %s", d)
-}

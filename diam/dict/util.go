@@ -89,8 +89,8 @@ func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
 	return nil, fmt.Errorf("Unsupported AVP code type %#v", code)
 }
 
-// FindCmd is a helper function that returns a pre-loaded Cmd from the Dict.
-func (p Parser) FindCmd(appid, code uint32) (*Cmd, error) {
+// FindCmd is a helper function that returns a pre-loaded CMD from the Dict.
+func (p Parser) FindCMD(appid, code uint32) (*CMD, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	if cmd, ok := p.command[codeIdx{appid, code}]; ok {
@@ -157,8 +157,8 @@ func (p Parser) String() string {
 				fmt.Fprintf(&b, "    Id=%d Name=%s\n", vendor.Id, vendor.Name)
 			}
 			fmt.Fprintf(&b, "  Commands:\n")
-			for _, cmd := range app.Cmd {
-				printCmd(&b, cmd)
+			for _, cmd := range app.CMD {
+				printCMD(&b, cmd)
 			}
 			fmt.Fprintf(&b, "  AVPs:\n")
 			for _, avp := range app.AVP {
@@ -169,7 +169,7 @@ func (p Parser) String() string {
 	return b.String()
 }
 
-func printCmd(w io.Writer, cmd *Cmd) {
+func printCMD(w io.Writer, cmd *CMD) {
 	fmt.Fprintf(w, "    % -4d %s\n", cmd.Code, cmd.Name)
 	fmt.Fprintf(w, "      %sR:\n", cmd.Short)
 	for _, rule := range cmd.Request.Rule {

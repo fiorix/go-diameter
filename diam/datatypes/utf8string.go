@@ -17,6 +17,15 @@ func (s UTF8String) Serialize() []byte {
 	return OctetString(s).Serialize()
 }
 
+func (s UTF8String) Len() int {
+	return len(s)
+}
+
+func (s UTF8String) Padding() int {
+	l := len(s)
+	return pad4(l) - l
+}
+
 func (s UTF8String) String() string {
 	return fmt.Sprintf("UTF8String{%s}", string(s))
 }

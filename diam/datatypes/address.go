@@ -54,6 +54,15 @@ func (addr Address) Serialize() []byte {
 	return b
 }
 
+func (addr Address) Len() int {
+	return len(addr)
+}
+
+func (addr Address) Padding() int {
+	l := len(addr)
+	return pad4(l) - l
+}
+
 func (addr Address) String() string {
 	return fmt.Sprintf("Address{%s}", net.IP(addr))
 }

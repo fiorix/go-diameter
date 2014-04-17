@@ -17,6 +17,15 @@ func (s DiameterIdentity) Serialize() []byte {
 	return OctetString(s).Serialize()
 }
 
+func (s DiameterIdentity) Len() int {
+	return len(s)
+}
+
+func (s DiameterIdentity) Padding() int {
+	l := len(s)
+	return pad4(l) - l
+}
+
 func (s DiameterIdentity) String() string {
 	return fmt.Sprintf("DiameterIdentity{%s}", string(s))
 }

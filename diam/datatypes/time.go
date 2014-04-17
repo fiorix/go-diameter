@@ -23,6 +23,14 @@ func (t Time) Serialize() []byte {
 	return b
 }
 
+func (t Time) Len() int {
+	return 4
+}
+
+func (t Time) Padding() int {
+	return 0
+}
+
 func (t Time) String() string {
 	return fmt.Sprintf("Time{%s}", time.Time(t))
 }

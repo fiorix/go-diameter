@@ -22,6 +22,14 @@ func (n Unsigned64) Serialize() []byte {
 	return b
 }
 
+func (n Unsigned64) Len() int {
+	return 8
+}
+
+func (n Unsigned64) Padding() int {
+	return 0
+}
+
 func (n Unsigned64) String() string {
 	return fmt.Sprintf("Unsigned64{%d}", n)
 }

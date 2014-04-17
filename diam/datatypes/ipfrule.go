@@ -17,6 +17,15 @@ func (s IPFilterRule) Serialize() []byte {
 	return OctetString(s).Serialize()
 }
 
+func (s IPFilterRule) Len() int {
+	return len(s)
+}
+
+func (s IPFilterRule) Padding() int {
+	l := len(s)
+	return pad4(l) - l
+}
+
 func (s IPFilterRule) String() string {
 	return fmt.Sprintf("IPFilterRule{%s}", string(s))
 }

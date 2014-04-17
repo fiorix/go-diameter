@@ -17,6 +17,14 @@ func (b Grouped) Serialize() []byte {
 	return b
 }
 
+func (b Grouped) Len() int {
+	return len(b)
+}
+
+func (b Grouped) Padding() int {
+	return 0
+}
+
 func (b Grouped) String() string {
 	return fmt.Sprint("Grouped{...}")
 }

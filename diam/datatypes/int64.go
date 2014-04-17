@@ -25,6 +25,13 @@ func (n Integer64) Serialize() []byte {
 	return b.Bytes()
 }
 
+func (n Integer64) Len() int {
+	return 8
+}
+
+func (n Integer64) Padding() int {
+	return 0
+}
 func (n Integer64) String() string {
 	return fmt.Sprintf("Integer64{%d}", n)
 }

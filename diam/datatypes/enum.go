@@ -18,6 +18,14 @@ func (n Enumerated) Serialize() []byte {
 	return Integer32(n).Serialize()
 }
 
+func (n Enumerated) Len() int {
+	return 4
+}
+
+func (n Enumerated) Padding() int {
+	return 0
+}
+
 func (n Enumerated) String() string {
 	return fmt.Sprintf("Enumerated{%d}", n)
 }

@@ -25,6 +25,14 @@ func (n Float64) Serialize() []byte {
 	return b.Bytes()
 }
 
+func (n Float64) Len() int {
+	return 8
+}
+
+func (n Float64) Padding() int {
+	return 0
+}
+
 func (n Float64) String() string {
 	return fmt.Sprintf("Float64{%0.4f}", n)
 }

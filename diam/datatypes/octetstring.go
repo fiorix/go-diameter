@@ -17,6 +17,15 @@ func (s OctetString) Serialize() []byte {
 	return []byte(s)
 }
 
+func (s OctetString) Len() int {
+	return len(s)
+}
+
+func (s OctetString) Padding() int {
+	l := len(s)
+	return pad4(l) - l
+}
+
 func (s OctetString) String() string {
 	return fmt.Sprintf("OctetString{%s}", string(s))
 }

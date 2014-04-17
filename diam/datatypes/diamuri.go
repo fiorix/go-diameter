@@ -17,6 +17,15 @@ func (s DiameterURI) Serialize() []byte {
 	return OctetString(s).Serialize()
 }
 
+func (s DiameterURI) Len() int {
+	return len(s)
+}
+
+func (s DiameterURI) Padding() int {
+	l := len(s)
+	return pad4(l) - l
+}
+
 func (s DiameterURI) String() string {
 	return fmt.Sprintf("DiameterURI{%s}", string(s))
 }

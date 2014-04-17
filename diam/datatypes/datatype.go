@@ -6,6 +6,8 @@ package datatypes
 
 type DataType interface {
 	Serialize() []byte
+	Len() int
+	Padding() int
 	String() string
 }
 

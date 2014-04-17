@@ -7,9 +7,7 @@
 package dict
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 
 	"github.com/fiorix/go-diameter/diam/datatypes"
 )
@@ -146,67 +144,4 @@ func (p Parser) Rule(appid, code uint32, n string) (*Rule, error) {
 	return nil, fmt.Errorf(
 		"Could not find preload Rule for %s for AVP %s (%d)",
 		n, avp.Name, avp.Code)
-}
-
-// String returns the Dict in a human readable form.
-func (p Parser) String() string {
-	var b bytes.Buffer
-	for _, f := range p.file {
-		for _, app := range f.App {
-			fmt.Fprintf(&b, "Application Id: %d\n", app.Id)
-			fmt.Fprintf(&b, "  Vendors:\n")
-			for _, vendor := range app.Vendor {
-				fmt.Fprintf(&b, "    Id=%d Name=%s\n", vendor.Id, vendor.Name)
-			}
-			fmt.Fprintf(&b, "  Commands:\n")
-			for _, cmd := range app.CMD {
-				printCMD(&b, cmd)
-			}
-			fmt.Fprintf(&b, "  AVPs:\n")
-			for _, avp := range app.AVP {
-				printAVP(&b, avp)
-			}
-		}
-	}
-	return b.String()
-}
-
-func printCMD(w io.Writer, cmd *CMD) {
-	fmt.Fprintf(w, "    % -4d %s\n", cmd.Code, cmd.Name)
-	fmt.Fprintf(w, "      %sR:\n", cmd.Short)
-	for _, rule := range cmd.Request.Rule {
-		if rule.Required && rule.Min == 0 {
-			rule.Min = 1
-		}
-		fmt.Fprintf(w, "        % -40s required=%-5t min=%d max=%d\n",
-			rule.AVP, rule.Required, rule.Min, rule.Max)
-	}
-	fmt.Fprintf(w, "      %sA:\n", cmd.Short)
-	for _, rule := range cmd.Answer.Rule {
-		if rule.Required && rule.Min == 0 {
-			rule.Min = 1
-		}
-		fmt.Fprintf(w, "        % -40s required=%-5t min=%d max=%d\n",
-			rule.AVP, rule.Required, rule.Min, rule.Max)
-	}
-}
-
-func printAVP(w io.Writer, avp *AVP) {
-	fmt.Fprintf(w, "   % -4d %s: %s\n",
-		avp.Code, avp.Name, avp.Data.TypeName)
-	// Enumerated
-	if len(avp.Data.Enum) > 0 {
-		fmt.Fprintf(w, "    Items:\n")
-		for _, item := range avp.Data.Enum {
-			fmt.Fprintf(w, "      % -2d %s\n", item.Code, item.Name)
-		}
-	}
-	// Grouped AVPs
-	if len(avp.Data.Rule) > 0 {
-		fmt.Fprintf(w, "    Rules:\n")
-		for _, rule := range avp.Data.Rule {
-			fmt.Fprintf(w, "      % -40s required=%-5t min=%d max=%d\n",
-				rule.AVP, rule.Required, rule.Min, rule.Max)
-		}
-	}
 }

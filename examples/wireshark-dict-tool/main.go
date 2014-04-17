@@ -1,4 +1,4 @@
-// Copyright 2014 Alexandre Fiori
+// Copyright 2013-2014 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ func copy_vendors(src []*Vendor, dst *dict.App) {
 
 func copy_commands(src []*Cmd, dst *dict.App) {
 	for _, cmd := range src {
-		new_cmd := &dict.Cmd{
+		new_cmd := &dict.CMD{
 			Code:  cmd.Code,
 			Name:  cmd.Name,
 			Short: cmd.Name,
@@ -66,11 +66,11 @@ func copy_commands(src []*Cmd, dst *dict.App) {
 		copy_cmd_rules(cmd.Answer.Fixed.Rule, &new_cmd.Answer, false)
 		copy_cmd_rules(cmd.Answer.Required.Rule, &new_cmd.Answer, true)
 		copy_cmd_rules(cmd.Answer.Optional.Rule, &new_cmd.Answer, false)
-		dst.Cmd = append(dst.Cmd, new_cmd)
+		dst.CMD = append(dst.CMD, new_cmd)
 	}
 }
 
-func copy_cmd_rules(src []*Rule, dst *dict.CmdRule, required bool) {
+func copy_cmd_rules(src []*Rule, dst *dict.CMDRule, required bool) {
 	for _, req := range src {
 		dst.Rule = append(dst.Rule, &dict.Rule{
 			AVP:      req.Name,
@@ -88,9 +88,9 @@ func copy_avps(src []*AVP, dst *dict.App) {
 			Code: avp.Code,
 		}
 		if avp.Type.Name == "" && avp.Grouped != nil {
-			new_avp.Data = dict.Data{Type: "Grouped"}
+			new_avp.Data = dict.Data{TypeName: "Grouped"}
 		} else {
-			new_avp.Data = dict.Data{Type: avp.Type.Name}
+			new_avp.Data = dict.Data{TypeName: avp.Type.Name}
 		}
 		switch avp.MayEncrypt {
 		case "yes":

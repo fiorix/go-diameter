@@ -27,5 +27,5 @@ func (s OctetString) Padding() int {
 }
 
 func (s OctetString) String() string {
-	return fmt.Sprintf("OctetString{%s}", string(s))
+	return fmt.Sprintf("OctetString{%s},Padding:%d", string(s), s.Padding())
 }

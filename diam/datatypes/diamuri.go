@@ -27,5 +27,5 @@ func (s DiameterURI) Padding() int {
 }
 
 func (s DiameterURI) String() string {
-	return fmt.Sprintf("DiameterURI{%s}", string(s))
+	return fmt.Sprintf("DiameterURI{%s},Padding:%d", string(s), s.Padding())
 }

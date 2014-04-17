@@ -64,5 +64,5 @@ func (addr Address) Padding() int {
 }
 
 func (addr Address) String() string {
-	return fmt.Sprintf("Address{%s}", net.IP(addr))
+	return fmt.Sprintf("Address{%s},Padding:%d", net.IP(addr), addr.Padding())
 }

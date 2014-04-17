@@ -27,5 +27,5 @@ func (s DiameterIdentity) Padding() int {
 }
 
 func (s DiameterIdentity) String() string {
-	return fmt.Sprintf("DiameterIdentity{%s}", string(s))
+	return fmt.Sprintf("DiameterIdentity{%s},Padding:%d", string(s), s.Padding())
 }

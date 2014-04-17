@@ -27,5 +27,5 @@ func (s IPFilterRule) Padding() int {
 }
 
 func (s IPFilterRule) String() string {
-	return fmt.Sprintf("IPFilterRule{%s}", string(s))
+	return fmt.Sprintf("IPFilterRule{%s},Padding:%d", string(s), s.Padding())
 }

@@ -27,5 +27,5 @@ func (s UTF8String) Padding() int {
 }
 
 func (s UTF8String) String() string {
-	return fmt.Sprintf("UTF8String{%s}", string(s))
+	return fmt.Sprintf("UTF8String{%s},Padding:%d", string(s), s.Padding())
 }

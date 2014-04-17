@@ -85,6 +85,13 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	if err != nil {
 		return err
 	}
+	// Handle grouped AVPs.
+	if a.Data.Type() == datatypes.GroupedType {
+		a.Data, err = DecodeGrouped(a, application, dictionary)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

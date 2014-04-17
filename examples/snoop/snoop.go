@@ -116,12 +116,12 @@ func Pump(src, dst diam.Conn, srcChan, dstChan chan *diam.Message) {
 				return
 			}
 			log.Printf(
-				"Message from %s to %s",
+				"Message from %s to %s\n%s",
 				src.RemoteAddr().String(),
 				dst.RemoteAddr().String(),
+				m,
 			)
-			m.PrettyPrint()
-			if _, err := src.Write(m); err != nil {
+			if _, err := m.WriteTo(src); err != nil {
 				src.Close() // triggers the case below
 			}
 		case <-src.(diam.CloseNotifier).CloseNotify():

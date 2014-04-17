@@ -16,6 +16,9 @@ func TestAddressIPv4(t *testing.T) {
 	if v := address.Serialize(); !bytes.Equal(v, b) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, v)
 	}
+	if address.Padding() != 2 {
+		t.Fatalf("Unexpected padding. Want 2, have %d", address.Padding())
+	}
 	t.Log(address)
 }
 
@@ -28,6 +31,9 @@ func TestDecodeAddressIPv4(t *testing.T) {
 	if ip := net.IP(address.(Address)).String(); ip != "10.0.0.1" {
 		t.Fatalf("Unexpected value. Want 10.0.0.1, have %s", ip)
 	}
+	if address.Padding() != 2 {
+		t.Fatalf("Unexpected padding. Want 2, have %d", address.Padding())
+	}
 	t.Log(address)
 }
 
@@ -39,6 +45,9 @@ func TestAddressIPv6(t *testing.T) {
 	}
 	if v := address.Serialize(); !bytes.Equal(v, b) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, v)
+	}
+	if address.Padding() != 2 {
+		t.Fatalf("Unexpected padding. Want 2, have %d", address.Padding())
 	}
 	t.Log(address)
 }
@@ -55,6 +64,9 @@ func TestDecodeAddressIPv6(t *testing.T) {
 	want := "2001:db8::ff00:42:8329"
 	if ip := net.IP(address.(Address)).String(); ip != want {
 		t.Fatalf("Unexpected value. Want %s, have %s", want, ip)
+	}
+	if address.Padding() != 2 {
+		t.Fatalf("Unexpected padding. Want 2, have %d", address.Padding())
 	}
 	t.Log(address)
 }

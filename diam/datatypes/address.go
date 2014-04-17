@@ -59,7 +59,7 @@ func (addr Address) Len() int {
 }
 
 func (addr Address) Padding() int {
-	l := len(addr)
+	l := len(addr) + 2 // two bytes from the address family
 	return pad4(l) - l
 }
 

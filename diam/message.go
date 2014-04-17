@@ -127,8 +127,9 @@ func (m *Message) AddAVP(a *AVP) {
 	m.Header.MessageLength += uint32(a.Len())
 }
 
-func (m *Message) WriteTo(writer io.Writer) (int, error) {
-	return writer.Write(m.Serialize())
+func (m *Message) WriteTo(writer io.Writer) (int64, error) {
+	n, err := writer.Write(m.Serialize())
+	return int64(n), err
 }
 
 func (m *Message) Serialize() []byte {

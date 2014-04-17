@@ -6,7 +6,6 @@ package diam
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 
 	"github.com/fiorix/go-diameter/diam/datatypes"
@@ -20,13 +19,10 @@ type Grouped struct {
 	AVP []*AVP
 }
 
-func DecodeGrouped(a *AVP, application uint32, dictionary *dict.Parser) (*Grouped, error) {
-	if a.Data.Type() != datatypes.GroupedType {
-		return nil, errors.New("Invalid AVP is not Grouped")
-	}
-	g := &Grouped{}
-	b := []byte(a.Data.(datatypes.Grouped))
-	for n := 0; n < cap(b); {
+func DecodeGrouped(data datatypes.Grouped, application uint32, dictionary *dict.Parser) (*Grouped, error) {
+	g := new(Grouped)
+	b := []byte(data)
+	for n := 0; n < len(b); {
 		avp, err := decodeAVP(b[n:], application, dictionary)
 		if err != nil {
 			return nil, err

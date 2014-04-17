@@ -49,6 +49,24 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	return decodeAVPs(m, pbytes)
 }
 
+func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {
+	var avp *AVP
+	var err error
+	for n := 0; n < cap(pbytes); {
+		avp, err = decodeAVP(
+			pbytes[n:],
+			m.Header.ApplicationId,
+			m.Dictionary,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to decode AVP: %s", err)
+		}
+		m.AVP = append(m.AVP, avp)
+		n += avp.Len()
+	}
+	return m, nil
+}
+
 // NewMessage creates and initializes Message.
 func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *dict.Parser) *Message {
 	if dictionary == nil {
@@ -136,25 +154,6 @@ func (m *Message) Len() int {
 	return l
 }
 
-func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {
-	var avp *AVP
-	var err error
-	for n := 0; n < cap(pbytes); {
-		avp, err = decodeAVP(
-			pbytes[n:],
-			m.Header.ApplicationId,
-			m.Dictionary,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to decode AVP: %s", err)
-		}
-		m.AVP = append(m.AVP, avp)
-		n += avp.Length + avp.Data.Padding()
-		// TODO: Handle grouped AVPs.
-	}
-	return m, nil
-}
-
 // FindAVP searches the Message for a specific AVP.
 // @code can be either the AVP code (int, uint32) or name (string).
 //
@@ -217,10 +216,34 @@ func (m *Message) String() string {
 			m.Header.ApplicationId,
 			avp.Code,
 		); err != nil {
-			fmt.Fprintf(&b, "\tUnknown %s\n", err)
+			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", avp, err)
+		} else if avp.Data.Type() == GroupedType {
+			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, avp))
 		} else {
 			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, avp)
 		}
 	}
+	return b.String()
+}
+
+func printGrouped(prefix string, m *Message, avp *AVP) string {
+	var b bytes.Buffer
+	fmt.Fprintf(&b, "{Code:%d,Flags:0x%x,Length:%d,VendorId:%d,Value:Grouped{\n",
+		avp.Code,
+		avp.Flags,
+		avp.Len(),
+		avp.VendorId,
+	)
+	for _, a := range avp.Data.(*Grouped).AVP {
+		if dictAVP, err := m.Dictionary.FindAVP(
+			m.Header.ApplicationId,
+			a.Code,
+		); err != nil {
+			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, avp, err)
+		} else {
+			fmt.Fprintf(&b, "%s\t%s %s,\n", prefix, dictAVP.Name, a)
+		}
+	}
+	fmt.Fprintf(&b, "%s}}", prefix)
 	return b.String()
 }

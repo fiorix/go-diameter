@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/datatypes"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -31,10 +32,18 @@ func TestGroupedAVP(t *testing.T) {
 	if a.Data.Type() != GroupedType {
 		t.Fatal("AVP is not grouped")
 	}
-	t.Log(a)
-	s, err := a.Serialize()
-	if !bytes.Equal(s, testGroupedAVP) {
+	b, err := a.Serialize()
+	if !bytes.Equal(b, testGroupedAVP) {
 		t.Fatalf("Unexpected value.\nWant:\n%s\nHave:\n%s",
-			hex.Dump(testGroupedAVP), hex.Dump(s))
+			hex.Dump(testGroupedAVP), hex.Dump(b))
 	}
+	t.Log(a)
+}
+
+func TestDecodeMessageWithGroupedAVP(t *testing.T) {
+	m := NewRequest(257, 0, dict.Default)
+	m.NewAVP(264, 0x40, 0, datatypes.DiameterIdentity("client"))
+	a, _ := decodeAVP(testGroupedAVP, 0, dict.Default)
+	m.AddAVP(a)
+	t.Log(m)
 }

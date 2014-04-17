@@ -64,19 +64,19 @@ func (sr *liveSwitchReader) Read(p []byte) (n int, err error) {
 }
 
 // conn represents the server side of a diameter connection.
-type sConn struct {
+type conn struct {
 	server   *Server              // the Server on which the connection arrived
 	rwc      net.Conn             // i/o connection
 	sr       liveSwitchReader     // reads from rwc
-	lr       *io.LimitedReader    // io.LimitedReader(sr)
-	buf      *bufio.ReadWriter    // buffered(lr, rwc) reading from bufio->limitReader->sr->rwc
+	buf      *bufio.ReadWriter    // buffered(sr, rwc)
 	tlsState *tls.ConnectionState // or nil when not using TLS
 
 	mu           sync.Mutex // guards the following
 	closeNotifyc chan bool
+	clientGone   bool
 }
 
-func (c *sConn) closeNotify() <-chan bool {
+func (c *conn) closeNotify() <-chan bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.closeNotifyc == nil {
@@ -92,72 +92,38 @@ func (c *sConn) closeNotify() <-chan bool {
 				err = io.EOF
 			}
 			pw.CloseWithError(err)
-			c.closeNotifyc <- true
+			c.noteClientGone()
 		}()
 	}
 	return c.closeNotifyc
 }
 
-// A response represents the server side of a diameter response.
-type response struct {
-	sConn *sConn
+func (c *conn) noteClientGone() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.closeNotifyc != nil && !c.clientGone {
+		c.closeNotifyc <- true
+	}
+	c.clientGone = true
 }
 
-// noLimit is an effective infinite upper bound for io.LimitedReader
-const noLimit int64 = (1 << 63) - 1
+// A response represents the server side of a diameter response.
+type response struct {
+	conn *conn
+}
 
 // Create new connection from rwc.
-func (srv *Server) newConn(rwc net.Conn) (c *sConn, err error) {
-	c = new(sConn)
+func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
+	c = new(conn)
 	c.server = srv
 	c.rwc = rwc
-	c.sr = liveSwitchReader{r: c.rwc}
-	c.lr = io.LimitReader(&c.sr, noLimit).(*io.LimitedReader)
-	br := newBufioReader(c.lr)
-	bw := newBufioWriterSize(c.rwc, 4<<10)
-	c.buf = bufio.NewReadWriter(br, bw)
+	c.sr = liveSwitchReader{r: rwc}
+	c.buf = bufio.NewReadWriter(bufio.NewReader(&c.sr), bufio.NewWriter(rwc))
 	return c, nil
 }
 
-// TODO: use a sync.Cache instead
-var (
-	bufioReaderCache   = make(chan *bufio.Reader, 4)
-	bufioWriterCache2k = make(chan *bufio.Writer, 4)
-	bufioWriterCache4k = make(chan *bufio.Writer, 4)
-)
-
-func newBufioReader(r io.Reader) *bufio.Reader {
-	select {
-	case p := <-bufioReaderCache:
-		p.Reset(r)
-		return p
-	default:
-		return bufio.NewReader(r)
-	}
-}
-
-func bufioWriterCache(size int) chan *bufio.Writer {
-	switch size {
-	case 2 << 10:
-		return bufioWriterCache2k
-	case 4 << 10:
-		return bufioWriterCache4k
-	}
-	return nil
-}
-
-func newBufioWriterSize(w io.Writer, size int) *bufio.Writer {
-	select {
-	case p := <-bufioWriterCache(size):
-		p.Reset(w)
-		return p
-	default:
-		return bufio.NewWriterSize(w, size)
-	}
-}
-
 // Read next message from connection.
-func (c *sConn) readMessage() (*Message, *response, error) {
+func (c *conn) readMessage() (*Message, *response, error) {
 	dp := c.server.Dict
 	if dp == nil {
 		dp = dict.Default
@@ -165,46 +131,47 @@ func (c *sConn) readMessage() (*Message, *response, error) {
 	if c.server.ReadTimeout > 0 {
 		c.rwc.SetReadDeadline(time.Now().Add(c.server.ReadTimeout))
 	}
-	c.lr.N = int64(HeaderLength) + 4096 /* bufio slop */
 	m, err := ReadMessage(c.buf.Reader, dp)
 	if err != nil {
 		return nil, nil, err
 	}
-	c.lr.N = noLimit
-	return m, &response{sConn: c}, nil
+	return m, &response{conn: c}, nil
 }
 
 // Write writes the message m to the connection.
 func (w *response) Write(b []byte) (int, error) {
-	if w.sConn.server.WriteTimeout > 0 {
-		w.sConn.rwc.SetWriteDeadline(time.Now().Add(w.sConn.server.WriteTimeout))
+	if w.conn.server.WriteTimeout > 0 {
+		w.conn.rwc.SetWriteDeadline(time.Now().Add(w.conn.server.WriteTimeout))
 	}
-	defer w.sConn.buf.Writer.Flush()
-	return w.sConn.buf.Writer.Write(b)
+	n, err := w.conn.buf.Writer.Write(b)
+	if err != nil {
+		return 0, err
+	}
+	return n, w.conn.buf.Writer.Flush()
 }
 
 // Close closes the connection.
 func (w *response) Close() {
-	w.sConn.rwc.Close()
+	w.conn.rwc.Close()
 }
 
 // LocalAddr returns the local address of the connection.
 func (w *response) LocalAddr() net.Addr {
-	return w.sConn.rwc.LocalAddr()
+	return w.conn.rwc.LocalAddr()
 }
 
 // RemoteAddr returns the peer address of the connection.
 func (w *response) RemoteAddr() net.Addr {
-	return w.sConn.rwc.RemoteAddr()
+	return w.conn.rwc.RemoteAddr()
 }
 
 // TLS returns the TLS connection state, or nil.
 func (w *response) TLS() *tls.ConnectionState {
-	return w.sConn.tlsState
+	return w.conn.tlsState
 }
 
 // Serve a new connection.
-func (c *sConn) serve() {
+func (c *conn) serve() {
 	defer func() {
 		if err := recover(); err != nil {
 			buf := make([]byte, 4096)
@@ -244,7 +211,7 @@ func (c *sConn) serve() {
 }
 
 func (w *response) CloseNotify() <-chan bool {
-	return w.sConn.closeNotify()
+	return w.conn.closeNotify()
 }
 
 // The HandlerFunc type is an adapter to allow the use of

@@ -55,7 +55,11 @@ func (addr Address) Serialize() []byte {
 }
 
 func (addr Address) Len() int {
-	return len(addr)
+	if ip4 := net.IP(addr).To4(); ip4 != nil {
+		return len(ip4)
+	} else {
+		return len(addr)
+	}
 }
 
 func (addr Address) Padding() int {

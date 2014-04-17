@@ -96,6 +96,14 @@ func (a *AVP) Serialize() []byte {
 	return b
 }
 
+func (a *AVP) Len() int {
+	if a.Flags&0x80 > 0 {
+		return 12 + a.Data.Len() + a.Data.Padding()
+	} else {
+		return 8 + a.Data.Len() + a.Data.Padding()
+	}
+}
+
 func (a *AVP) String() string {
 	return fmt.Sprintf("{Code:%d,Flags:0x%x,Length:%d,VendorId:%d,Value:%s}",
 		a.Code,

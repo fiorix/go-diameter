@@ -74,6 +74,11 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dicti
 	}
 }
 
+// NewRequest is an alias to NewMessage.
+func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
+	return NewMessage(cmd, 0x80, appid, 0, 0, dictionary)
+}
+
 // NewAVP creates and initializes a new AVP and adds it to the Message.
 // @code can be int, uint32 or string (e.g. 268 or Result-Code)
 func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data datatypes.DataType) (*AVP, error) {
@@ -128,7 +133,7 @@ func (m *Message) Len() int {
 	for _, avp := range m.AVP {
 		l += avp.Len()
 	}
-	return HeaderLength + l
+	return l
 }
 
 func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {

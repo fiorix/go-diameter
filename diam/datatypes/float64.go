@@ -5,28 +5,26 @@
 package datatypes
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math"
 )
 
 // Float64 Diameter Type
 type Float64 float64
 
 func DecodeFloat64(b []byte) (DataType, error) {
-	var n float64
-	err := binary.Read(bytes.NewReader(b), binary.BigEndian, &n)
-	return Float64(n), err
+	return Float64(math.Float64frombits(binary.BigEndian.Uint64(b))), nil
 }
 
 func (n Float64) Serialize() []byte {
-	var b bytes.Buffer
-	binary.Write(&b, binary.BigEndian, n)
-	return b.Bytes()
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, math.Float64bits(float64(n)))
+	return b
 }
 
 func (n Float64) Len() int {
-	return 8
+	return 4
 }
 
 func (n Float64) Padding() int {

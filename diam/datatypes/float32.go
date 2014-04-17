@@ -5,24 +5,22 @@
 package datatypes
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math"
 )
 
 // Float32 Diameter Type
 type Float32 float32
 
 func DecodeFloat32(b []byte) (DataType, error) {
-	var n float32
-	err := binary.Read(bytes.NewReader(b), binary.BigEndian, &n)
-	return Float32(n), err
+	return Float32(math.Float32frombits(binary.BigEndian.Uint32(b))), nil
 }
 
 func (n Float32) Serialize() []byte {
-	var b bytes.Buffer
-	binary.Write(&b, binary.BigEndian, n)
-	return b.Bytes()
+	b := make([]byte, 4)
+	binary.BigEndian.PutUint32(b, math.Float32bits(float32(n)))
+	return b
 }
 
 func (n Float32) Len() int {

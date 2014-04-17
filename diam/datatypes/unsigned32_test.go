@@ -6,14 +6,15 @@ package datatypes
 
 import (
 	"bytes"
+	"math"
 	"testing"
 )
 
 type zz struct{ uint32 }
 
 func TestUnsigned32(t *testing.T) {
-	n := Unsigned32(0xffc0ffee)
-	b := []byte{0xff, 0xc0, 0xff, 0xee}
+	n := Unsigned32(math.MaxUint32)
+	b := []byte{0xff, 0xff, 0xff, 0xff}
 	if x := n.Serialize(); !bytes.Equal(b, x) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, x)
 	}
@@ -21,12 +22,12 @@ func TestUnsigned32(t *testing.T) {
 }
 
 func TestDecodeUnsigned32(t *testing.T) {
-	b := []byte{0xff, 0xc0, 0xff, 0xee}
+	b := []byte{0xff, 0xff, 0xff, 0xff}
 	n, err := DecodeUnsigned32(b)
 	if err != nil {
 		t.Fatal(err)
 	}
-	z := uint32(0xffc0ffee)
+	z := uint32(math.MaxUint32)
 	if uint32(n.(Unsigned32)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
@@ -34,7 +35,7 @@ func TestDecodeUnsigned32(t *testing.T) {
 }
 
 func BenchmarkUnsigned32(b *testing.B) {
-	v := Unsigned32(0xffc0ffee)
+	v := Unsigned32(math.MaxUint32)
 	for n := 0; n < b.N; n++ {
 		v.Serialize()
 	}

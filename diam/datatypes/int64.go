@@ -5,7 +5,6 @@
 package datatypes
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 )
@@ -14,19 +13,17 @@ import (
 type Integer64 int64
 
 func DecodeInteger64(b []byte) (DataType, error) {
-	var n int64
-	err := binary.Read(bytes.NewReader(b), binary.BigEndian, &n)
-	return Integer64(n), err
+	return Integer64(binary.BigEndian.Uint64(b)), nil
 }
 
 func (n Integer64) Serialize() []byte {
-	var b bytes.Buffer
-	binary.Write(&b, binary.BigEndian, n)
-	return b.Bytes()
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(n))
+	return b
 }
 
 func (n Integer64) Len() int {
-	return 8
+	return 4
 }
 
 func (n Integer64) Padding() int {

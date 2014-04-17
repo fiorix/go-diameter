@@ -5,7 +5,6 @@
 package datatypes
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 )
@@ -14,15 +13,13 @@ import (
 type Integer32 int32
 
 func DecodeInteger32(b []byte) (DataType, error) {
-	var n int32
-	err := binary.Read(bytes.NewReader(b), binary.BigEndian, &n)
-	return Integer32(n), err
+	return Integer32(binary.BigEndian.Uint32(b)), nil
 }
 
 func (n Integer32) Serialize() []byte {
-	var b bytes.Buffer
-	binary.Write(&b, binary.BigEndian, n)
-	return b.Bytes()
+	b := make([]byte, 4)
+	binary.BigEndian.PutUint32(b, uint32(n))
+	return b
 }
 
 func (n Integer32) Len() int {

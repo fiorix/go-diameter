@@ -6,12 +6,13 @@ package datatypes
 
 import (
 	"bytes"
+	"math"
 	"testing"
 )
 
 func TestUnsigned64(t *testing.T) {
-	n := Unsigned64(0xffffffffffc0ffee)
-	b := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xc0, 0xff, 0xee}
+	n := Unsigned64(math.MaxUint64)
+	b := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 	if x := n.Serialize(); !bytes.Equal(b, x) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, x)
 	}
@@ -19,12 +20,12 @@ func TestUnsigned64(t *testing.T) {
 }
 
 func TestDecodeUnsigned64(t *testing.T) {
-	b := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xc0, 0xff, 0xee}
+	b := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 	n, err := DecodeUnsigned64(b)
 	if err != nil {
 		t.Fatal(err)
 	}
-	z := uint64(0xffffffffffc0ffee)
+	z := uint64(math.MaxUint64)
 	if uint64(n.(Unsigned64)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
@@ -32,14 +33,14 @@ func TestDecodeUnsigned64(t *testing.T) {
 }
 
 func BenchmarkUnsigned64(b *testing.B) {
-	v := Unsigned64(0xffffffffffc0ffee)
+	v := Unsigned64(math.MaxUint64)
 	for n := 0; n < b.N; n++ {
 		v.Serialize()
 	}
 }
 
 func BenchmarkDecodeUnsigned64(b *testing.B) {
-	v := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xc0, 0xff, 0xee}
+	v := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 	for n := 0; n < b.N; n++ {
 		DecodeUnsigned64(v)
 	}

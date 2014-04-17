@@ -52,10 +52,7 @@ func TestEncodeHeader(t *testing.T) {
 		HopByHopId:    0x2c0b6149,
 		EndToEndId:    0xdbbfd385,
 	}
-	b, err := hdr.Serialize()
-	if err != nil {
-		t.Fatal(err)
-	}
+	b := hdr.Serialize()
 	if !bytes.Equal(testHeader, b) {
 		t.Fatalf("Unexpected packet.\nWant:\n%s\nHave:\n%s",
 			hex.Dump(testHeader), hex.Dump(b))

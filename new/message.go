@@ -8,10 +8,18 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math/rand"
+	"time"
 
+	"github.com/fiorix/go-diameter/diam/datatypes"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
+func init() {
+	rand.Seed(time.Now().Unix())
+}
+
+// Diameter message.
 type Message struct {
 	Header *Header
 	AVP    []*AVP
@@ -19,6 +27,8 @@ type Message struct {
 	Dictionary *dict.Parser // Used to encode and decode AVPs.
 }
 
+// ReadMessage returns a Message. It uses the dictionary to parse the
+// binary stream from the reader.
 func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	var err error
 	hbytes := make([]byte, HeaderLength)
@@ -36,6 +46,71 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	}
 	m.Dictionary = dictionary
 	return decodeAVPs(m, pbytes)
+}
+
+// NewMessage creates and initializes Message.
+func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *dict.Parser) *Message {
+	if dictionary == nil {
+		dictionary = dict.Default
+	}
+	if hopbyhop == 0 {
+		hopbyhop = rand.Uint32()
+	}
+	if endtoend == 0 {
+		endtoend = rand.Uint32()
+	}
+	return &Message{
+		Header: &Header{
+			Version:       1,
+			MessageLength: HeaderLength,
+			CommandFlags:  flags,
+			CommandCode:   cmd,
+			ApplicationId: appid,
+			HopByHopId:    hopbyhop,
+			EndToEndId:    endtoend,
+		},
+		Dictionary: dictionary,
+	}
+}
+
+// NewAVP creates and initializes a new AVP and adds it to the Message.
+func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, data datatypes.DataType) {
+	a := NewAVP(code, flags, vendor, data)
+	m.AVP = append(m.AVP, a)
+	m.Header.MessageLength += uint32(a.Len())
+}
+
+// AddAVP adds the AVP to the Message.
+func (m *Message) AddAVP(a *AVP) {
+	m.AVP = append(m.AVP, a)
+	m.Header.MessageLength += uint32(a.Len())
+}
+
+func (m *Message) Write(writer io.Writer) (int, error) {
+	return writer.Write(m.Serialize())
+}
+
+func (m *Message) Serialize() []byte {
+	b := make([]byte, m.Len())
+	m.SerializeTo(b)
+	return b
+}
+
+func (m *Message) SerializeTo(b []byte) {
+	m.Header.SerializeTo(b[0:HeaderLength])
+	offset := HeaderLength
+	for _, avp := range m.AVP {
+		avp.SerializeTo(b[offset:])
+		offset += avp.Len()
+	}
+}
+
+func (m *Message) Len() int {
+	l := HeaderLength
+	for _, avp := range m.AVP {
+		l += avp.Len()
+	}
+	return HeaderLength + l
 }
 
 func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {

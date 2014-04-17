@@ -47,24 +47,28 @@ func (h *Header) DecodeFromBytes(data []byte) error {
 	return nil
 }
 
-func (h *Header) Serialize() ([]byte, error) {
-	b := make([]byte, 20)
+func (h *Header) Serialize() []byte {
+	b := make([]byte, HeaderLength)
+	h.SerializeTo(b)
+	return b
+}
+
+func (h *Header) SerializeTo(b []byte) {
 	b[0] = h.Version
-	copy(b[1:], uint32to24(h.MessageLength))
+	copy(b[1:4], uint32to24(h.MessageLength))
 	b[4] = h.CommandFlags
-	copy(b[5:], uint32to24(h.CommandCode))
-	binary.BigEndian.PutUint32(b[8:], h.ApplicationId)
-	binary.BigEndian.PutUint32(b[12:], h.HopByHopId)
-	binary.BigEndian.PutUint32(b[16:], h.EndToEndId)
-	return b, nil
+	copy(b[5:8], uint32to24(h.CommandCode))
+	binary.BigEndian.PutUint32(b[8:12], h.ApplicationId)
+	binary.BigEndian.PutUint32(b[12:16], h.HopByHopId)
+	binary.BigEndian.PutUint32(b[16:20], h.EndToEndId)
 }
 
 func (h *Header) String() string {
-	return fmt.Sprintf("{Version:0x%x,Length:%d,Flags:0x%x,Code:%d,ApplicationId:%d,HopByHopId:0x%x,EndToEndId:0x%x}",
+	return fmt.Sprintf("{Code:%d,Flags:0x%x,Version:0x%x,Length:%d,ApplicationId:%d,HopByHopId:0x%x,EndToEndId:0x%x}",
+		h.CommandCode,
+		h.CommandFlags,
 		h.Version,
 		h.MessageLength,
-		h.CommandFlags,
-		h.CommandCode,
 		h.ApplicationId,
 		h.HopByHopId,
 		h.EndToEndId,

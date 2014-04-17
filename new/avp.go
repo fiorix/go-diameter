@@ -6,6 +6,7 @@ package diam
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"github.com/fiorix/go-diameter/diam/datatypes"
@@ -19,6 +20,18 @@ type AVP struct {
 	Length   int                // Length of this AVP's payload
 	VendorId uint32             // VendorId of this AVP
 	Data     datatypes.DataType // Data of this AVP (payload)
+}
+
+// NewAVP creates and initializes a new AVP.
+func NewAVP(code uint32, flags uint8, vendor uint32, data datatypes.DataType) *AVP {
+	a := &AVP{
+		Code:     code,
+		Flags:    flags,
+		VendorId: vendor,
+		Data:     data,
+	}
+	a.Length = a.headerLen()
+	return a
 }
 
 func decodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
@@ -75,9 +88,12 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	return nil
 }
 
-// Serialize returns the byte array that represents this AVP.
+// Serialize returns the byte sequence that represents this AVP.
 // It requires at least the Code, Flags and Data fields set.
-func (a *AVP) Serialize() []byte {
+func (a *AVP) Serialize() ([]byte, error) {
+	if a.Data == nil {
+		return nil, errors.New("Failed to serialize AVP: Data is nil")
+	}
 	payload := a.Data.Serialize()
 	payloadLen := len(payload)
 	var b []byte
@@ -93,14 +109,37 @@ func (a *AVP) Serialize() []byte {
 	}
 	binary.BigEndian.PutUint32(b[0:4], a.Code)
 	b[4] = a.Flags
-	return b
+	return b, nil
+}
+
+func (a *AVP) SerializeTo(b []byte) error {
+	if a.Data == nil {
+		return errors.New("Failed to serialize AVP: Data is nil")
+	}
+	payload := a.Data.Serialize()
+	payloadLen := len(payload)
+	if a.VendorId > 0 {
+		copy(b[5:8], uint32to24(uint32(12+payloadLen)))
+		binary.BigEndian.PutUint32(b[8:12], a.VendorId)
+		copy(b[12:], payload)
+	} else {
+		copy(b[5:8], uint32to24(uint32(8+payloadLen)))
+		copy(b[8:], payload)
+	}
+	binary.BigEndian.PutUint32(b[0:4], a.Code)
+	b[4] = a.Flags
+	return nil
 }
 
 func (a *AVP) Len() int {
+	return a.headerLen() + a.Data.Padding()
+}
+
+func (a *AVP) headerLen() int {
 	if a.Flags&0x80 > 0 {
-		return 12 + a.Data.Len() + a.Data.Padding()
+		return 12 + a.Data.Len()
 	} else {
-		return 8 + a.Data.Len() + a.Data.Padding()
+		return 8 + a.Data.Len()
 	}
 }
 
@@ -108,7 +147,7 @@ func (a *AVP) String() string {
 	return fmt.Sprintf("{Code:%d,Flags:0x%x,Length:%d,VendorId:%d,Value:%s}",
 		a.Code,
 		a.Flags,
-		a.Length,
+		a.Len(),
 		a.VendorId,
 		a.Data,
 	)

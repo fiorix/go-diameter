@@ -52,6 +52,17 @@ var testAVP = [][]byte{
 	},
 }
 
+func TestNewAVP(t *testing.T) {
+	a := NewAVP(264, 0x40, 0, datatypes.DiameterIdentity("client"))
+	if a.Length != 14 { // Length in the AVP header
+		t.Fatalf("Unexpected length. Want 14, have %d", a.Length)
+	}
+	if a.Len() != 16 { // With padding
+		t.Fatalf("Unexpected length (with padding). Want 16, have %d\n", a.Len())
+	}
+	t.Log(a)
+}
+
 func TestDecodeAVP(t *testing.T) {
 	hdr := &Header{
 		Version:       1,
@@ -85,10 +96,26 @@ func TestEncodeAVP(t *testing.T) {
 		Flags: 0x40,
 		Data:  datatypes.DiameterIdentity("client"),
 	}
-	b := avp.Serialize()
+	b, err := avp.Serialize()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !bytes.Equal(b, testAVP[0]) {
 		t.Fatalf("AVPs do not match.\nWant:\n%s\nHave:\n%s",
 			hex.Dump(testAVP[0]), hex.Dump(b))
 	}
 	t.Log(hex.Dump(b))
+}
+
+func TestEncodeAVPnoData(t *testing.T) {
+	avp := &AVP{
+		Code:  264,
+		Flags: 0x40,
+	}
+	_, err := avp.Serialize()
+	if err != nil {
+		t.Log("Expected:", err)
+	} else {
+		t.Fatal("Unexpected serialization succeeded")
+	}
 }

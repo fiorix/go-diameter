@@ -1,4 +1,4 @@
-// Copyright 2013 Alexandre Fiori
+// Copyright 2013-2014 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@ package diam
 import (
 	"bufio"
 	"crypto/tls"
-	"errors"
 	"io"
 	"log"
 	"net"
@@ -41,9 +40,9 @@ type CloseNotifier interface {
 	CloseNotify() <-chan bool
 }
 
-// A Conn interface is used by a handler to send diameter messages.
+// Conn interface is used by a handler to send diameter messages.
 type Conn interface {
-	Write(*Message) (int, error) // Writes a msg to the connection
+	Write(b []byte) (int, error) // Writes a msg to the connection
 	Close()                      // Close the connection
 	LocalAddr() net.Addr         // Local IP
 	RemoteAddr() net.Addr        // Remote IP
@@ -64,25 +63,24 @@ func (sr *liveSwitchReader) Read(p []byte) (n int, err error) {
 	return r.Read(p)
 }
 
-// A conn represents the server side of a diameter connection.
-type conn struct {
+// conn represents the server side of a diameter connection.
+type sConn struct {
 	server   *Server              // the Server on which the connection arrived
 	rwc      net.Conn             // i/o connection
 	sr       liveSwitchReader     // reads from rwc
-	buf      *bufio.ReadWriter    // reads from sr, writes to rwc
+	lr       *io.LimitedReader    // io.LimitedReader(sr)
+	buf      *bufio.ReadWriter    // buffered(lr, rwc) reading from bufio->limitReader->sr->rwc
 	tlsState *tls.ConnectionState // or nil when not using TLS
 
 	mu           sync.Mutex // guards the following
-	clientGone   bool       // if client has disconnected mid-request
-	closeNotifyc chan bool  // made lazily
+	closeNotifyc chan bool
 }
 
-func (c *conn) closeNotify() <-chan bool {
+func (c *sConn) closeNotify() <-chan bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.closeNotifyc == nil {
 		c.closeNotifyc = make(chan bool, 1)
-		// Took me a while to figure all this out. 8D
 		pr, pw := io.Pipe()
 		readSource := c.sr.r
 		c.sr.Lock()
@@ -94,106 +92,129 @@ func (c *conn) closeNotify() <-chan bool {
 				err = io.EOF
 			}
 			pw.CloseWithError(err)
-			c.noteClientGone()
+			c.closeNotifyc <- true
 		}()
 	}
 	return c.closeNotifyc
 }
 
-func (c *conn) noteClientGone() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.closeNotifyc != nil && !c.clientGone {
-		c.closeNotifyc <- true
-	}
-	c.clientGone = true
-}
-
 // A response represents the server side of a diameter response.
 type response struct {
-	conn *conn
+	sConn *sConn
 }
 
+// noLimit is an effective infinite upper bound for io.LimitedReader
+const noLimit int64 = (1 << 63) - 1
+
 // Create new connection from rwc.
-func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
-	c = new(conn)
+func (srv *Server) newConn(rwc net.Conn) (c *sConn, err error) {
+	c = new(sConn)
 	c.server = srv
 	c.rwc = rwc
 	c.sr = liveSwitchReader{r: c.rwc}
-	c.buf = bufio.NewReadWriter(
-		bufio.NewReader(&c.sr),
-		bufio.NewWriter(rwc),
-	)
+	c.lr = io.LimitReader(&c.sr, noLimit).(*io.LimitedReader)
+	br := newBufioReader(c.lr)
+	bw := newBufioWriterSize(c.rwc, 4<<10)
+	c.buf = bufio.NewReadWriter(br, bw)
 	return c, nil
 }
 
+// TODO: use a sync.Cache instead
+var (
+	bufioReaderCache   = make(chan *bufio.Reader, 4)
+	bufioWriterCache2k = make(chan *bufio.Writer, 4)
+	bufioWriterCache4k = make(chan *bufio.Writer, 4)
+)
+
+func newBufioReader(r io.Reader) *bufio.Reader {
+	select {
+	case p := <-bufioReaderCache:
+		p.Reset(r)
+		return p
+	default:
+		return bufio.NewReader(r)
+	}
+}
+
+func bufioWriterCache(size int) chan *bufio.Writer {
+	switch size {
+	case 2 << 10:
+		return bufioWriterCache2k
+	case 4 << 10:
+		return bufioWriterCache4k
+	}
+	return nil
+}
+
+func newBufioWriterSize(w io.Writer, size int) *bufio.Writer {
+	select {
+	case p := <-bufioWriterCache(size):
+		p.Reset(w)
+		return p
+	default:
+		return bufio.NewWriterSize(w, size)
+	}
+}
+
 // Read next message from connection.
-func (c *conn) readMessage() (*Message, *response, error) {
-	if d := c.server.ReadTimeout; d != 0 {
-		c.rwc.SetReadDeadline(time.Now().Add(d))
-	}
-	if d := c.server.WriteTimeout; d != 0 {
-		defer func() {
-			c.rwc.SetWriteDeadline(time.Now().Add(d))
-		}()
-	}
+func (c *sConn) readMessage() (*Message, *response, error) {
 	dp := c.server.Dict
 	if dp == nil {
 		dp = dict.Default
 	}
-	m, err := ReadMessage(c.buf, dp)
+	if c.server.ReadTimeout > 0 {
+		c.rwc.SetReadDeadline(time.Now().Add(c.server.ReadTimeout))
+	}
+	c.lr.N = int64(HeaderLength) + 4096 /* bufio slop */
+	m, err := ReadMessage(c.buf.Reader, dp)
 	if err != nil {
 		return nil, nil, err
 	}
-	return m, &response{conn: c}, nil
+	c.lr.N = noLimit
+	return m, &response{sConn: c}, nil
 }
 
 // Write writes the message m to the connection.
-func (w *response) Write(m *Message) (int, error) {
-	n, err := w.conn.buf.Write(m.Pack())
-	w.conn.buf.Flush()
-	return n, err
+func (w *response) Write(b []byte) (int, error) {
+	if w.sConn.server.WriteTimeout > 0 {
+		w.sConn.rwc.SetWriteDeadline(time.Now().Add(w.sConn.server.WriteTimeout))
+	}
+	defer w.sConn.buf.Writer.Flush()
+	return w.sConn.buf.Writer.Write(b)
 }
 
 // Close closes the connection.
 func (w *response) Close() {
-	w.conn.rwc.Close()
+	w.sConn.rwc.Close()
 }
 
 // LocalAddr returns the local address of the connection.
 func (w *response) LocalAddr() net.Addr {
-	return w.conn.rwc.LocalAddr()
+	return w.sConn.rwc.LocalAddr()
 }
 
 // RemoteAddr returns the peer address of the connection.
 func (w *response) RemoteAddr() net.Addr {
-	return w.conn.rwc.RemoteAddr()
+	return w.sConn.rwc.RemoteAddr()
 }
 
 // TLS returns the TLS connection state, or nil.
 func (w *response) TLS() *tls.ConnectionState {
-	return w.conn.tlsState
+	return w.sConn.tlsState
 }
 
 // Serve a new connection.
-func (c *conn) serve() {
+func (c *sConn) serve() {
 	defer func() {
 		if err := recover(); err != nil {
-			const size = 4096
-			buf := make([]byte, size)
+			buf := make([]byte, 4096)
 			buf = buf[:runtime.Stack(buf, false)]
-			log.Printf("diam: panic serving %v: %v\n%s",
+			log.Printf("DIAM: panic serving %v: %v\n%s",
 				c.rwc.RemoteAddr().String(), err, buf)
 		}
 		c.rwc.Close()
 	}()
 	if tlsConn, ok := c.rwc.(*tls.Conn); ok {
-		if d := c.server.ReadTimeout; d != 0 {
-			c.rwc.SetReadDeadline(time.Now().Add(d))
-		}
-		if d := c.server.WriteTimeout; d != 0 {
-			c.rwc.SetWriteDeadline(time.Now().Add(d))
-		}
 		if err := tlsConn.Handshake(); err != nil {
 			return
 		}
@@ -223,7 +244,7 @@ func (c *conn) serve() {
 }
 
 func (w *response) CloseNotify() <-chan bool {
-	return w.conn.closeNotify()
+	return w.sConn.closeNotify()
 }
 
 // The HandlerFunc type is an adapter to allow the use of
@@ -280,9 +301,9 @@ func (mux *ServeMux) ServeDiam(c Conn, m *Message) {
 	mux.mu.RLock()
 	defer mux.mu.RUnlock()
 	var cmd string
-	if dcmd, err := m.Dict.FindCmd(
+	if dcmd, err := m.Dictionary.FindCMD(
 		m.Header.ApplicationId,
-		m.Header.CommandCode(),
+		m.Header.CommandCode,
 	); err != nil {
 		cmd = "ALL"
 	} else {
@@ -310,7 +331,7 @@ func (mux *ServeMux) Handle(cmd string, handler Handler) {
 	mux.mu.Lock()
 	defer mux.mu.Unlock()
 	if handler == nil {
-		panic("diam: nil handler")
+		panic("DIAM: nil handler")
 	}
 	mux.m[cmd] = muxEntry{h: handler, cmd: cmd}
 }
@@ -406,7 +427,7 @@ func (srv *Server) Serve(l net.Listener) error {
 				if max := 1 * time.Second; tempDelay > max {
 					tempDelay = max
 				}
-				log.Printf("diam: Accept error: %v; retrying in %v", e, tempDelay)
+				log.Printf("DIAM: Accept error: %v; retrying in %v", e, tempDelay)
 				time.Sleep(tempDelay)
 				continue
 			}
@@ -431,18 +452,6 @@ func (srv *Server) Serve(l net.Listener) error {
 func ListenAndServe(addr string, handler Handler, dict *dict.Parser) error {
 	server := &Server{Addr: addr, Handler: handler, Dict: dict}
 	return server.ListenAndServe()
-}
-
-// ListenAndServeTLS acts identically to ListenAndServe, except that it
-// expects SSL connections. Additionally, files containing a certificate and
-// matching private key for the server must be provided. If the certificate
-// is signed by a certificate authority, the certFile should be the concatenation
-// of the server's certificate followed by the CA's certificate.
-//
-// One can use generate_cert.go in crypto/tls to generate cert.pem and key.pem.
-func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler, dict *dict.Parser) error {
-	server := &Server{Addr: addr, Handler: handler, Dict: dict}
-	return server.ListenAndServeTLS(certFile, keyFile)
 }
 
 // ListenAndServeTLS listens on the TCP network address srv.Addr and
@@ -477,76 +486,14 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 	return srv.Serve(tlsListener)
 }
 
-// TimeoutHandler returns a Handler that runs h with the given time limit.
+// ListenAndServeTLS acts identically to ListenAndServe, except that it
+// expects SSL connections. Additionally, files containing a certificate and
+// matching private key for the server must be provided. If the certificate
+// is signed by a certificate authority, the certFile should be the concatenation
+// of the server's certificate followed by the CA's certificate.
 //
-// The new Handler calls h.ServeDiam to handle each request, but if a
-// call runs for longer than its time limit, the connection is closed.
-// After such a timeout its MessageWriter will return ErrHandlerTimeout.
-func TimeoutHandler(h Handler, dt time.Duration, msg string) Handler {
-	f := func() <-chan time.Time {
-		return time.After(dt)
-	}
-	return &timeoutHandler{h, f, msg}
-}
-
-// ErrHandlerTimeout is returned on MessageWriter Write calls
-// in handlers which have timed out.
-var ErrHandlerTimeout = errors.New("diam: Handler timeout")
-
-type timeoutHandler struct {
-	handler Handler
-	timeout func() <-chan time.Time // returns channel producing a timeout
-	body    string
-}
-
-func (h *timeoutHandler) ServeDiam(w Conn, m *Message) {
-	done := make(chan bool, 1)
-	tw := &timeoutConn{w: w}
-	go func() {
-		h.handler.ServeDiam(tw, m)
-		done <- true
-	}()
-	select {
-	case <-done:
-		return
-	case <-h.timeout():
-		tw.mu.Lock()
-		defer tw.mu.Unlock()
-		if !tw.wroteHeader {
-			// TODO: Retransmit? Close?
-		}
-		tw.timedOut = true
-	}
-}
-
-func (h *timeoutHandler) ErrorReports() chan ErrorReport {
-	return h.ErrorReports()
-}
-
-type timeoutConn struct {
-	w Conn
-
-	mu          sync.Mutex
-	timedOut    bool
-	wroteHeader bool
-}
-
-func (tw *timeoutConn) Write(m *Message) (int, error) {
-	return tw.w.Write(m)
-}
-
-func (tw *timeoutConn) Close() {
-	tw.w.Close()
-}
-
-func (tw *timeoutConn) LocalAddr() net.Addr {
-	return tw.w.LocalAddr()
-}
-
-func (tw *timeoutConn) RemoteAddr() net.Addr {
-	return tw.w.RemoteAddr()
-}
-
-func (tw *timeoutConn) TLS() *tls.ConnectionState {
-	return tw.w.TLS()
+// One can use generate_cert.go in crypto/tls to generate cert.pem and key.pem.
+func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler, dict *dict.Parser) error {
+	server := &Server{Addr: addr, Handler: handler, Dict: dict}
+	return server.ListenAndServeTLS(certFile, keyFile)
 }

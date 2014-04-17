@@ -34,16 +34,16 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	var err error
 	hbytes := make([]byte, HeaderLength)
 	if _, err = io.ReadFull(reader, hbytes); err != nil {
-		return nil, fmt.Errorf("Failed to read Header: %s", err)
+		return nil, err
 	}
 	m := &Message{}
 	m.Header, err = decodeHeader(hbytes)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to decode Header: %s", err)
+		return nil, err
 	}
 	pbytes := make([]byte, m.Header.MessageLength-HeaderLength)
 	if _, err = io.ReadFull(reader, pbytes); err != nil {
-		return nil, fmt.Errorf("Failed to read Payload: %s", err)
+		return nil, err
 	}
 	m.Dictionary = dictionary
 	return decodeAVPs(m, pbytes)
@@ -75,10 +75,27 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dicti
 }
 
 // NewAVP creates and initializes a new AVP and adds it to the Message.
-func (m *Message) NewAVP(code uint32, flags uint8, vendor uint32, data datatypes.DataType) {
-	a := NewAVP(code, flags, vendor, data)
+// @code can be int, uint32 or string (e.g. 268 or Result-Code)
+func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data datatypes.DataType) (*AVP, error) {
+	var a *AVP
+	switch code.(type) {
+	case int:
+		a = NewAVP(uint32(code.(int)), flags, vendor, data)
+	case uint32:
+		a = NewAVP(code.(uint32), flags, vendor, data)
+	case string:
+		dictAVP, err := m.Dictionary.FindAVP(
+			m.Header.ApplicationId,
+			code.(string),
+		)
+		if err != nil {
+			return nil, err
+		}
+		a = NewAVP(dictAVP.Code, flags, vendor, data)
+	}
 	m.AVP = append(m.AVP, a)
 	m.Header.MessageLength += uint32(a.Len())
+	return a, nil
 }
 
 // AddAVP adds the AVP to the Message.
@@ -87,7 +104,7 @@ func (m *Message) AddAVP(a *AVP) {
 	m.Header.MessageLength += uint32(a.Len())
 }
 
-func (m *Message) Write(writer io.Writer) (int, error) {
+func (m *Message) WriteTo(writer io.Writer) (int, error) {
 	return writer.Write(m.Serialize())
 }
 
@@ -151,6 +168,21 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 		}
 	}
 	return nil, errors.New("Not found")
+}
+
+// Answer creates an answer for the current Message with an embedded
+// Result-Code AVP.
+func (m *Message) Answer(resultCode uint32) *Message {
+	nm := NewMessage(
+		m.Header.CommandCode,
+		m.Header.CommandFlags&^0x80,
+		m.Header.ApplicationId,
+		m.Header.HopByHopId,
+		m.Header.EndToEndId,
+		m.Dictionary,
+	)
+	nm.NewAVP(268, 0x40, 0x00, datatypes.Unsigned32(resultCode))
+	return nm
 }
 
 func (m *Message) String() string {

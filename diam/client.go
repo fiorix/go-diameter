@@ -1,4 +1,4 @@
-// Copyright 2013 Alexandre Fiori
+// Copyright 2013-2014 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -37,7 +37,7 @@ func (srv *Server) dial() (Conn, error) {
 		return nil, err
 	}
 	go c.serve()
-	return &response{conn: c}, nil
+	return &response{sConn: c}, nil
 }
 
 // DialTLS is the same as Dial, but for TLS.
@@ -72,5 +72,5 @@ func (srv *Server) dialTLS(certFile, keyFile string) (Conn, error) {
 		return nil, err
 	}
 	go c.serve()
-	return &response{conn: c}, nil
+	return &response{sConn: c}, nil
 }

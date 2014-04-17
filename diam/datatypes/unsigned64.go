@@ -30,6 +30,10 @@ func (n Unsigned64) Padding() int {
 	return 0
 }
 
+func (n Unsigned64) Type() DataTypeId {
+	return Unsigned64Type
+}
+
 func (n Unsigned64) String() string {
 	return fmt.Sprintf("Unsigned64{%d}", n)
 }

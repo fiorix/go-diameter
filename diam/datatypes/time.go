@@ -31,6 +31,10 @@ func (t Time) Padding() int {
 	return 0
 }
 
+func (t Time) Type() DataTypeId {
+	return TimeType
+}
+
 func (t Time) String() string {
 	return fmt.Sprintf("Time{%s}", time.Time(t))
 }

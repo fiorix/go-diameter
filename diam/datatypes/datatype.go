@@ -8,6 +8,7 @@ type DataType interface {
 	Serialize() []byte
 	Len() int
 	Padding() int
+	Type() DataTypeId
 	String() string
 }
 

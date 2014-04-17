@@ -26,6 +26,10 @@ func (s OctetString) Padding() int {
 	return pad4(l) - l
 }
 
+func (s OctetString) Type() DataTypeId {
+	return OctetStringType
+}
+
 func (s OctetString) String() string {
 	return fmt.Sprintf("OctetString{%s},Padding:%d", string(s), s.Padding())
 }

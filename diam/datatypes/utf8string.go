@@ -26,6 +26,10 @@ func (s UTF8String) Padding() int {
 	return pad4(l) - l
 }
 
+func (s UTF8String) Type() DataTypeId {
+	return UTF8StringType
+}
+
 func (s UTF8String) String() string {
 	return fmt.Sprintf("UTF8String{%s},Padding:%d", string(s), s.Padding())
 }

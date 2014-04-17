@@ -26,6 +26,10 @@ func (n Enumerated) Padding() int {
 	return 0
 }
 
+func (n Enumerated) Type() DataTypeId {
+	return EnumeratedType
+}
+
 func (n Enumerated) String() string {
 	return fmt.Sprintf("Enumerated{%d}", n)
 }

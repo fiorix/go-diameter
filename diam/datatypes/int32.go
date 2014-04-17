@@ -33,6 +33,10 @@ func (n Integer32) Padding() int {
 	return 0
 }
 
+func (n Integer32) Type() DataTypeId {
+	return Integer32Type
+}
+
 func (n Integer32) String() string {
 	return fmt.Sprintf("Integer32{%d}", n)
 }

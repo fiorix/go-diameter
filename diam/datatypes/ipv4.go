@@ -31,6 +31,10 @@ func (ip IPv4) Padding() int {
 	return 0
 }
 
+func (ip IPv4) Type() DataTypeId {
+	return IPv4Type
+}
+
 func (ip IPv4) String() string {
 	return fmt.Sprintf("IPv4{%s}", net.IP(ip))
 }

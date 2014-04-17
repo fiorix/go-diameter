@@ -13,18 +13,22 @@ func DecodeGrouped(b []byte) (DataType, error) {
 	return Grouped(b), nil
 }
 
-func (b Grouped) Serialize() []byte {
-	return b
+func (g Grouped) Serialize() []byte {
+	return g
 }
 
-func (b Grouped) Len() int {
-	return len(b)
+func (g Grouped) Len() int {
+	return len(g)
 }
 
-func (b Grouped) Padding() int {
+func (g Grouped) Padding() int {
 	return 0
 }
 
-func (b Grouped) String() string {
+func (g Grouped) Type() DataTypeId {
+	return GroupedType
+}
+
+func (g Grouped) String() string {
 	return fmt.Sprint("Grouped{...}")
 }

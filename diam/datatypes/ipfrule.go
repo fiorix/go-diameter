@@ -26,6 +26,10 @@ func (s IPFilterRule) Padding() int {
 	return pad4(l) - l
 }
 
+func (s IPFilterRule) Type() DataTypeId {
+	return IPFilterRuleType
+}
+
 func (s IPFilterRule) String() string {
 	return fmt.Sprintf("IPFilterRule{%s},Padding:%d", string(s), s.Padding())
 }

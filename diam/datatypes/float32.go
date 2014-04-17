@@ -33,6 +33,10 @@ func (n Float32) Padding() int {
 	return 0
 }
 
+func (n Float32) Type() DataTypeId {
+	return Float32Type
+}
+
 func (n Float32) String() string {
 	return fmt.Sprintf("Float32{%0.4f}", n)
 }

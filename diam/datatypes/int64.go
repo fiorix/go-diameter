@@ -32,6 +32,11 @@ func (n Integer64) Len() int {
 func (n Integer64) Padding() int {
 	return 0
 }
+
+func (n Integer64) Type() DataTypeId {
+	return Integer64Type
+}
+
 func (n Integer64) String() string {
 	return fmt.Sprintf("Integer64{%d}", n)
 }

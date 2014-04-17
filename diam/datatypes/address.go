@@ -67,6 +67,10 @@ func (addr Address) Padding() int {
 	return pad4(l) - l
 }
 
+func (addr Address) Type() DataTypeId {
+	return AddressType
+}
+
 func (addr Address) String() string {
 	return fmt.Sprintf("Address{%s},Padding:%d", net.IP(addr), addr.Padding())
 }

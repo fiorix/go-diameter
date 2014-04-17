@@ -26,6 +26,10 @@ func (s DiameterIdentity) Padding() int {
 	return pad4(l) - l
 }
 
+func (s DiameterIdentity) Type() DataTypeId {
+	return DiameterIdentityType
+}
+
 func (s DiameterIdentity) String() string {
 	return fmt.Sprintf("DiameterIdentity{%s},Padding:%d", string(s), s.Padding())
 }

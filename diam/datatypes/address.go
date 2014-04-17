@@ -56,9 +56,9 @@ func (addr Address) Serialize() []byte {
 
 func (addr Address) Len() int {
 	if ip4 := net.IP(addr).To4(); ip4 != nil {
-		return len(ip4)
+		return len(ip4) + 2 // two from address family
 	} else {
-		return len(addr)
+		return len(addr) + 2
 	}
 }
 

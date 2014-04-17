@@ -1,4 +1,4 @@
-// Copyright 2013 Alexandre Fiori
+// Copyright 2013-2014 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,18 +18,19 @@ import (
 	"time"
 
 	"github.com/fiorix/go-diameter/diam"
+	"github.com/fiorix/go-diameter/diam/datatypes"
 )
 
 const (
-	Identity    = "client"
-	Realm       = "localhost"
-	VendorId    = 13
-	ProductName = "go-diameter"
+	Identity    = datatypes.DiameterIdentity("client")
+	Realm       = datatypes.DiameterIdentity("localhost")
+	VendorId    = datatypes.Unsigned32(13)
+	ProductName = datatypes.UTF8String("go-diameter")
 )
 
 var (
 	BenchMessages int
-	WG            sync.WaitGroup
+	wg            sync.WaitGroup
 )
 
 func main() {
@@ -39,7 +40,7 @@ func main() {
 	flag.Parse()
 	BenchMessages = *n
 	if len(os.Args) < 2 {
-		fmt.Println("Use: client [options] host:port")
+		fmt.Println("Use: bench [options] host:port")
 		flag.Usage()
 		return
 	}
@@ -47,10 +48,10 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	// Launch clients.
 	for n := 0; n < *c; n++ {
-		WG.Add(1)
+		wg.Add(1)
 		go NewClient(*ssl)
 	}
-	WG.Wait()
+	wg.Wait()
 	log.Println("Done.")
 }
 
@@ -80,66 +81,49 @@ func NewClient(ssl bool) {
 	}
 	if err != nil {
 		log.Fatal(err)
-		WG.Done()
 	}
 	// Build CER
-	m := diam.NewMessage(
-		257,  // CER
-		0x80, // Flags: request
-		0,    // Application Id
-		0,    // HopByHop: 0 means random
-		0,    // EndToEnd: 0 means random
-		nil,  // nil means diam.dict.Default
-	)
+	m := diam.NewRequest(257, 0, nil)
 	// Add AVPs
 	m.NewAVP("Origin-Host", 0x40, 0x00, Identity)
 	m.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
-	IP, _, _ := net.SplitHostPort(c.LocalAddr().String())
-	m.NewAVP("Host-IP-Address", 0x40, 0x0, IP)
+	laddr := c.LocalAddr()
+	ip, _, _ := net.SplitHostPort(laddr.String())
+	m.NewAVP("Host-IP-Address", 0x40, 0x0, datatypes.Address(net.ParseIP(ip)))
 	m.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
 	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
-	m.NewAVP("Origin-State-Id", 0x40, 0x0, rand.Uint32())
+	m.NewAVP("Origin-State-Id", 0x40, 0x0, datatypes.Unsigned32(rand.Uint32()))
 	// Send message to the connection
-	if _, err := c.Write(m); err != nil {
+	if _, err := m.WriteTo(c); err != nil {
 		log.Println("Write failed:", err)
 		return
 	}
 	// Prepare the ACR that is used for benchmarking.
-	m = diam.NewMessage(
-		271,  // ACR
-		0x80, // Flags: request
-		0,    // Application Id
-		0,    // HopByHop: 0 means random
-		0,    // EndToEnd: 0 means random
-		nil,  // nil means diam.dict.Default
-	)
+	m = diam.NewRequest(271, 0, nil)
 	// Add AVPs
-	SessId, _ := m.NewAVP("Session-Id", 0x40, 0x00, "Hello")
+	m.NewAVP("Session-Id", 0x40, 0x00, datatypes.UTF8String("Hello"))
 	m.NewAVP("Origin-Host", 0x40, 0x00, Identity)
 	m.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
-	m.NewAVP("Host-IP-Address", 0x40, 0x0, IP)
+	m.NewAVP("Host-IP-Address", 0x40, 0x0, datatypes.Address(net.ParseIP(ip)))
 	m.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
 	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
-	StateId, _ := m.NewAVP("Origin-State-Id", 0x40, 0x0, rand.Uint32())
+	m.NewAVP("Origin-State-Id", 0x40, 0x0, datatypes.Unsigned32(rand.Uint32()))
 	log.Println("OK, sending messages")
 	var n int
-	start := time.Now()
 	go func() {
+		start := time.Now()
 		// Wait until the connection is closed.
 		<-c.(diam.CloseNotifier).CloseNotify()
 		elapsed := time.Since(start)
 		mps := int(float64(n) / elapsed.Seconds())
 		log.Printf("%d messages in %s seconds, %d msg/s",
 			n, elapsed, mps)
-		WG.Done()
+		wg.Done()
 	}()
 	for ; n < BenchMessages; n++ {
 		// Send message to the connection
-		if _, err := c.Write(m); err != nil {
-			log.Println("Write failed:", err)
-			break
+		if _, err := m.WriteTo(c); err != nil {
+			log.Fatal("Write failed:", err)
 		}
-		SessId.Set(fmt.Sprintf("%d", rand.Uint32()))
-		StateId.Set(rand.Uint32())
 	}
 }

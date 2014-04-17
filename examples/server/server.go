@@ -1,4 +1,4 @@
-// Copyright 2013 Alexandre Fiori
+// Copyright 2013-2014 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,13 +16,14 @@ import (
 	"runtime"
 
 	"github.com/fiorix/go-diameter/diam"
+	"github.com/fiorix/go-diameter/diam/datatypes"
 )
 
 const (
-	Identity    = "server"
-	Realm       = "localhost"
-	VendorId    = 13
-	ProductName = "go-diameter"
+	Identity    = datatypes.DiameterIdentity("server")
+	Realm       = datatypes.DiameterIdentity("localhost")
+	VendorId    = datatypes.Unsigned32(13)
+	ProductName = datatypes.UTF8String("go-diameter")
 )
 
 var Quiet bool
@@ -84,29 +85,26 @@ func OnCER(c diam.Conn, m *diam.Message) {
 	}
 	if !Quiet {
 		//log.Println("Receiving message from %s", c.RemoteAddr().String())
-		log.Printf("Receiving message from %s.%s (%s)",
-			host.Data().(string),
-			realm.Data().(string),
-			ipaddr.Data().(net.IP).String(),
-		)
-		m.PrettyPrint()
+		log.Printf("Receiving message from %s.%s (%s)", host, realm, ipaddr)
+		log.Println(m)
 	}
 	// Craft CEA with result code 2001 (OK).
 	a := m.Answer(2001)
 	a.NewAVP("Origin-Host", 0x40, 0x00, Identity)
 	a.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
-	IP, _, _ := net.SplitHostPort(c.LocalAddr().String())
-	a.NewAVP("Host-IP-Address", 0x40, 0x0, IP)
+	laddr := c.LocalAddr()
+	ip, _, _ := net.SplitHostPort(laddr.String())
+	m.NewAVP("Host-IP-Address", 0x40, 0x0, datatypes.Address(net.ParseIP(ip)))
 	a.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
 	a.NewAVP("Product-Name", 0x40, 0x0, ProductName)
 	// Copy origin Origin-State-Id.
-	a.Add(stateId)
+	a.AddAVP(stateId)
 	if !Quiet {
 		log.Printf("Sending message to %s", c.RemoteAddr().String())
-		a.PrettyPrint()
+		log.Println(a)
 	}
 	// Send message to the connection
-	if _, err := c.Write(a); err != nil {
+	if _, err := a.WriteTo(c); err != nil {
 		log.Println("Write failed:", err)
 		c.Close()
 	}
@@ -125,24 +123,23 @@ func OnMSG(c diam.Conn, m *diam.Message) {
 	// Ignore message if there's no Origin-State-Id.
 	stateId, err := m.FindAVP("Origin-State-Id")
 	if err != nil {
-		return
+		log.Println("Invalid message: missing Origin-State-Id\n", m)
 	}
 	if !Quiet {
-		log.Printf(
-			"Receiving message from %s", c.RemoteAddr().String())
-		m.PrettyPrint()
+		log.Printf("Receiving message from %s", c.RemoteAddr().String())
+		log.Println(m)
 	}
 	// Craft answer with result code 2001 (OK).
 	a := m.Answer(2001)
 	a.NewAVP("Origin-Host", 0x40, 0x00, Identity)
 	a.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
-	a.Add(stateId)
+	a.AddAVP(stateId)
 	if !Quiet {
 		log.Printf("Sending message to %s", c.RemoteAddr().String())
-		a.PrettyPrint()
+		log.Println(a)
 	}
 	// Send message to the connection.
-	if _, err := c.Write(a); err != nil {
+	if _, err := a.WriteTo(c); err != nil {
 		log.Println("Write failed:", err)
 		c.Close()
 	}

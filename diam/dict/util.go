@@ -10,6 +10,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+
+	"github.com/fiorix/go-diameter/diam/datatypes"
 )
 
 // Apps return a list of all applications loaded in the Dict instance.
@@ -109,7 +111,7 @@ func (p Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
 	if err != nil {
 		return nil, err
 	}
-	if avp.Data.Type != "Enumerated" {
+	if avp.Data.Type != datatypes.EnumeratedType {
 		return nil, fmt.Errorf(
 			"Data of AVP %s (%d) data is not Enumerated.",
 			avp.Name, avp.Code)
@@ -131,7 +133,7 @@ func (p Parser) Rule(appid, code uint32, n string) (*Rule, error) {
 	if err != nil {
 		return nil, err
 	}
-	if avp.Data.Type != "Grouped" {
+	if avp.Data.Type != datatypes.GroupedType {
 		return nil, fmt.Errorf(
 			"Data of AVP %s (%d) data is not Grouped.",
 			avp.Name, avp.Code)
@@ -191,7 +193,7 @@ func printCMD(w io.Writer, cmd *CMD) {
 
 func printAVP(w io.Writer, avp *AVP) {
 	fmt.Fprintf(w, "   % -4d %s: %s\n",
-		avp.Code, avp.Name, avp.Data.Type)
+		avp.Code, avp.Name, avp.Data.TypeName)
 	// Enumerated
 	if len(avp.Data.Enum) > 0 {
 		fmt.Fprintf(w, "    Items:\n")

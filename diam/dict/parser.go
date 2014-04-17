@@ -8,6 +8,7 @@ package dict
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -32,8 +33,6 @@ type Parser struct {
 	mu      sync.RWMutex     // Protects all maps
 	once    sync.Once
 }
-
-type decoderFunc func([]byte) (datatypes.DataType, error)
 
 type codeIdx struct {
 	appId uint32
@@ -93,7 +92,20 @@ func (p *Parser) Load(r io.Reader) error {
 			avp.App = app
 			p.avpname[nameIdx{app.Id, avp.Name}] = avp
 			p.avpcode[codeIdx{app.Id, avp.Code}] = avp
+			// Check the AVP type.
+			if err := updateType(avp); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
+}
+
+func updateType(a *AVP) error {
+	id, exists := datatypes.Available[a.Data.TypeName]
+	if !exists {
+		return fmt.Errorf("Unsupported data type: %s", a.Data.TypeName)
+	}
+	a.Data.Type = id
 	return nil
 }

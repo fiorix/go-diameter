@@ -6,7 +6,11 @@
 
 package dict
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+
+	"github.com/fiorix/go-diameter/diam/datatypes"
+)
 
 // File is the dictionary root element of a XML file.  See diam_base.xml.
 type File struct {
@@ -58,9 +62,10 @@ type AVP struct {
 
 // Data of an AVP can be EnumItem or a Parser of multiple AVPs.
 type Data struct {
-	Type string  `xml:"type,attr"`
-	Enum []*Enum `xml:"item"` // In case of Enumerated AVP data
-	Rule []*Rule `xml:"rule"` // In case of Grouped AVPs
+	Type     datatypes.DataTypeId `xml:"-"`
+	TypeName string               `xml:"type,attr"`
+	Enum     []*Enum              `xml:"item"` // In case of Enumerated AVP data
+	Rule     []*Rule              `xml:"rule"` // In case of Grouped AVPs
 }
 
 type Enum struct {

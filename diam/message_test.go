@@ -7,6 +7,7 @@ package diam
 import (
 	"bytes"
 	"encoding/hex"
+	"io/ioutil"
 	"net"
 	"sync"
 	"testing"
@@ -65,6 +66,13 @@ func BenchmarkReadMessage(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		ReadMessage(reader, dict.Default)
 		reader.Seek(0, 0)
+	}
+}
+
+func BenchmarkWriteMessage(b *testing.B) {
+	m, _ := ReadMessage(testMessage(), dict.Default)
+	for n := 0; n < b.N; n++ {
+		m.WriteTo(ioutil.Discard)
 	}
 }
 

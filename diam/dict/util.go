@@ -49,14 +49,17 @@ func (p Parser) FindAVP(appid uint32, code interface{}) (*AVP, error) {
 			err = fmt.Errorf("Could not find AVP %d", code.(uint32))
 		}
 	case int:
-		return p.FindAVP(appid, uint32(code.(int)))
+		avp, ok = p.avpcode[codeIdx{appid, uint32(code.(int))}]
+		if !ok {
+			err = fmt.Errorf("Could not find AVP %d", code.(int))
+		}
 	default:
 		return nil, fmt.Errorf("Unsupported AVP code type %#v", code)
 	}
 	if ok {
 		return avp, nil
 	} else if appid != 0 {
-		return p.FindAVP(0, code)
+		return p.FindAVP(0, code) // Try the base dict.
 	}
 	return nil, err
 }
@@ -84,7 +87,12 @@ func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
 		}
 		return nil, fmt.Errorf("Could not find AVP code %d", code.(uint32))
 	case int:
-		return p.ScanAVP(uint32(code.(int)))
+		for idx, avp := range p.avpcode {
+			if idx.code == uint32(code.(int)) {
+				return avp, nil
+			}
+		}
+		return nil, fmt.Errorf("Could not find AVP code %d", code.(int))
 	}
 	return nil, fmt.Errorf("Unsupported AVP code type %#v", code)
 }

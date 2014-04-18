@@ -58,3 +58,24 @@ func TestEncodeHeader(t *testing.T) {
 			hex.Dump(testHeader), hex.Dump(b))
 	}
 }
+
+func BenchmarkDecodeHeader(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		decodeHeader(testHeader)
+	}
+}
+
+func BenchmarkEncodeHeader(b *testing.B) {
+	hdr := &Header{
+		Version:       1,
+		MessageLength: 116,
+		CommandFlags:  0x80,
+		CommandCode:   257,
+		ApplicationId: 1,
+		HopByHopId:    0x2c0b6149,
+		EndToEndId:    0xdbbfd385,
+	}
+	for n := 0; n < b.N; n++ {
+		hdr.Serialize()
+	}
+}

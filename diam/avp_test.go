@@ -64,16 +64,7 @@ func TestNewAVP(t *testing.T) {
 }
 
 func TestDecodeAVP(t *testing.T) {
-	hdr := &Header{
-		Version:       1,
-		MessageLength: 116,
-		CommandFlags:  0x80,
-		CommandCode:   257,
-		ApplicationId: 1,
-		HopByHopId:    0x2c0b6149,
-		EndToEndId:    0xdbbfd385,
-	}
-	avp, err := decodeAVP(testAVP[0], hdr.ApplicationId, dict.Default)
+	avp, err := decodeAVP(testAVP[0], 1, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,5 +108,18 @@ func TestEncodeAVPnoData(t *testing.T) {
 		t.Log("Expected:", err)
 	} else {
 		t.Fatal("Unexpected serialization succeeded")
+	}
+}
+
+func BenchmarkDecodeAVP(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		decodeAVP(testAVP[0], 1, dict.Default)
+	}
+}
+
+func BenchmarkEncodeAVP(b *testing.B) {
+	a := NewAVP(264, 0x40, 0, datatypes.DiameterIdentity("client"))
+	for n := 0; n < b.N; n++ {
+		a.Serialize()
 	}
 }

@@ -31,8 +31,6 @@ func decodeHeader(data []byte) (*Header, error) {
 }
 
 // DecodeFromBytes decodes the bytes of a Diameter Header.
-// It requires a dictionary Parser to be able to decode the Header
-// by consulting the
 func (h *Header) DecodeFromBytes(data []byte) error {
 	if n := len(data); n < HeaderLength {
 		return fmt.Errorf("Not enough data to decode Header: %d", n)
@@ -53,6 +51,7 @@ func (h *Header) Serialize() []byte {
 	return b
 }
 
+// SerializeTo serializes the header to a byte sequence in network byte order.
 func (h *Header) SerializeTo(b []byte) {
 	b[0] = h.Version
 	copy(b[1:4], uint32to24(h.MessageLength))

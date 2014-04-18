@@ -19,6 +19,7 @@ func TestOctetString(t *testing.T) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, v)
 	}
 	t.Log(s)
+	t.Log(string(s)) // ?
 }
 
 func TestDecodeOctetString(t *testing.T) {

@@ -46,3 +46,27 @@ func TestRule(t *testing.T) {
 		t.Errorf("Unexpected rule %#v", rule)
 	}
 }
+
+func BenchmarkFindAVPName(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		Default.FindAVP(0, "Session-Id")
+	}
+}
+
+func BenchmarkFindAVPCode(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		Default.FindAVP(0, 263)
+	}
+}
+
+func BenchmarkScanAVPName(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		Default.ScanAVP("Session-Id")
+	}
+}
+
+func BenchmarkScanAVPCode(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		Default.ScanAVP(263)
+	}
+}

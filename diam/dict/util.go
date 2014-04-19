@@ -12,7 +12,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/datatypes"
 )
 
-// Apps return a list of all applications loaded in the Dict instance.
+// Apps return a list of all applications loaded in the Parser instance.
 func (p Parser) Apps() []*App {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
@@ -37,20 +37,21 @@ func (p Parser) FindAVP(appid uint32, code interface{}) (*AVP, error) {
 		ok  bool
 		err error
 	)
+retry:
 	switch code.(type) {
 	case string:
 		avp, ok = p.avpname[nameIdx{appid, code.(string)}]
-		if !ok {
+		if !ok && appid == 0 {
 			err = fmt.Errorf("Could not find AVP %s", code.(string))
 		}
 	case uint32:
 		avp, ok = p.avpcode[codeIdx{appid, code.(uint32)}]
-		if !ok {
+		if !ok && appid == 0 {
 			err = fmt.Errorf("Could not find AVP %d", code.(uint32))
 		}
 	case int:
 		avp, ok = p.avpcode[codeIdx{appid, uint32(code.(int))}]
-		if !ok {
+		if !ok && appid == 0 {
 			err = fmt.Errorf("Could not find AVP %d", code.(int))
 		}
 	default:
@@ -59,7 +60,9 @@ func (p Parser) FindAVP(appid uint32, code interface{}) (*AVP, error) {
 	if ok {
 		return avp, nil
 	} else if appid != 0 {
-		return p.FindAVP(0, code) // Try the base dict.
+		// Try searching the back dictionary.
+		appid = 0
+		goto retry
 	}
 	return nil, err
 }

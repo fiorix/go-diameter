@@ -7,7 +7,7 @@ package dict
 import "testing"
 
 func TestFindAVP(t *testing.T) {
-	if _, err := Default.FindAVP(0, 263); err != nil {
+	if _, err := Default.FindAVP(999, 263); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -21,7 +21,7 @@ func TestScanAVP(t *testing.T) {
 }
 
 func TestFindCmd(t *testing.T) {
-	if cmd, err := Default.FindCMD(0, 257); err != nil {
+	if cmd, err := Default.FindCMD(999, 257); err != nil {
 		t.Error(err)
 	} else if cmd.Short != "CE" {
 		t.Fatalf("Unexpected command: %#v", cmd)

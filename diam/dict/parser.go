@@ -31,7 +31,7 @@ type Parser struct {
 	avpname map[nameIdx]*AVP // AVP index by name
 	avpcode map[codeIdx]*AVP // AVP index by code
 	command map[codeIdx]*CMD // CMD index
-	mu      sync.RWMutex     // Protects all maps
+	mu      sync.Mutex       // Protects all maps
 	once    sync.Once
 }
 
@@ -69,6 +69,8 @@ func (p *Parser) LoadFile(filename string) error {
 
 // Load loads a dictionary from byte array. May be used multiple times.
 func (p *Parser) Load(r io.Reader) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.once.Do(func() {
 		p.avpname = make(map[nameIdx]*AVP)
 		p.avpcode = make(map[codeIdx]*AVP)
@@ -79,8 +81,6 @@ func (p *Parser) Load(r io.Reader) error {
 	if err := d.Decode(f); err != nil {
 		return err
 	}
-	p.mu.Lock()
-	defer p.mu.Unlock()
 	p.file = append(p.file, f)
 	for _, app := range f.App {
 		// Cache commands.

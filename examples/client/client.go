@@ -72,6 +72,14 @@ func NewClient(c diam.Conn) {
 	m.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
 	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
 	m.NewAVP("Origin-State-Id", 0x40, 0x0, datatypes.Unsigned32(rand.Uint32()))
+	m.NewAVP("Vendor-Specific-Application-Id", 0x40, 0x00, &diam.Grouped{
+		AVP: []*diam.AVP{
+			// Auth-Application-Id
+			diam.NewAVP(258, 0x40, 0x0, datatypes.Unsigned32(4)),
+			// Vendor-Id
+			diam.NewAVP(266, 0x40, 0x0, datatypes.Unsigned32(10415)),
+		},
+	})
 	log.Printf("Sending message to %s", c.RemoteAddr().String())
 	log.Println(m)
 	// Send message to the connection

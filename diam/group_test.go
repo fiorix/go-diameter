@@ -47,3 +47,23 @@ func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 	m.AddAVP(a)
 	t.Log(m)
 }
+
+func TestMakeGroupedAVP(t *testing.T) {
+	// Create empty Grouped AVP
+	g := new(Grouped)
+	// Add Auth-Application-Id
+	g.AVP = append(g.AVP, NewAVP(258, 0x40, 0, datatypes.Unsigned32(4)))
+	// Add Vendor-Id
+	g.AVP = append(g.AVP, NewAVP(266, 0x40, 0, datatypes.Unsigned32(10415)))
+	// Create Vendor-Specific-Application-Id
+	a := NewAVP(260, 0x40, 0, g)
+	b, err := a.Serialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(b, testGroupedAVP) {
+		t.Fatalf("Unexpected value.\nWant:\n%s\nHave:\n%s",
+			hex.Dump(testGroupedAVP), hex.Dump(b))
+	}
+	t.Log(a)
+}

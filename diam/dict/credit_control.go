@@ -8,18 +8,18 @@ package dict
 
 import "bytes"
 
-// Default is a static Parser with a pre-loaded Base Protocol.
-var CCDict *Parser
+// CreditControl is a static Parser with a pre-loaded Base Protocol.
+var CreditControl *Parser
 
 func init() {
-	CCDict, _ = NewParser()
-	CCDict.Load(bytes.NewReader(CCDictXML))
+	CreditControl, _ = NewParser()
+	CreditControl.Load(bytes.NewReader(CreditControlXML))
 }
 
-// DefaultXML is an embedded version of the Diameter Base Protocol.
+// CreditControlXML is an embedded version of the Diameter Credit-Control Application
 //
-// Copy of diam_base.xml
-var CCDictXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
+// Copy of diam_credit_control.xml
+var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
   <application id="4"> <!-- Diameter Credit-Control Application -->

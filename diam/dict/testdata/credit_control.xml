@@ -5,6 +5,67 @@
 
     <vendor id="10415" name="3GPP"/>
 
+    <command code="272" short="CC" name="Credit-Control">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="Auth-Application-Id" required="true" max="1"/>
+        <rule avp="Service-Context-Id" required="true" max="1"/>
+        <rule avp="CC-Request-Type" required="true" max="1"/>
+        <rule avp="CC-Request-Number" required="true" max="1"/>
+        <rule avp="Destination-Host" required="false" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="CC-Sub-Session-Id" required="false" max="1"/>
+        <rule avp="Acct-Multi-Session-Id" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Event-Timestamp" required="false" max="1"/>
+        <rule avp="Subscription-Id" required="false" max="1"/>
+        <rule avp="Service-Identifier" required="false" max="1"/>
+        <rule avp="Termination-Cause" required="false" max="1"/>
+        <rule avp="Requested-Service-Unit" required="false" max="1"/>
+        <rule avp="Requested-Action" required="false" max="1"/>
+        <rule avp="Used-Service-Unit" required="false" max="1"/>
+        <rule avp="Multiple-Services-Indicator" required="false" max="1"/>
+        <rule avp="Multiple-Services-Credit-Control" required="false" max="1"/>
+        <rule avp="Service-Parameter-Info" required="false" max="1"/>
+        <rule avp="CC-Correlation-Id" required="false" max="1"/>
+        <rule avp="User-Equipment-Info" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false" max="1"/>
+        <rule avp="Route-Record" required="false" max="1"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="CC-Request-Type" required="true" max="1"/>
+        <rule avp="CC-Request-Number" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="CC-Session-Failover" required="false" max="1"/>
+        <rule avp="CC-Sub-Session-Id" required="false" max="1"/>
+        <rule avp="Acct-Multi-Session-Id" required="false" max="1"/>
+        <rule avp="Origin-State-Id" required="false" max="1"/>
+        <rule avp="Event-Timestamp" required="false" max="1"/>
+        <rule avp="Granted-Service-Unit" required="false" max="1"/>
+        <rule avp="Multiple-Services-Credit-Control" required="false" max="1"/>
+        <rule avp="Cost-Information" required="false" max="1"/>
+        <rule avp="Final-Unit-Indication" required="false" max="1"/>
+        <rule avp="Check-Balance-Result" required="false" max="1"/>
+        <rule avp="Check-Balance-Result" required="false" max="1"/>
+        <rule avp="Credit-Control-Failure-Handling" required="false" max="1"/>
+        <rule avp="Direct-Debiting-Failure-Handling" required="false" max="1"/>
+        <rule avp="Validity-Time" required="false" max="1"/>
+        <rule avp="Redirect-Host" required="false" max="1"/>
+        <rule avp="Redirect-Host-Usage" required="false" max="1"/>
+        <rule avp="Redirect-Max-Cache-Time" required="false" max="1"/>
+        <rule avp="Proxy-Info" required="false" max="1"/>
+        <rule avp="Route-Record" required="false" max="1"/>
+        <rule avp="Failed-AVP" required="false" max="1"/>
+      </answer>
+    </command>
+
     <avp name="CC-Correlation-Id" code="411" must="-" may="P,M" must-not="V" may-encrypt="Y">
       <data type="OctetString"/>
     </avp>

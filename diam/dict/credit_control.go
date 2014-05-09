@@ -71,7 +71,6 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
         <rule avp="Cost-Information" required="false" max="1"/>
         <rule avp="Final-Unit-Indication" required="false" max="1"/>
         <rule avp="Check-Balance-Result" required="false" max="1"/>
-        <rule avp="Check-Balance-Result" required="false" max="1"/>
         <rule avp="Credit-Control-Failure-Handling" required="false" max="1"/>
         <rule avp="Direct-Debiting-Failure-Handling" required="false" max="1"/>
         <rule avp="Validity-Time" required="false" max="1"/>

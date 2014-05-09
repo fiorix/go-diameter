@@ -21,10 +21,16 @@ func init() {
 // Copy of credit_control.xml
 var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-  <application id="4"> <!-- Diameter Credit-Control Application -->
+
+  <application id="4">
+    <!-- Diameter Credit Control Application -->
+    <!-- http://tools.ietf.org/html/rfc4006 -->
+
     <vendor id="10415" name="3GPP"/>
+
     <command code="272" short="CC" name="Credit-Control">
       <request>
+        <!-- http://tools.ietf.org/html/rfc4006#section-3.1 -->
         <rule avp="Session-Id" required="true" max="1"/>
         <rule avp="Origin-Host" required="true" max="1"/>
         <rule avp="Origin-Realm" required="true" max="1"/>
@@ -54,6 +60,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
         <rule avp="Route-Record" required="false" max="1"/>
       </request>
       <answer>
+        <!-- http://tools.ietf.org/html/rfc4006#section-3.2 -->
         <rule avp="Session-Id" required="true" max="1"/>
         <rule avp="Result-Code" required="true" max="1"/>
         <rule avp="Origin-Host" required="true" max="1"/>
@@ -84,14 +91,17 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </command>
 
     <avp name="CC-Correlation-Id" code="411" must="-" may="P,M" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.1 -->
       <data type="OctetString"/>
     </avp>
 
     <avp name="CC-Input-Octets" code="412" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.24 -->
       <data type="Unsigned64"/>
     </avp>
 
     <avp name="CC-Money" code="413" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.22 -->
       <data type="Grouped">
         <rule avp="Unit-Value" required="true" max="1"/>
         <rule avp="Currency-Code" required="true" max="1"/>
@@ -99,14 +109,17 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="CC-Output-Octets" code="414" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.25 -->
       <data type="Unsigned64"/>
     </avp>
 
     <avp name="CC-Request-Number" code="415" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.2 -->
       <data type="Unsigned32"/>
     </avp>
 
     <avp name="CC-Request-Type" code="416" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.3 -->
       <data type="Enumerated">
         <item code="1" name="INITIAL_REQUEST"/>
         <item code="2" name="UPDATE_REQUEST"/>
@@ -119,6 +132,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="CC-Session-Failover" code="418" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.4 -->
       <data type="Enumerated">
         <item code="0" name="FAILOVER_NOT_SUPPORTED"/>
         <item code="1" name="FAILOVER_SUPPORTED"/>
@@ -126,18 +140,22 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="CC-Sub-Session-Id" code="419" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.5 -->
       <data type="Unsigned64"/>
     </avp>
 
     <avp name="CC-Time" code="420" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.21 -->
       <data type="Unsigned32"/>
     </avp>
 
     <avp name="CC-Total-Octets" code="421" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.23 -->
       <data type="Unsigned64"/>
     </avp>
 
     <avp name="CC-Unit-Type" code="454" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.32 -->
       <data type="Enumerated">
         <item code="0" name="TIME"/>
         <item code="1" name="MONEY"/>
@@ -149,6 +167,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Check-Balance-Result" code="422" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.6 -->
       <data type="Enumerated">
         <item code="0" name="ENOUGH_CREDIT"/>
         <item code="1" name="NO_CREDIT"/>
@@ -156,6 +175,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Cost-Information" code="423" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.7 -->
       <data type="Grouped">
         <rule avp="Unit-Value" required="true" max="1"/>
         <rule avp="Currency-Code" required="true" max="1"/>
@@ -164,10 +184,12 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Cost-Unit" code="424" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.12 -->
       <data type="UTF8String"/>
     </avp>
 
     <avp name="Credit-Control" code="426" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.13 -->
       <data type="Enumerated">
         <item code="0" name="CREDIT_AUTHORIZATION"/>
         <item code="1" name="RE_AUTHORIZATION"/>
@@ -175,6 +197,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Credit-Control-Failure-Handling" code="427" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.14 -->
       <data type="Enumerated">
         <item code="0" name="TERMINATE"/>
         <item code="1" name="CONTINUE"/>
@@ -183,10 +206,12 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Currency-Code" code="425" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.11 -->
       <data type="Unsigned32"/>
     </avp>
 
     <avp name="Direct-Debiting-Failure-Handling" code="428" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.15 -->
       <data type="Enumerated">
         <item code="0" name="TERMINATE_OR_BUFFER"/>
         <item code="1" name="CONTINUE"/>
@@ -194,10 +219,12 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Exponent" code="429" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.9 -->
       <data type="Integer32"/>
     </avp>
 
     <avp name="Final-Unit-Action" code="449" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.35 -->
       <data type="Enumerated">
         <item code="0" name="TERMINATE"/>
         <item code="1" name="REDIRECT"/>
@@ -206,6 +233,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Final-Unit-Indication" code="430" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.34 -->
       <data type="Grouped">
         <rule avp="Final-Unit-Action" required="true" max="1"/>
         <rule avp="Restriction-Filter-Rule" required="false" max="1"/>
@@ -215,23 +243,26 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Granted-Service-Unit" code="431" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.17 -->
       <data type="Grouped">
-        <rule avp="Tariff-Time-Change" required="true" max="1"/>
-        <rule avp="CC-Time" required="true" max="1"/>
-        <rule avp="CC-Money" required="true" max="1"/>
-        <rule avp="CC-Total-Octets" required="true" max="1"/>
-        <rule avp="CC-Input-Octets" required="true" max="1"/>
-        <rule avp="CC-Output-Octets" required="true" max="1"/>
-        <rule avp="CC-Service-Specific-Units" required="true" max="1"/>
+        <rule avp="Tariff-Time-Change" required="false" max="1"/>
+        <rule avp="CC-Time" required="false" max="1"/>
+        <rule avp="CC-Money" required="false" max="1"/>
+        <rule avp="CC-Total-Octets" required="false" max="1"/>
+        <rule avp="CC-Input-Octets" required="false" max="1"/>
+        <rule avp="CC-Output-Octets" required="false" max="1"/>
+        <rule avp="CC-Service-Specific-Units" required="false" max="1"/>
         <!-- *[ AVP ]-->
       </data>
     </avp>
 
     <avp name="G-S-U-Pool-Identifier" code="453" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.31 -->
       <data type="Unsigned32"/>
     </avp>
 
     <avp name="G-S-U-Pool-Reference" code="457" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.30 -->
       <data type="Grouped">
         <rule avp="G-S-U-Pool-Identifier" required="true" max="1"/>
         <rule avp="CC-Unit-Type" required="true" max="1"/>
@@ -240,6 +271,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Multiple-Services-Credit-Control" code="456" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.16 -->
       <data type="Grouped">
         <rule avp="Granted-Service-Unit" required="false" max="1"/>
         <rule avp="Requested-Service-Unit" required="false" max="1"/>
@@ -256,6 +288,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Multiple-Services-Indicator" code="455" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.40 -->
       <data type="Enumerated">
         <item code="0" name="MULTIPLE_SERVICES_NOT_SUPPORTED"/>
         <item code="1" name="MULTIPLE_SERVICES_SUPPORTED"/>
@@ -263,10 +296,12 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Rating-Group" code="432" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.29 -->
       <data type="Unsigned32"/>
     </avp>
 
     <avp name="Redirect-Address-Type " code="433" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.38 -->
       <data type="Enumerated">
         <item code="0" name="IPv4 Address"/>
         <item code="1" name="IPv6 Address"/>
@@ -276,6 +311,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Redirect-Server" code="434" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.37 -->
       <data type="Grouped">
         <rule avp="Redirect-Address-Type" required="true" max="1"/>
         <rule avp="Redirect-Server-Address" required="true" max="1"/>
@@ -283,10 +319,12 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Redirect-Server-Address" code="435" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.39 -->
       <data type="UTF8String"/>
     </avp>
 
     <avp name="Requested-Action" code="436" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.41 -->
       <data type="Enumerated">
         <item code="0" name="DIRECT_DEBITING"/>
         <item code="1" name="REFUND_ACCOUNT"/>
@@ -296,29 +334,35 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Requested-Service-Unit" code="437" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.18-->
       <data type="Grouped">
-        <rule avp="CC-Time" required="true" max="1"/>
-        <rule avp="CC-Total-Octets" required="true" max="1"/>
-        <rule avp="CC-Input-Octets" required="true" max="1"/>
-        <rule avp="CC-Output-Octets" required="true" max="1"/>
-        <rule avp="CC-Service-Specific-Units" required="true" max="1"/>
+        <rule avp="CC-Time" required="false" max="1"/>
+        <rule avp="CC-Money" required="false" max="1"/>
+        <rule avp="CC-Total-Octets" required="false" max="1"/>
+        <rule avp="CC-Input-Octets" required="false" max="1"/>
+        <rule avp="CC-Output-Octets" required="false" max="1"/>
+        <rule avp="CC-Service-Specific-Units" required="false" max="1"/>
         <!-- *[ AVP ]-->
       </data>
     </avp>
 
     <avp name="Restriction-Filter-Rule" code="438" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.36-->
       <data type="IPFilterRule"/>
     </avp>
 
     <avp name="Service-Context-Id" code="461" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.42-->
       <data type="UTF8String"/>
     </avp>
 
     <avp name="Service-Identifier" code="439" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.28-->
       <data type="Unsigned32"/>
     </avp>
 
     <avp name="Service-Parameter-Info" code="440" must="-" may="P,M" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.43-->
       <data type="Grouped">
         <rule avp="Service-Parameter-Type" required="true" max="1"/>
         <rule avp="Service-Parameter-Value" required="true" max="1"/>
@@ -326,14 +370,17 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Service-Parameter-Type" code="441" must="-" may="P,M" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.44-->
       <data type="Unsigned32"/>
     </avp>
 
     <avp name="Service-Parameter-Value" code="442" must="-" may="P,M" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.45-->
       <data type="OctetString"/>
     </avp>
 
     <avp name="Subscription-Id" code="443" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.46-->
       <data type="Grouped">
         <rule avp="Subscription-Id-Type" required="true" max="1"/>
         <rule avp="Subscription-Id-Data" required="true" max="1"/>
@@ -341,10 +388,12 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Subscription-Id-Data" code="444" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.48-->
       <data type="UTF8String"/>
     </avp>
 
     <avp name="Subscription-Id-Type" code="450" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.47-->
       <data type="Enumerated">
         <item code="0" name="END_USER_E164"/>
         <item code="1" name="END_USER_IMSI"/>
@@ -354,6 +403,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Tariff-Change-Usage" code="452" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.27-->
       <data type="Enumerated">
         <item code="0" name="UNIT_BEFORE_TARIFF_CHANGE"/>
         <item code="1" name="UNIT_AFTER_TARIFF_CHANGE"/>
@@ -362,10 +412,12 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Tariff-Time-Change" code="451" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.20-->
       <data type="Time"/>
     </avp>
 
     <avp name="Unit-Value" code="445" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.8-->
       <data type="Grouped">
         <rule avp="Value-Digits" required="true" max="1"/>
         <rule avp="Exponent" required="true" max="1"/>
@@ -373,19 +425,21 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Used-Service-Unit" code="446" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.19-->
       <data type="Grouped">
-        <rule avp="Tariff-Change-Usage" required="true" max="1"/>
-        <rule avp="CC-Time" required="true" max="1"/>
-        <rule avp="CC-Money" required="true" max="1"/>
-        <rule avp="CC-Total-Octets" required="true" max="1"/>
-        <rule avp="CC-Input-Octets" required="true" max="1"/>
-        <rule avp="CC-Output-Octets" required="true" max="1"/>
-        <rule avp="CC-Service-Specific-Units" required="true" max="1"/>
+        <rule avp="Tariff-Change-Usage" required="false" max="1"/>
+        <rule avp="CC-Time" required="false" max="1"/>
+        <rule avp="CC-Money" required="false" max="1"/>
+        <rule avp="CC-Total-Octets" required="false" max="1"/>
+        <rule avp="CC-Input-Octets" required="false" max="1"/>
+        <rule avp="CC-Output-Octets" required="false" max="1"/>
+        <rule avp="CC-Service-Specific-Units" required="false" max="1"/>
         <!-- *[ AVP ]-->
       </data>
     </avp>
 
     <avp name="User-Equipment-Info" code="458" must="-" may="P,M" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.49-->
       <data type="Grouped">
         <rule avp="User-Equipment-Info-Type" required="true" max="1"/>
         <rule avp="User-Equipment-Info-Value" required="true" max="1"/>
@@ -393,6 +447,7 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="User-Equipment-Info-Type" code="459" must="-" may="P,M" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.50-->
       <data type="Enumerated">
         <item code="0" name="IMEISV"/>
         <item code="1" name="MAC"/>
@@ -402,14 +457,17 @@ var CreditControlXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="User-Equipment-Info-Value" code="460" must="-" may="P,M" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.51-->
       <data type="OctetString"/>
     </avp>
 
     <avp name="Value-Digits" code="447" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.10-->
       <data type="Integer64"/>
     </avp>
 
     <avp name="Validity-Time" code="448" must="M" may="P" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc4006#section-8.33-->
       <data type="Unsigned32"/>
     </avp>
   </application>

@@ -68,6 +68,9 @@ func NewClient(c diam.Conn) {
 	// parser.Load(bytes.NewReader(dict.DefaultXML))
 	// parser.Load(bytes.NewReader(dict.CreditControlXML))
 	// m := diam.NewRequest(257, 0, parser)
+
+	// Alternatively you can use load more dictionaries into the default parser. e.g.
+	// dict.Default.load(bytes.NewReader(dict.CreditControlXML))
 	m := diam.NewRequest(257, 0, nil)
 	// Add AVPs
 	m.NewAVP("Origin-Host", 0x40, 0x00, Identity)

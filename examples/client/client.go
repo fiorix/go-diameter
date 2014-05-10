@@ -62,6 +62,15 @@ func main() {
 // NewClient sends a CER to the server and then a DWR every 10 seconds.
 func NewClient(c diam.Conn) {
 	// Build CER
+	// Passing nil as the last argument to NewRequest will use the default Parser
+	// and load dict.Default. To load other dictionaries you can use your own parser. e.g.
+	// parser, _ := dict.NewParser()
+	// parser.Load(bytes.NewReader(dict.DefaultXML))
+	// parser.Load(bytes.NewReader(dict.CreditControlXML))
+	// m := diam.NewRequest(257, 0, parser)
+
+	// Alternatively you can use load more dictionaries into the default parser. e.g.
+	// dict.Default.load(bytes.NewReader(dict.CreditControlXML))
 	m := diam.NewRequest(257, 0, nil)
 	// Add AVPs
 	m.NewAVP("Origin-Host", 0x40, 0x00, Identity)

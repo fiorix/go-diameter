@@ -55,10 +55,10 @@ servers and identifying bottlenecks.
 The results below are from two Intel i5 quad-core with 4GB ram on a 1Gbps
 network, with 4 concurrent clients hammering the example server:
 
-2014/05/11 10:32:26 1000000 messages in 10.449877643s seconds, 95694 msg/s
-2014/05/11 10:32:26 1000000 messages in 10.604832166s seconds, 94296 msg/s
-2014/05/11 10:32:26 1000000 messages in 10.699197777s seconds, 93464 msg/s
-2014/05/11 10:32:27 1000000 messages in 10.727248401s seconds, 93220 msg/s
+	2014/05/11 10:32:26 1000000 messages in 10.449877643s seconds, 95694 msg/s
+	2014/05/11 10:32:26 1000000 messages in 10.604832166s seconds, 94296 msg/s
+	2014/05/11 10:32:26 1000000 messages in 10.699197777s seconds, 93464 msg/s
+	2014/05/11 10:32:27 1000000 messages in 10.727248401s seconds, 93220 msg/s
 
 For better performance, avoid printing diameter messages to the log.
 Although they're very useful for debugging purposes, they kill performance

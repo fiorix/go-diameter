@@ -11,8 +11,8 @@ import (
 	"net"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/diamdict"
 	"github.com/fiorix/go-diameter/diam/diamtype"
-	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 // testMessage is used by the test cases below and also in reflect_test.go.
@@ -90,7 +90,7 @@ var testMessage = []byte{
 }
 
 func TestReadMessage(t *testing.T) {
-	msg, err := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	msg, err := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,8 +98,8 @@ func TestReadMessage(t *testing.T) {
 }
 
 func TestNewMessage(t *testing.T) {
-	want, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
-	m := NewMessage(257, 0x80, 0, 0xa8cc407d, 0xa8c1b2b4, dict.Default)
+	want, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
+	m := NewMessage(257, 0x80, 0, 0xa8cc407d, 0xa8c1b2b4, diamdict.Default)
 	m.NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("test"))
 	m.NewAVP(296, 0x40, 0, diamtype.DiameterIdentity("localhost"))
 	m.NewAVP(257, 0x40, 0, diamtype.Address(net.ParseIP("10.1.0.1")))
@@ -131,7 +131,7 @@ func TestNewMessage(t *testing.T) {
 }
 
 func TestMessageFindAVP(t *testing.T) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	a, err := m.FindAVP(278)
 	if err != nil {
 		t.Fatal(err)
@@ -146,13 +146,13 @@ func TestMessageFindAVP(t *testing.T) {
 func BenchmarkReadMessage(b *testing.B) {
 	reader := bytes.NewReader(testMessage)
 	for n := 0; n < b.N; n++ {
-		ReadMessage(reader, dict.Default)
+		ReadMessage(reader, diamdict.Default)
 		reader.Seek(0, 0)
 	}
 }
 
 func BenchmarkWriteMessage(b *testing.B) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	for n := 0; n < b.N; n++ {
 		m.WriteTo(ioutil.Discard)
 	}

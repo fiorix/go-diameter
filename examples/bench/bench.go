@@ -73,7 +73,7 @@ func NewClient(ssl bool) {
 			c.Close()
 		}
 	})
-	// Connect using the our custom mux and default base.Dict.
+	// Connect using the our custom mux and default dictionary.
 	if ssl {
 		c, err = diam.DialTLS(addr, "", "", mux, nil)
 	} else {

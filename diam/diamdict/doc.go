@@ -3,4 +3,4 @@
 // found in the LICENSE file.
 
 // Diameter dictionary parser.  Part of go-diameter.
-package dict
+package diamdict

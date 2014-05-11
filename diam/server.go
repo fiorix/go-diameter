@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diam/diamdict"
 )
 
 // Objects implementing the Handler interface can be
@@ -126,7 +126,7 @@ func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
 func (c *conn) readMessage() (*Message, *response, error) {
 	dp := c.server.Dict
 	if dp == nil {
-		dp = dict.Default
+		dp = diamdict.Default
 	}
 	if c.server.ReadTimeout > 0 {
 		c.rwc.SetReadDeadline(time.Now().Add(c.server.ReadTimeout))
@@ -340,12 +340,12 @@ func Serve(l net.Listener, handler Handler) error {
 
 // A Server defines parameters for running a diameter server.
 type Server struct {
-	Addr         string        // TCP address to listen on, ":3868" if empty
-	Handler      Handler       // handler to invoke, diam.DefaultServeMux if nil
-	Dict         *dict.Parser  // diameter dictionaries for this server
-	ReadTimeout  time.Duration // maximum duration before timing out read of the request
-	WriteTimeout time.Duration // maximum duration before timing out write of the response
-	TLSConfig    *tls.Config   // optional TLS config, used by ListenAndServeTLS
+	Addr         string           // TCP address to listen on, ":3868" if empty
+	Handler      Handler          // handler to invoke, diam.DefaultServeMux if nil
+	Dict         *diamdict.Parser // diameter dictionaries for this server
+	ReadTimeout  time.Duration    // maximum duration before timing out read of the request
+	WriteTimeout time.Duration    // maximum duration before timing out write of the response
+	TLSConfig    *tls.Config      // optional TLS config, used by ListenAndServeTLS
 }
 
 // serverHandler delegates to either the server's Handler or DefaultServeMux.
@@ -415,8 +415,8 @@ func (srv *Server) Serve(l net.Listener) error {
 //
 // If handler is nil, diam.DefaultServeMux is used.
 //
-// If dict is nil, dict.Default is used.
-func ListenAndServe(addr string, handler Handler, dict *dict.Parser) error {
+// If dict is nil, diamdict.Default is used.
+func ListenAndServe(addr string, handler Handler, dict *diamdict.Parser) error {
 	server := &Server{Addr: addr, Handler: handler, Dict: dict}
 	return server.ListenAndServe()
 }
@@ -460,7 +460,7 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 // of the server's certificate followed by the CA's certificate.
 //
 // One can use generate_cert.go in crypto/tls to generate cert.pem and key.pem.
-func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler, dict *dict.Parser) error {
+func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler, dict *diamdict.Parser) error {
 	server := &Server{Addr: addr, Handler: handler, Dict: dict}
 	return server.ListenAndServeTLS(certFile, keyFile)
 }

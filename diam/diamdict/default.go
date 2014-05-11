@@ -4,7 +4,7 @@
 
 // Default dictionary Parser and Base Protocol XML.
 
-package dict
+package diamdict
 
 import "bytes"
 

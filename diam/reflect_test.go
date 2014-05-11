@@ -9,12 +9,12 @@ import (
 	"net"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/diamdict"
 	"github.com/fiorix/go-diameter/diam/diamtype"
-	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 func TestUnmarshalAVP(t *testing.T) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	type Data struct {
 		OriginHost1 AVP  `avp:"Origin-Host"`
 		OriginHost2 *AVP `avp:"Origin-Host"`
@@ -32,7 +32,7 @@ func TestUnmarshalAVP(t *testing.T) {
 }
 
 func TestUnmarshalString(t *testing.T) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	type Data struct {
 		OriginHost string `avp:"Origin-Host"`
 	}
@@ -46,7 +46,7 @@ func TestUnmarshalString(t *testing.T) {
 }
 
 func TestUnmarshalNetIP(t *testing.T) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	type Data struct {
 		HostIP1 *AVP   `avp:"Host-IP-Address"`
 		HostIP2 net.IP `avp:"Host-IP-Address"`
@@ -64,7 +64,7 @@ func TestUnmarshalNetIP(t *testing.T) {
 }
 
 func TestUnmarshalInt(t *testing.T) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	type Data struct {
 		VendorId1 *AVP `avp:"Vendor-Id"`
 		VendorId2 int  `avp:"Vendor-Id"`
@@ -82,7 +82,7 @@ func TestUnmarshalInt(t *testing.T) {
 }
 
 func TestUnmarshalSlice(t *testing.T) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	type Data struct {
 		Vendors1 []*AVP `avp:"Supported-Vendor-Id"`
 		Vendors2 []int  `avp:"Supported-Vendor-Id"`
@@ -112,7 +112,7 @@ func TestUnmarshalSlice(t *testing.T) {
 }
 
 func TestUnmarshalGrouped(t *testing.T) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	type VSA struct {
 		AuthAppId1 AVP  `avp:"Auth-Application-Id"`
 		AuthAppId2 *AVP `avp:"Auth-Application-Id"`
@@ -140,7 +140,7 @@ func TestUnmarshalGrouped(t *testing.T) {
 		t.Fatal(err)
 	}
 	if v, ok := d.VSA1.Data.(*Grouped); !ok {
-		t.Fatalf("Unexpected value. Want Grouped, have %s", d.VSA1)
+		t.Fatalf("Unexpected value. Want Grouped, have %v", d.VSA1)
 	} else if len(v.AVP) != 2 { // There must be 2 AVPs in it.
 		t.Fatalf("Unexpected value. Want 2, have %d", len(v.AVP))
 	}
@@ -206,7 +206,7 @@ func TestUnmarshalGrouped(t *testing.T) {
 }
 
 func TestUnmarshalCER(t *testing.T) {
-	msg, err := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	msg, err := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,10 +232,9 @@ func TestUnmarshalCER(t *testing.T) {
 	}
 	switch {
 	case d.OriginHost != "test":
-		t.Fatalf("Unexpected Code. Want test, have %d", d.OriginHost)
+		t.Fatalf("Unexpected Code. Want test, have %s", d.OriginHost)
 	case d.OriginRealm != "localhost":
-		t.Fatalf("Unexpected Code. Want localhost, have %d", d.OriginRealm)
-
+		t.Fatalf("Unexpected Code. Want localhost, have %s", d.OriginRealm)
 	case d.HostIP.String() != "10.1.0.1":
 		t.Fatalf("Unexpected Host-IP-Address. Want 10.1.0.1, have %s", d.HostIP)
 	case d.VendorId != 13:
@@ -262,7 +261,7 @@ func TestUnmarshalCER(t *testing.T) {
 }
 
 func BenchmarkUnmarshal(b *testing.B) {
-	msg, err := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	msg, err := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
 	if err != nil {
 		b.Fatal(err)
 	}

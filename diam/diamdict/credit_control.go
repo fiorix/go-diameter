@@ -4,7 +4,7 @@
 
 // Credit Control dictionary Parser and Credit Control Protocol XML.
 
-package dict
+package diamdict
 
 import "bytes"
 
@@ -12,8 +12,8 @@ import "bytes"
 var CreditControl *Parser
 
 func init() {
-  CreditControl, _ = NewParser()
-  CreditControl.Load(bytes.NewReader(CreditControlXML))
+	CreditControl, _ = NewParser()
+	CreditControl.Load(bytes.NewReader(CreditControlXML))
 }
 
 // CreditControlXML is an embedded version of the Diameter Credit-Control Application

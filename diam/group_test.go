@@ -9,8 +9,8 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/diamdict"
 	"github.com/fiorix/go-diameter/diam/diamtype"
-	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 var testGroupedAVP = []byte{ // Vendor-Specific-Application-Id
@@ -25,7 +25,7 @@ var testGroupedAVP = []byte{ // Vendor-Specific-Application-Id
 }
 
 func TestGroupedAVP(t *testing.T) {
-	a, err := decodeAVP(testGroupedAVP, 0, dict.Default)
+	a, err := decodeAVP(testGroupedAVP, 0, diamdict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,9 +41,9 @@ func TestGroupedAVP(t *testing.T) {
 }
 
 func TestDecodeMessageWithGroupedAVP(t *testing.T) {
-	m := NewRequest(257, 0, dict.Default)
+	m := NewRequest(257, 0, diamdict.Default)
 	m.NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("client"))
-	a, _ := decodeAVP(testGroupedAVP, 0, dict.Default)
+	a, _ := decodeAVP(testGroupedAVP, 0, diamdict.Default)
 	m.AddAVP(a)
 	t.Log(m)
 }

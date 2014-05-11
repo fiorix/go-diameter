@@ -4,7 +4,7 @@
 
 // Skeleton of the dictionary file.  Part of go-diameter.
 
-package dict
+package diamdict
 
 import (
 	"encoding/xml"

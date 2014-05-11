@@ -12,8 +12,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/fiorix/go-diameter/diam/diamdict"
 	"github.com/fiorix/go-diameter/diam/diamtype"
-	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 func init() {
@@ -25,12 +25,12 @@ type Message struct {
 	Header *Header
 	AVP    []*AVP
 
-	Dictionary *dict.Parser // Used to encode and decode AVPs.
+	Dictionary *diamdict.Parser // Used to encode and decode AVPs.
 }
 
 // ReadMessage returns a Message. It uses the dictionary to parse the
 // binary stream from the reader.
-func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
+func ReadMessage(reader io.Reader, dictionary *diamdict.Parser) (*Message, error) {
 	var err error
 	hbytes := make([]byte, HeaderLength)
 	if _, err = io.ReadFull(reader, hbytes); err != nil {
@@ -68,9 +68,9 @@ func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {
 }
 
 // NewMessage creates and initializes Message.
-func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *dict.Parser) *Message {
+func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *diamdict.Parser) *Message {
 	if dictionary == nil {
-		dictionary = dict.Default
+		dictionary = diamdict.Default
 	}
 	if hopbyhop == 0 {
 		hopbyhop = rand.Uint32()
@@ -93,7 +93,7 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dicti
 }
 
 // NewRequest is an alias to NewMessage.
-func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
+func NewRequest(cmd uint32, appid uint32, dictionary *diamdict.Parser) *Message {
 	return NewMessage(cmd, 0x80, appid, 0, 0, dictionary)
 }
 

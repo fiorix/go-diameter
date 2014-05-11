@@ -4,7 +4,7 @@
 
 // Dictionary parser.  Part of go-diameter.
 
-package dict
+package diamdict
 
 import (
 	"bytes"

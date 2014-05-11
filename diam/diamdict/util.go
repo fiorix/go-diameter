@@ -4,7 +4,7 @@
 
 // Dictionary parser, helper functions.  Part of go-diameter.
 
-package dict
+package diamdict
 
 import (
 	"fmt"

@@ -9,8 +9,8 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/diamdict"
 	"github.com/fiorix/go-diameter/diam/diamtype"
-	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 var testAVP = [][]byte{ // Body of a CER message
@@ -64,7 +64,7 @@ func TestNewAVP(t *testing.T) {
 }
 
 func TestDecodeAVP(t *testing.T) {
-	avp, err := decodeAVP(testAVP[0], 1, dict.Default)
+	avp, err := decodeAVP(testAVP[0], 1, diamdict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestEncodeEmptyAVP(t *testing.T) {
 
 func BenchmarkDecodeAVP(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		decodeAVP(testAVP[0], 1, dict.Default)
+		decodeAVP(testAVP[0], 1, diamdict.Default)
 	}
 }
 

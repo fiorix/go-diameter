@@ -9,8 +9,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/fiorix/go-diameter/diam/diamdict"
 	"github.com/fiorix/go-diameter/diam/diamtype"
-	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 // Diameter AVP.
@@ -34,7 +34,7 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data diamtype.DataType) *AV
 	return a
 }
 
-func decodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
+func decodeAVP(data []byte, application uint32, dictionary *diamdict.Parser) (*AVP, error) {
 	avp := new(AVP)
 	if err := avp.DecodeFromBytes(data, application, dictionary); err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func decodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, 
 // DecodeFromBytes decodes the bytes of a Diameter AVP.
 // It requires a parent Header to be able to decode the AVP data by
 // consulting the ApplicationId and Dictionary of the Header.
-func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.Parser) error {
+func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *diamdict.Parser) error {
 	dl := len(data)
 	if len(data) < 8 {
 		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", dl)

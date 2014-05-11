@@ -12,7 +12,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/fiorix/go-diameter/diam/datatypes"
+	"github.com/fiorix/go-diameter/diam/diamtype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -99,7 +99,7 @@ func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
 
 // NewAVP creates and initializes a new AVP and adds it to the Message.
 // @code can be int, uint32 or string (e.g. 268 or Result-Code)
-func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data datatypes.DataType) (*AVP, error) {
+func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data diamtype.DataType) (*AVP, error) {
 	var a *AVP
 	switch code.(type) {
 	case int:
@@ -168,7 +168,7 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 		return nil, err
 	}
 	for _, a := range m.AVP {
-		if dictAVP.Code == a.Code {
+		if a.Code == dictAVP.Code {
 			return a, nil
 		}
 	}
@@ -186,7 +186,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.EndToEndId,
 		m.Dictionary,
 	)
-	nm.NewAVP(268, 0x40, 0x00, datatypes.Unsigned32(resultCode))
+	nm.NewAVP(268, 0x40, 0x00, diamtype.Unsigned32(resultCode))
 	return nm
 }
 

@@ -9,7 +9,7 @@ package dict
 import (
 	"fmt"
 
-	"github.com/fiorix/go-diameter/diam/datatypes"
+	"github.com/fiorix/go-diameter/diam/diamtype"
 )
 
 // Apps return a list of all applications loaded in the Parser instance.
@@ -131,7 +131,7 @@ func (p Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
 	if err != nil {
 		return nil, err
 	}
-	if avp.Data.Type != datatypes.EnumeratedType {
+	if avp.Data.Type != diamtype.EnumeratedType {
 		return nil, fmt.Errorf(
 			"Data of AVP %s (%d) data is not Enumerated.",
 			avp.Name, avp.Code)
@@ -155,7 +155,7 @@ func (p Parser) Rule(appid, code uint32, n string) (*Rule, error) {
 	if err != nil {
 		return nil, err
 	}
-	if avp.Data.Type != datatypes.GroupedType {
+	if avp.Data.Type != diamtype.GroupedType {
 		return nil, fmt.Errorf(
 			"Data of AVP %s (%d) data is not Grouped.",
 			avp.Name, avp.Code)

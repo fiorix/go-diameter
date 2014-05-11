@@ -9,7 +9,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/fiorix/go-diameter/diam/datatypes"
+	"github.com/fiorix/go-diameter/diam/diamtype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -42,7 +42,7 @@ func TestGroupedAVP(t *testing.T) {
 
 func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 	m := NewRequest(257, 0, dict.Default)
-	m.NewAVP(264, 0x40, 0, datatypes.DiameterIdentity("client"))
+	m.NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("client"))
 	a, _ := decodeAVP(testGroupedAVP, 0, dict.Default)
 	m.AddAVP(a)
 	t.Log(m)
@@ -52,9 +52,9 @@ func TestMakeGroupedAVP(t *testing.T) {
 	// Create empty Grouped AVP
 	g := new(Grouped)
 	// Add Auth-Application-Id
-	g.AVP = append(g.AVP, NewAVP(258, 0x40, 0, datatypes.Unsigned32(4)))
+	g.AVP = append(g.AVP, NewAVP(258, 0x40, 0, diamtype.Unsigned32(4)))
 	// Add Vendor-Id
-	g.AVP = append(g.AVP, NewAVP(266, 0x40, 0, datatypes.Unsigned32(10415)))
+	g.AVP = append(g.AVP, NewAVP(266, 0x40, 0, diamtype.Unsigned32(10415)))
 	// Create Vendor-Specific-Application-Id
 	a := NewAVP(260, 0x40, 0, g)
 	b, err := a.Serialize()

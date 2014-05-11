@@ -14,7 +14,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/fiorix/go-diameter/diam/datatypes"
+	"github.com/fiorix/go-diameter/diam/diamtype"
 )
 
 // Parser is the root element for dictionaries and supports multiple XML
@@ -103,7 +103,7 @@ func (p *Parser) Load(r io.Reader) error {
 }
 
 func updateType(a *AVP) error {
-	id, exists := datatypes.Available[a.Data.TypeName]
+	id, exists := diamtype.Available[a.Data.TypeName]
 	if !exists {
 		return fmt.Errorf("Unsupported data type: %s", a.Data.TypeName)
 	}

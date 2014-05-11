@@ -9,11 +9,11 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/fiorix/go-diameter/diam/datatypes"
+	"github.com/fiorix/go-diameter/diam/diamtype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-var testAVP = [][]byte{
+var testAVP = [][]byte{ // Body of a CER message
 	[]byte{ // Origin-Host
 		0x00, 0x00, 0x01, 0x08,
 		0x40, 0x00, 0x00, 0x0e,
@@ -53,7 +53,7 @@ var testAVP = [][]byte{
 }
 
 func TestNewAVP(t *testing.T) {
-	a := NewAVP(264, 0x40, 0, datatypes.DiameterIdentity("client"))
+	a := NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("client"))
 	if a.Length != 14 { // Length in the AVP header
 		t.Fatalf("Unexpected length. Want 14, have %d", a.Length)
 	}
@@ -85,7 +85,7 @@ func TestEncodeAVP(t *testing.T) {
 	avp := &AVP{
 		Code:  264,
 		Flags: 0x40,
-		Data:  datatypes.DiameterIdentity("client"),
+		Data:  diamtype.DiameterIdentity("client"),
 	}
 	b, err := avp.Serialize()
 	if err != nil {
@@ -98,7 +98,7 @@ func TestEncodeAVP(t *testing.T) {
 	t.Log(hex.Dump(b))
 }
 
-func TestEncodeAVPnoData(t *testing.T) {
+func TestEncodeEmptyAVP(t *testing.T) {
 	avp := &AVP{
 		Code:  264,
 		Flags: 0x40,
@@ -118,7 +118,7 @@ func BenchmarkDecodeAVP(b *testing.B) {
 }
 
 func BenchmarkEncodeAVP(b *testing.B) {
-	a := NewAVP(264, 0x40, 0, datatypes.DiameterIdentity("client"))
+	a := NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("client"))
 	for n := 0; n < b.N; n++ {
 		a.Serialize()
 	}

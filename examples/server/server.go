@@ -16,14 +16,14 @@ import (
 	"runtime"
 
 	"github.com/fiorix/go-diameter/diam"
-	"github.com/fiorix/go-diameter/diam/datatypes"
+	"github.com/fiorix/go-diameter/diam/diamtype"
 )
 
 const (
-	Identity    = datatypes.DiameterIdentity("server")
-	Realm       = datatypes.DiameterIdentity("localhost")
-	VendorId    = datatypes.Unsigned32(13)
-	ProductName = datatypes.UTF8String("go-diameter")
+	Identity    = diamtype.DiameterIdentity("server")
+	Realm       = diamtype.DiameterIdentity("localhost")
+	VendorId    = diamtype.Unsigned32(13)
+	ProductName = diamtype.UTF8String("go-diameter")
 )
 
 var Quiet bool
@@ -94,7 +94,7 @@ func OnCER(c diam.Conn, m *diam.Message) {
 	a.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
 	laddr := c.LocalAddr()
 	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP("Host-IP-Address", 0x40, 0x0, datatypes.Address(net.ParseIP(ip)))
+	m.NewAVP("Host-IP-Address", 0x40, 0x0, diamtype.Address(net.ParseIP(ip)))
 	a.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
 	a.NewAVP("Product-Name", 0x40, 0x0, ProductName)
 	// Copy origin Origin-State-Id.

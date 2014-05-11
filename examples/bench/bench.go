@@ -18,14 +18,14 @@ import (
 	"time"
 
 	"github.com/fiorix/go-diameter/diam"
-	"github.com/fiorix/go-diameter/diam/datatypes"
+	"github.com/fiorix/go-diameter/diam/diamtype"
 )
 
 const (
-	Identity    = datatypes.DiameterIdentity("client")
-	Realm       = datatypes.DiameterIdentity("localhost")
-	VendorId    = datatypes.Unsigned32(13)
-	ProductName = datatypes.UTF8String("go-diameter")
+	Identity    = diamtype.DiameterIdentity("client")
+	Realm       = diamtype.DiameterIdentity("localhost")
+	VendorId    = diamtype.Unsigned32(13)
+	ProductName = diamtype.UTF8String("go-diameter")
 )
 
 var (
@@ -89,10 +89,10 @@ func NewClient(ssl bool) {
 	m.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
 	laddr := c.LocalAddr()
 	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP("Host-IP-Address", 0x40, 0x0, datatypes.Address(net.ParseIP(ip)))
+	m.NewAVP("Host-IP-Address", 0x40, 0x0, diamtype.Address(net.ParseIP(ip)))
 	m.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
 	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
-	m.NewAVP("Origin-State-Id", 0x40, 0x0, datatypes.Unsigned32(rand.Uint32()))
+	m.NewAVP("Origin-State-Id", 0x40, 0x0, diamtype.Unsigned32(rand.Uint32()))
 	// Send message to the connection
 	if _, err := m.WriteTo(c); err != nil {
 		log.Println("Write failed:", err)
@@ -101,13 +101,13 @@ func NewClient(ssl bool) {
 	// Prepare the ACR that is used for benchmarking.
 	m = diam.NewRequest(271, 0, nil)
 	// Add AVPs
-	m.NewAVP("Session-Id", 0x40, 0x00, datatypes.UTF8String("Hello"))
+	m.NewAVP("Session-Id", 0x40, 0x00, diamtype.UTF8String("Hello"))
 	m.NewAVP("Origin-Host", 0x40, 0x00, Identity)
 	m.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
-	m.NewAVP("Host-IP-Address", 0x40, 0x0, datatypes.Address(net.ParseIP(ip)))
+	m.NewAVP("Host-IP-Address", 0x40, 0x0, diamtype.Address(net.ParseIP(ip)))
 	m.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
 	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
-	m.NewAVP("Origin-State-Id", 0x40, 0x0, datatypes.Unsigned32(rand.Uint32()))
+	m.NewAVP("Origin-State-Id", 0x40, 0x0, diamtype.Unsigned32(rand.Uint32()))
 	log.Println("OK, sending messages")
 	var n int
 	go func() {

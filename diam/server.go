@@ -22,11 +22,11 @@ import (
 // Objects implementing the Handler interface can be
 // registered to serve particular messages like CER, DWR.
 //
-// ServeDiam should write messages to the Conn and then return.
+// ServeDIAM should write messages to the Conn and then return.
 // Returning signals that the request is finished and that the server
 // can move on to the next request on the connection.
 type Handler interface {
-	ServeDiam(Conn, *Message)
+	ServeDIAM(Conn, *Message)
 	ErrorReports() chan ErrorReport
 }
 
@@ -35,9 +35,9 @@ type Handler interface {
 //
 // This mechanism can be used to detect if the client has disconnected.
 type CloseNotifier interface {
-	// CloseNotify returns a channel that receives a single value
+	// CloseNotify returns a channel that is closed
 	// when the client connection has gone away.
-	CloseNotify() <-chan bool
+	CloseNotify() <-chan struct{}
 }
 
 // Conn interface is used by a handler to send diameter messages.
@@ -72,15 +72,15 @@ type conn struct {
 	tlsState *tls.ConnectionState // or nil when not using TLS
 
 	mu           sync.Mutex // guards the following
-	closeNotifyc chan bool
+	closeNotifyc chan struct{}
 	clientGone   bool
 }
 
-func (c *conn) closeNotify() <-chan bool {
+func (c *conn) closeNotify() <-chan struct{} {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.closeNotifyc == nil {
-		c.closeNotifyc = make(chan bool, 1)
+		c.closeNotifyc = make(chan struct{})
 		pr, pw := io.Pipe()
 		readSource := c.sr.r
 		c.sr.Lock()
@@ -102,7 +102,7 @@ func (c *conn) noteClientGone() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.closeNotifyc != nil && !c.clientGone {
-		c.closeNotifyc <- true
+		close(c.closeNotifyc) // unblock reader
 	}
 	c.clientGone = true
 }
@@ -202,15 +202,16 @@ func (c *conn) serve() {
 			}
 			break
 		}
-		// Diameter cannot have multiple simultaneous active requests.
+		// Diameter cannot have multiple simultaneous active requests
+		// or pipelines.
 		// Until the server replies to this message, it can't
 		// read another, so we might as well run the handler in
 		// this goroutine.
-		serverHandler{c.server}.ServeDiam(w, m)
+		serverHandler{c.server}.ServeDIAM(w, m)
 	}
 }
 
-func (w *response) CloseNotify() <-chan bool {
+func (w *response) CloseNotify() <-chan struct{} {
 	return w.conn.closeNotify()
 }
 
@@ -220,8 +221,8 @@ func (w *response) CloseNotify() <-chan bool {
 // Handler object that calls f.
 type HandlerFunc func(Conn, *Message)
 
-// ServeDiam calls f(c, m).
-func (f HandlerFunc) ServeDiam(c Conn, m *Message) {
+// ServeDIAM calls f(c, m).
+func (f HandlerFunc) ServeDIAM(c Conn, m *Message) {
 	f(c, m)
 }
 
@@ -240,7 +241,7 @@ type ServeMux struct {
 }
 
 // ErrorReport is sent out of the server in case it fails to read messages
-// because of a bad dictionary or network errors.
+// because of a bad dictionary, or due to network errors.
 type ErrorReport struct {
 	Message *Message
 	Error   error
@@ -262,9 +263,9 @@ func NewServeMux() *ServeMux {
 // DefaultServeMux is the default ServeMux used by Serve.
 var DefaultServeMux = NewServeMux()
 
-// ServeDiam dispatches the request to the handler whose code match
+// ServeDIAM dispatches the request to the handler whose code match
 // the incoming message, or close the connection if no handler is found.
-func (mux *ServeMux) ServeDiam(c Conn, m *Message) {
+func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 	mux.mu.RLock()
 	defer mux.mu.RUnlock()
 	var cmd string
@@ -282,12 +283,13 @@ func (mux *ServeMux) ServeDiam(c Conn, m *Message) {
 		}
 	}
 	if me, ok := mux.m[cmd]; ok {
-		me.h.ServeDiam(c, m)
+		me.h.ServeDIAM(c, m)
 	} else if me, ok = mux.m["ALL"]; ok {
-		me.h.ServeDiam(c, m)
+		me.h.ServeDIAM(c, m)
 	} else {
-		// This is not HTTP. Ignore messages that are not bound
-		// instead of closing the connection.
+		// Commands not handled by mux go to a blackhole.
+		// If they're not in mux there's no dictionary therefore
+		// the message can't be parsed.
 		//c.Close()
 	}
 }
@@ -353,12 +355,12 @@ type serverHandler struct {
 	srv *Server
 }
 
-func (sh serverHandler) ServeDiam(w Conn, m *Message) {
+func (sh serverHandler) ServeDIAM(w Conn, m *Message) {
 	handler := sh.srv.Handler
 	if handler == nil {
 		handler = DefaultServeMux
 	}
-	handler.ServeDiam(w, m)
+	handler.ServeDIAM(w, m)
 }
 
 // ListenAndServe listens on the TCP network address srv.Addr and then
@@ -401,11 +403,11 @@ func (srv *Server) Serve(l net.Listener) error {
 			return e
 		}
 		tempDelay = 0
-		c, err := srv.newConn(rw)
-		if err != nil {
+		if c, err := srv.newConn(rw); err != nil {
 			continue
+		} else {
+			go c.serve()
 		}
-		go c.serve()
 	}
 }
 

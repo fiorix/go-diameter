@@ -45,7 +45,7 @@ func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 	m.NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("client"))
 	a, _ := decodeAVP(testGroupedAVP, 0, diamdict.Default)
 	m.AddAVP(a)
-	t.Log(m)
+	t.Logf("Message:\n%s", m)
 }
 
 func TestMakeGroupedAVP(t *testing.T) {
@@ -65,5 +65,5 @@ func TestMakeGroupedAVP(t *testing.T) {
 		t.Fatalf("Unexpected value.\nWant:\n%s\nHave:\n%s",
 			hex.Dump(testGroupedAVP), hex.Dump(b))
 	}
-	t.Log(a)
+	t.Logf("Message:\n%s", a)
 }

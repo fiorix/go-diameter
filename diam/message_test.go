@@ -94,7 +94,7 @@ func TestReadMessage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(msg)
+	t.Logf("Message:\n%s", msg)
 }
 
 func TestNewMessage(t *testing.T) {
@@ -126,8 +126,8 @@ func TestNewMessage(t *testing.T) {
 		t.Fatalf("Unexpected message.\nWant:\n%s\n%s\nHave:\n%s\n%s",
 			want, hex.Dump(b), m, hex.Dump(a))
 	}
-	t.Log(len(a), "bytes\n", m)
-	t.Log(hex.Dump(a))
+	t.Logf("%d bytes\n%s", len(a), m)
+	t.Logf("Message:\n%s", hex.Dump(a))
 }
 
 func TestMessageFindAVP(t *testing.T) {

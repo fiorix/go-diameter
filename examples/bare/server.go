@@ -24,16 +24,18 @@ func main() {
 		if conn, err := srv.Accept(); err != nil {
 			panic(err)
 		} else {
-			go client(conn)
+			go handleClient(conn)
 		}
 	}
 }
 
-func client(conn net.Conn) {
+func handleClient(conn net.Conn) {
 	defer conn.Close()
-	m, err := diam.ReadMessage(conn, diamdict.Default)
-	if err != nil {
-		log.Fatal(err)
+	for {
+		m, err := diam.ReadMessage(conn, diamdict.Default)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(m)
 	}
-	log.Println(m)
 }

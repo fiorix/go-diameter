@@ -12,7 +12,6 @@ package main
 import (
 	"flag"
 	"log"
-	"net"
 	"runtime"
 	"strings"
 	"sync"
@@ -29,7 +28,7 @@ type Bridge struct {
 var (
 	UpstreamAddr string
 	LiveMu       sync.RWMutex
-	Live         = make(map[net.Addr]*Bridge)
+	Live         = make(map[string]*Bridge) // ip:bridge
 )
 
 func main() {
@@ -40,7 +39,7 @@ func main() {
 	UpstreamAddr = *remote
 	log.Println("Diameter sn🔍 op agent")
 	if len(*remote) == 0 {
-		log.Fatal("Missing argument --remote")
+		log.Fatal("Missing argument -remote")
 	}
 	if *local == *remote {
 		log.Fatal("Local and remote address are the same. Duh?")
@@ -76,7 +75,7 @@ func main() {
 // bridge with the client, returning the newly created Bridge object.
 func GetBridge(c diam.Conn) *Bridge {
 	LiveMu.RLock()
-	if b, ok := Live[c.RemoteAddr()]; ok {
+	if b, ok := Live[c.RemoteAddr().String()]; ok {
 		LiveMu.RUnlock()
 		return b
 	}
@@ -87,7 +86,7 @@ func GetBridge(c diam.Conn) *Bridge {
 		Client: make(chan *diam.Message),
 		Server: make(chan *diam.Message),
 	}
-	Live[c.RemoteAddr()] = b
+	Live[c.RemoteAddr().String()] = b
 	// Prepare for the upstream connection.
 	mux := diam.NewServeMux()
 	mux.HandleFunc("ALL", func(c diam.Conn, m *diam.Message) {
@@ -127,15 +126,15 @@ func Pump(src, dst diam.Conn, srcChan, dstChan chan *diam.Message) {
 		case <-src.(diam.CloseNotifier).CloseNotify():
 			LiveMu.Lock()
 			defer LiveMu.Unlock()
-			if _, ok := Live[src.RemoteAddr()]; ok {
-				delete(Live, src.RemoteAddr())
+			if _, ok := Live[src.RemoteAddr().String()]; ok {
+				delete(Live, src.RemoteAddr().String())
 				log.Printf(
 					"Destroying bridge from %s to %s",
 					src.RemoteAddr().String(),
 					dst.RemoteAddr().String(),
 				)
 			} else {
-				delete(Live, dst.RemoteAddr())
+				delete(Live, dst.RemoteAddr().String())
 				log.Printf(
 					"Destroying bridge from %s to %s",
 					dst.RemoteAddr().String(),

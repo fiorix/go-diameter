@@ -82,10 +82,19 @@ func (m *Message) Unmarshal(dst interface{}) error {
 	if v.Kind() != reflect.Ptr {
 		return errors.New("dst is not a pointer to struct")
 	}
-	return scanStruct(m, m.AVP, v)
+	return scanStruct(m, v, m.AVP)
 }
 
-func scanStruct(m *Message, avps []*AVP, field reflect.Value) error {
+// newIndex returns a map of AVPs indexed by their code.
+func newIndex(avps []*AVP) map[uint32][]*AVP {
+	idx := make(map[uint32][]*AVP)
+	for _, avp := range avps {
+		idx[avp.Code] = append(idx[avp.Code], avp)
+	}
+	return idx
+}
+
+func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 	base := reflect.Indirect(field)
 	if base.Kind() != reflect.Struct {
 		return errors.New("dst is not a pointer to struct")
@@ -93,8 +102,8 @@ func scanStruct(m *Message, avps []*AVP, field reflect.Value) error {
 	idx := newIndex(avps)
 	for n := 0; n < base.NumField(); n++ {
 		f := base.Field(n)
-		bf := base.Type().Field(n)
-		avpname := bf.Tag.Get("avp")
+		bt := base.Type().Field(n)
+		avpname := bt.Tag.Get("avp")
 		if avpname == "" || avpname == "-" {
 			continue
 		}
@@ -109,91 +118,62 @@ func scanStruct(m *Message, avps []*AVP, field reflect.Value) error {
 		if !exists {
 			continue
 		}
-		//log.Println("Handling", f, bf)
+		//log.Println("Handling", f, bt)
 		unmarshal(m, f, avps)
 	}
 	return nil
 }
 
-func newIndex(avps []*AVP) map[uint32][]*AVP {
-	idx := make(map[uint32][]*AVP)
-	for _, avp := range avps {
-		idx[avp.Code] = append(idx[avp.Code], avp)
-	}
-	return idx
-}
-
 func unmarshal(m *Message, f reflect.Value, avps []*AVP) {
-	ft := f.Type()
-	// Case 1: f is *AVP
-	at := reflect.TypeOf(avps[0])
-	if ft.AssignableTo(at) {
-		f.Set(reflect.ValueOf(avps[0]))
-		return
-	}
-	// Case 2: f is AVP
-	at = reflect.TypeOf(*avps[0])
-	if ft.AssignableTo(at) {
-		f.Set(reflect.ValueOf(*avps[0]))
-		return
-	}
-	// Case 3: f is the type of AVP.Data
-	dv := reflect.ValueOf(avps[0].Data)
-	if dv.Type().ConvertibleTo(ft) {
-		f.Set(dv.Convert(ft))
-		return
-	}
-	if dv.Type() == _groupedType {
-		if f.Kind() == reflect.Ptr {
-			nf := reflect.New(f.Type().Elem())
-			scanStruct(m, avps[0].Data.(*Grouped).AVP, nf)
-			f.Set(nf)
-		} else {
-			scanStruct(m, avps[0].Data.(*Grouped).AVP, f)
+	fieldType := f.Type()
+
+	switch f.Kind() {
+	case reflect.Slice:
+		// Copy byte arrays.
+		dv := reflect.ValueOf(avps[0].Data)
+		if dv.Type().ConvertibleTo(fieldType) {
+			f.Set(dv.Convert(fieldType))
+			break
 		}
-		return
-	}
-	// Look for slices, except []byte (e.g. net.IP, time.Time)
-	if f.Kind() == reflect.Slice && !ft.AssignableTo(_byteSliceType) {
-		unmarshalSlice(f, avps)
-		return
+
+		// Allocate new slice and copy all items.
+		f.Set(reflect.MakeSlice(fieldType, len(avps), len(avps)))
+		// TODO: optimize?
+		for n := 0; n < len(avps); n++ {
+			unmarshal(m, f.Index(n), avps[n:])
+		}
+
+	case reflect.Interface, reflect.Ptr:
+		if f.IsNil() {
+			f.Set(reflect.New(fieldType.Elem()))
+		}
+		unmarshal(m, f.Elem(), avps)
+
+	case reflect.Struct:
+		// Field is *AVP
+		at := reflect.TypeOf(avps[0])
+		if fieldType.AssignableTo(at) {
+			f.Set(reflect.ValueOf(avps[0]))
+			break
+		}
+
+		// Field is AVP
+		at = reflect.TypeOf(*avps[0])
+		if fieldType.ConvertibleTo(at) {
+			f.Set(reflect.ValueOf(*avps[0]))
+			break
+		}
+
+		// Handle grouped AVPs.
+		if group, ok := avps[0].Data.(*Grouped); ok {
+			scanStruct(m, f, group.AVP)
+		}
+
+	default:
+		// Field is AVP.Data (e.g. diamtype.UTF8String, string)
+		dv := reflect.ValueOf(avps[0].Data)
+		if dv.Type().ConvertibleTo(fieldType) {
+			f.Set(dv.Convert(fieldType))
+		}
 	}
 }
-
-func unmarshalSlice(f reflect.Value, avps []*AVP) {
-	ft := f.Type()
-	// Case 1: f is []*AVP
-	at := reflect.TypeOf(avps)
-	if at.AssignableTo(ft) {
-		f.Set(reflect.ValueOf(avps))
-		return
-	}
-	// Case 2: f is []AVP
-	eft := f.Type().Elem()
-	at = reflect.TypeOf(*avps[0])
-	if at.AssignableTo(eft) {
-		tmp := make([]AVP, 0, len(avps))
-		for _, avp := range avps {
-			tmp = append(tmp, *avp)
-		}
-		f.Set(reflect.ValueOf(tmp))
-		return
-	}
-	// Case 3: f[n] is the type of AVP.Data
-	tmp := reflect.MakeSlice(ft, 0, len(avps))
-	for _, avp := range avps {
-		// sanity check each avp
-		v := reflect.ValueOf(avp.Data)
-		if v.Type().ConvertibleTo(eft) {
-			tmp = reflect.Append(tmp, v.Convert(eft))
-		}
-	}
-	if tmp.Len() > 0 {
-		f.Set(tmp)
-	}
-}
-
-var (
-	_groupedType   = reflect.TypeOf(&Grouped{})
-	_byteSliceType = reflect.TypeOf([]byte{})
-)

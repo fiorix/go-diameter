@@ -23,10 +23,14 @@ func TestUnmarshalAVP(t *testing.T) {
 	if err := m.Unmarshal(&d); err != nil {
 		t.Fatal(err)
 	}
-	if v := d.OriginHost1.Data.(diamtype.DiameterIdentity); v != "test" {
+	if v, ok := d.OriginHost1.Data.(diamtype.DiameterIdentity); !ok {
+		t.Fatalf("Unexpected value. Want diamtype.DiameterIdentity, have %#v", d.OriginHost1.Data)
+	} else if v != "test" {
 		t.Fatalf("Unexpected value. Want test, have %s", v)
 	}
-	if v := d.OriginHost2.Data.(diamtype.DiameterIdentity); v != "test" {
+	if v, ok := d.OriginHost2.Data.(diamtype.DiameterIdentity); !ok {
+		t.Fatalf("Unexpected value. Want diamtype.DiameterIdentity, have %#v", d.OriginHost2.Data)
+	} else if v != "test" {
 		t.Fatalf("Unexpected value. Want test, have %s", v)
 	}
 }
@@ -202,6 +206,33 @@ func TestUnmarshalGrouped(t *testing.T) {
 	}
 	if d.VSA5.VendorId3 != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA5.VendorId3)
+	}
+}
+
+func TestUnmarshalGroupedSlice(t *testing.T) {
+	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
+	type VSA struct {
+		AuthAppId int `avp:"Auth-Application-Id"`
+		VendorId  int `avp:"Vendor-Id"`
+	}
+	type Data struct {
+		VSA1 []*VSA `avp:"Vendor-Specific-Application-Id"`
+		VSA2 []*AVP `avp:"Vendor-Specific-Application-Id"`
+	}
+	var d Data
+	if err := m.Unmarshal(&d); err != nil {
+		t.Fatal(err)
+	}
+	if len(d.VSA1) != 1 {
+		t.Fatalf("Unexpected value. Want 1, have %d", len(d.VSA1))
+	}
+	if len(d.VSA2) != 1 {
+		t.Fatalf("Unexpected value. Want 1, have %d", len(d.VSA2))
+	}
+	if v, ok := d.VSA2[0].Data.(*Grouped); !ok {
+		t.Fatalf("Unexpected value. Want Grouped, have %s", d.VSA2)
+	} else if len(v.AVP) != 2 { // There must be 2 AVPs in it.
+		t.Fatalf("Unexpected value. Want 2, have %d", len(v.AVP))
 	}
 }
 

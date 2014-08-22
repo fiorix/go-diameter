@@ -8,18 +8,18 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diamtype"
 )
 
-const GroupedType = 50 // Must not conflict with other diamtype.DataTypeId.
+const GroupedFormat = 50 // Must not conflict with other format.DataFormatId.
 
-// Grouped AVP.  This is different from the dummy diamtype.Grouped.
+// Grouped AVP.  This is different from the dummy format.Grouped.
 type Grouped struct {
 	AVP []*AVP
 }
 
-func DecodeGrouped(data diamtype.Grouped, application uint32, dictionary *dict.Parser) (*Grouped, error) {
+func DecodeGrouped(data format.Grouped, application uint32, dictionary *dict.Parser) (*Grouped, error) {
 	g := new(Grouped)
 	b := []byte(data)
 	for n := 0; n < len(b); {
@@ -56,8 +56,8 @@ func (g *Grouped) Padding() int {
 	return 0
 }
 
-func (g *Grouped) Type() diamtype.DataTypeId {
-	return GroupedType
+func (g *Grouped) Format() format.FormatId {
+	return GroupedFormat
 }
 
 func (g *Grouped) String() string {

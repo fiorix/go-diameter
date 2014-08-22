@@ -88,9 +88,9 @@ func copy_avps(src []*AVP, dst *dict.App) {
 			Code: avp.Code,
 		}
 		if avp.Type.Name == "" && avp.Grouped != nil {
-			new_avp.Data = dict.Data{TypeName: "Grouped"}
+			new_avp.Data = dict.Data{FormatName: "Grouped"}
 		} else {
-			new_avp.Data = dict.Data{TypeName: avp.Type.Name}
+			new_avp.Data = dict.Data{FormatName: avp.Type.Name}
 		}
 		switch avp.MayEncrypt {
 		case "yes":

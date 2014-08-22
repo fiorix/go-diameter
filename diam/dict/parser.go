@@ -14,7 +14,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/fiorix/go-diameter/diamtype"
+	"github.com/fiorix/go-diameter/diam/avp/format"
 )
 
 // Parser is the root element for dictionaries and supports multiple XML
@@ -103,11 +103,11 @@ func (p *Parser) Load(r io.Reader) error {
 }
 
 func updateType(a *AVP) error {
-	id, exists := diamtype.Available[a.Data.TypeName]
+	id, exists := format.Available[a.Data.FormatName]
 	if !exists {
-		return fmt.Errorf("Unsupported data type: %s", a.Data.TypeName)
+		return fmt.Errorf("Unsupported data type: %s", a.Data.FormatName)
 	}
-	a.Data.Type = id
+	a.Data.Format = id
 	return nil
 }
 
@@ -155,7 +155,7 @@ func printCMD(w io.Writer, cmd *CMD) {
 
 func printAVP(w io.Writer, avp *AVP) {
 	fmt.Fprintf(w, "\t%-4d %s: %s\n",
-		avp.Code, avp.Name, avp.Data.TypeName)
+		avp.Code, avp.Name, avp.Data.FormatName)
 	// Enumerated
 	if len(avp.Data.Enum) > 0 {
 		fmt.Fprintf(w, "\t\tItems:\n")

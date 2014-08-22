@@ -9,18 +9,18 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
 	"github.com/fiorix/go-diameter/diam/util"
-	"github.com/fiorix/go-diameter/diamtype"
 )
 
 // Diameter AVP.
 type AVP struct {
-	Code     uint32            // Code of this AVP
-	Flags    uint8             // Flags of this AVP
-	Length   int               // Length of this AVP's payload
-	VendorId uint32            // VendorId of this AVP
-	Data     diamtype.DataType // Data of this AVP (payload)
+	Code     uint32        // Code of this AVP
+	Flags    uint8         // Flags of this AVP
+	Length   int           // Length of this AVP's payload
+	VendorId uint32        // VendorId of this AVP
+	Data     format.Format // Data of this AVP (payload)
 }
 
 // AVP Flags. See section 4.1 of RFC 6733.
@@ -31,7 +31,7 @@ const (
 )
 
 // New creates and initializes a new AVP.
-func New(code uint32, flags uint8, vendor uint32, data diamtype.DataType) *AVP {
+func New(code uint32, flags uint8, vendor uint32, data format.Format) *AVP {
 	a := &AVP{
 		Code:     code,
 		Flags:    flags,
@@ -90,13 +90,13 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 			hdrLength, n,
 		)
 	}
-	a.Data, err = diamtype.Decode(dictAVP.Data.Type, payload)
+	a.Data, err = format.Decode(dictAVP.Data.Format, payload)
 	if err != nil {
 		return err
 	}
 	// Handle grouped AVPs.
-	if a.Data.Type() == diamtype.GroupedType {
-		a.Data, err = DecodeGrouped(a.Data.(diamtype.Grouped), application, dictionary)
+	if a.Data.Format() == format.GroupedFormat {
+		a.Data, err = DecodeGrouped(a.Data.(format.Grouped), application, dictionary)
 		if err != nil {
 			return err
 		}

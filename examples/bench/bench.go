@@ -19,14 +19,14 @@ import (
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diamtype"
+	"github.com/fiorix/go-diameter/diam/avp/format"
 )
 
 const (
-	Identity    = diamtype.DiameterIdentity("client")
-	Realm       = diamtype.DiameterIdentity("localhost")
-	VendorId    = diamtype.Unsigned32(13)
-	ProductName = diamtype.UTF8String("go-diameter")
+	Identity    = format.DiameterIdentity("client")
+	Realm       = format.DiameterIdentity("localhost")
+	VendorId    = format.Unsigned32(13)
+	ProductName = format.UTF8String("go-diameter")
 )
 
 var (
@@ -89,10 +89,10 @@ func NewClient(ssl bool) {
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
 	laddr := c.LocalAddr()
 	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, diamtype.Address(net.ParseIP(ip)))
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, format.Address(net.ParseIP(ip)))
 	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
 	m.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
-	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, diamtype.Unsigned32(rand.Uint32()))
+	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(rand.Uint32()))
 	// Send message to the connection
 	if _, err := m.WriteTo(c); err != nil {
 		log.Println("Write failed:", err)
@@ -100,13 +100,13 @@ func NewClient(ssl bool) {
 	}
 	// Prepare the ACR that is used for benchmarking.
 	m = diam.NewRequest(diam.Accounting, 0, nil)
-	m.NewAVP(avp.SessionId, avp.Mbit, 0, diamtype.UTF8String("Hello"))
+	m.NewAVP(avp.SessionId, avp.Mbit, 0, format.UTF8String("Hello"))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, diamtype.Address(net.ParseIP(ip)))
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, format.Address(net.ParseIP(ip)))
 	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
 	m.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
-	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, diamtype.Unsigned32(rand.Uint32()))
+	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(rand.Uint32()))
 	log.Println("OK, sending messages")
 	var n int
 	go func() {

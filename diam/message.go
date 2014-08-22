@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/fiorix/go-diameter/diam/avp"
+	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diamtype"
 )
 
 func init() {
@@ -99,7 +99,7 @@ func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
 }
 
 // NewAVP creates and initializes a new AVP and adds it to the Message.
-func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data diamtype.DataType) (*avp.AVP, error) {
+func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data format.Format) (*avp.AVP, error) {
 	var a *avp.AVP
 	switch code.(type) {
 	case int:
@@ -186,7 +186,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.EndToEndId,
 		m.Dictionary,
 	)
-	nm.NewAVP(268, 0x40, 0x00, diamtype.Unsigned32(resultCode))
+	nm.NewAVP(268, 0x40, 0x00, format.Unsigned32(resultCode))
 	return nm
 }
 
@@ -218,7 +218,7 @@ func (m *Message) String() string {
 			a.Code,
 		); err != nil {
 			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", a, err)
-		} else if a.Data.Type() == avp.GroupedType {
+		} else if a.Data.Format() == avp.GroupedFormat {
 			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, a))
 		} else {
 			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, a)

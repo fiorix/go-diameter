@@ -9,8 +9,8 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diamtype"
 )
 
 var testAVP = [][]byte{ // Body of a CER message
@@ -57,7 +57,7 @@ func TestNew(t *testing.T) {
 		OriginHost, // Code
 		Mbit,       // Flags
 		0,          // Vendor
-		diamtype.DiameterIdentity("foobar"), // Data
+		format.DiameterIdentity("foobar"), // Data
 	)
 	if a.Length != 14 { // Length in the AVP header
 		t.Fatalf("Unexpected length. Want 14, have %d", a.Length)
@@ -90,7 +90,7 @@ func TestEncode(t *testing.T) {
 	avp := &AVP{
 		Code:  OriginHost,
 		Flags: Mbit,
-		Data:  diamtype.DiameterIdentity("client"),
+		Data:  format.DiameterIdentity("client"),
 	}
 	b, err := avp.Serialize()
 	if err != nil {
@@ -123,7 +123,7 @@ func BenchmarkDecode(b *testing.B) {
 }
 
 func BenchmarkEncode(b *testing.B) {
-	a := New(OriginHost, Mbit, 0, diamtype.DiameterIdentity("client"))
+	a := New(OriginHost, Mbit, 0, format.DiameterIdentity("client"))
 	for n := 0; n < b.N; n++ {
 		a.Serialize()
 	}

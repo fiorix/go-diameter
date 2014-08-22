@@ -34,7 +34,7 @@ import (
 // second, *AVP, stores a pointer to the original AVP in the message. If you
 // change the values of it, you're actually changing the message.
 // The third decodes the inner contents of AVP.Data, which in this case is
-// a diamtype.DiameterIdentity, and stores the value of it in the struct.
+// a format.DiameterIdentity, and stores the value of it in the struct.
 //
 // Unmarshal supports all the basic Go types, including slices, for multiple
 // AVPs of the same type) and structs, for grouped AVPs.
@@ -71,7 +71,7 @@ import (
 //	err := m.Unmarshal(&d)
 //
 // Other types are supported as well, such as net.IP and time.Time where
-// applicable. See the diamtype sub-module for details. Usually, you want
+// applicable. See the format sub-package for details. Usually, you want
 // to decode values to their native Go type when the AVPs don't have to be
 // re-used in an answer, such as Origin-Host and friends. The ones that are
 // usually added to responses, such as Origin-State-Id are better decoded to
@@ -172,7 +172,7 @@ func unmarshal(m *Message, f reflect.Value, avps []*avp.AVP) {
 		}
 
 	default:
-		// Field is AVP.Data (e.g. diamtype.UTF8String, string)
+		// Field is AVP.Data (e.g. format.UTF8String, string)
 		dv := reflect.ValueOf(avps[0].Data)
 		if dv.Type().ConvertibleTo(fieldType) {
 			f.Set(dv.Convert(fieldType))

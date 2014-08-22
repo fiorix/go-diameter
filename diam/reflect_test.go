@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/fiorix/go-diameter/diam/avp"
+	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diamtype"
 )
 
 func TestUnmarshalAVP(t *testing.T) {
@@ -24,13 +24,13 @@ func TestUnmarshalAVP(t *testing.T) {
 	if err := m.Unmarshal(&d); err != nil {
 		t.Fatal(err)
 	}
-	if v, ok := d.OriginHost1.Data.(diamtype.DiameterIdentity); !ok {
-		t.Fatalf("Unexpected value. Want diamtype.DiameterIdentity, have %#v", d.OriginHost1.Data)
+	if v, ok := d.OriginHost1.Data.(format.DiameterIdentity); !ok {
+		t.Fatalf("Unexpected value. Want format.DiameterIdentity, have %#v", d.OriginHost1.Data)
 	} else if v != "test" {
 		t.Fatalf("Unexpected value. Want test, have %s", v)
 	}
-	if v, ok := d.OriginHost2.Data.(diamtype.DiameterIdentity); !ok {
-		t.Fatalf("Unexpected value. Want diamtype.DiameterIdentity, have %#v", d.OriginHost2.Data)
+	if v, ok := d.OriginHost2.Data.(format.DiameterIdentity); !ok {
+		t.Fatalf("Unexpected value. Want format.DiameterIdentity, have %#v", d.OriginHost2.Data)
 	} else if v != "test" {
 		t.Fatalf("Unexpected value. Want test, have %s", v)
 	}
@@ -60,7 +60,7 @@ func TestUnmarshalNetIP(t *testing.T) {
 	if err := m.Unmarshal(&d); err != nil {
 		t.Fatal(err)
 	}
-	if v := d.HostIP1.Data.(diamtype.Address); net.IP(v).String() != "10.1.0.1" {
+	if v := d.HostIP1.Data.(format.Address); net.IP(v).String() != "10.1.0.1" {
 		t.Fatalf("Unexpected value. Want 10.1.0.1, have %s", v)
 	}
 	if v := d.HostIP2.String(); v != "10.1.0.1" {
@@ -78,7 +78,7 @@ func TestUnmarshalInt(t *testing.T) {
 	if err := m.Unmarshal(&d); err != nil {
 		t.Fatal(err)
 	}
-	if v := d.VendorId1.Data.(diamtype.Unsigned32); v != 13 {
+	if v := d.VendorId1.Data.(format.Unsigned32); v != 13 {
 		t.Fatalf("Unexpected value. Want 13, have %d", v)
 	}
 	if d.VendorId2 != 13 {
@@ -99,10 +99,10 @@ func TestUnmarshalSlice(t *testing.T) {
 	if len(d.Vendors1) != 2 {
 		t.Fatalf("Unexpected value. Want 2, have %d", len(d.Vendors1))
 	}
-	if v := d.Vendors1[0].Data.(diamtype.Unsigned32); v != 10415 {
+	if v := d.Vendors1[0].Data.(format.Unsigned32); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if v := d.Vendors1[1].Data.(diamtype.Unsigned32); v != 13 {
+	if v := d.Vendors1[1].Data.(format.Unsigned32); v != 13 {
 		t.Fatalf("Unexpected value. Want 13, have %d", v)
 	}
 	if len(d.Vendors2) != 2 {
@@ -154,55 +154,55 @@ func TestUnmarshalGrouped(t *testing.T) {
 	} else if len(v.AVP) != 2 { // There must be 2 AVPs in it.
 		t.Fatalf("Unexpected value. Want 2, have %d", len(v.AVP))
 	}
-	if v := int(d.VSA3.AuthAppId1.Data.(diamtype.Unsigned32)); v != 4 {
+	if v := int(d.VSA3.AuthAppId1.Data.(format.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if v := int(d.VSA3.AuthAppId2.Data.(diamtype.Unsigned32)); v != 4 {
+	if v := int(d.VSA3.AuthAppId2.Data.(format.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
 	if d.VSA3.AuthAppId3 != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA3.AuthAppId3)
 	}
-	if v := int(d.VSA3.VendorId1.Data.(diamtype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA3.VendorId1.Data.(format.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if v := int(d.VSA3.VendorId2.Data.(diamtype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA3.VendorId2.Data.(format.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
 	if d.VSA3.VendorId3 != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA3.VendorId3)
 	}
-	if v := int(d.VSA4.AuthAppId1.Data.(diamtype.Unsigned32)); v != 4 {
+	if v := int(d.VSA4.AuthAppId1.Data.(format.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if v := int(d.VSA4.AuthAppId2.Data.(diamtype.Unsigned32)); v != 4 {
+	if v := int(d.VSA4.AuthAppId2.Data.(format.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
 	if d.VSA4.AuthAppId3 != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA4.AuthAppId3)
 	}
-	if v := int(d.VSA4.VendorId1.Data.(diamtype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA4.VendorId1.Data.(format.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if v := int(d.VSA4.VendorId2.Data.(diamtype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA4.VendorId2.Data.(format.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
 	if d.VSA4.VendorId3 != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA4.VendorId3)
 	}
-	if v := int(d.VSA5.AuthAppId1.Data.(diamtype.Unsigned32)); v != 4 {
+	if v := int(d.VSA5.AuthAppId1.Data.(format.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if v := int(d.VSA5.AuthAppId2.Data.(diamtype.Unsigned32)); v != 4 {
+	if v := int(d.VSA5.AuthAppId2.Data.(format.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
 	if d.VSA5.AuthAppId3 != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA5.AuthAppId3)
 	}
-	if v := int(d.VSA5.VendorId1.Data.(diamtype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA5.VendorId1.Data.(format.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if v := int(d.VSA5.VendorId2.Data.(diamtype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA5.VendorId2.Data.(format.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
 	if d.VSA5.VendorId3 != 10415 {

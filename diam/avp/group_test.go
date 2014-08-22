@@ -9,8 +9,8 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diamtype"
 )
 
 // testGroupedAVP is a Vendor-Specific-Application-Id Grouped AVP.
@@ -30,7 +30,7 @@ func TestGroupedAVP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if a.Data.Type() != GroupedType {
+	if a.Data.Format() != GroupedFormat {
 		t.Fatal("AVP is not grouped")
 	}
 	b, err := a.Serialize()
@@ -44,7 +44,7 @@ func TestGroupedAVP(t *testing.T) {
 func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 	/*
 		m := NewRequest(257, 0, dict.Default)
-		m.NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("client"))
+		m.NewAVP(264, 0x40, 0, format.DiameterIdentity("client"))
 		a, _ := decode(testGroupedAVP, 0, dict.Default)
 		m.AddAVP(a)
 		t.Logf("Message:\n%s", m)
@@ -54,8 +54,8 @@ func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 func TestMakeGroupedAVP(t *testing.T) {
 	g := &Grouped{
 		AVP: []*AVP{
-			New(AuthApplicationId, Mbit, 0, diamtype.Unsigned32(4)),
-			New(VendorId, Mbit, 0, diamtype.Unsigned32(10415)),
+			New(AuthApplicationId, Mbit, 0, format.Unsigned32(4)),
+			New(VendorId, Mbit, 0, format.Unsigned32(10415)),
 		},
 	}
 	a := New(VendorSpecificApplicationId, Mbit, 0, g)

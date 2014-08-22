@@ -17,7 +17,7 @@ import (
 	"sync"
 
 	"github.com/fiorix/go-diameter/diam"
-	"github.com/fiorix/go-diameter/diam/diamdict"
+	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 type Bridge struct {
@@ -44,11 +44,11 @@ func main() {
 	if *local == *remote {
 		log.Fatal("Local and remote address are the same. Duh?")
 	}
-	// Load dictionary files onto the default (base protocol) diamdict.
+	// Load dictionary files onto the default (base protocol) dict.
 	if *files != "" {
 		for _, f := range strings.Split(*files, ",") {
 			log.Println("Loading dictionary", f)
-			if err := diamdict.Default.LoadFile(f); err != nil {
+			if err := dict.Default.LoadFile(f); err != nil {
 				log.Fatal(err)
 			}
 		}

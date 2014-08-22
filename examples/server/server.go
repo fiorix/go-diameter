@@ -16,7 +16,8 @@ import (
 	"runtime"
 
 	"github.com/fiorix/go-diameter/diam"
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diam/avp"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 const (
@@ -60,25 +61,25 @@ func main() {
 // OnCER handles Capabilities-Exchange-Request messages.
 func OnCER(c diam.Conn, m *diam.Message) {
 	// Reject client if there's no Origin-Host.
-	host, err := m.FindAVP("Origin-Host")
+	host, err := m.FindAVP(avp.OriginHost)
 	if err != nil {
 		c.Close()
 		return
 	}
 	// Reject client if there's no Origin-Realm.
-	realm, err := m.FindAVP("Origin-Realm")
+	realm, err := m.FindAVP(avp.OriginRealm)
 	if err != nil {
 		c.Close()
 		return
 	}
 	// Reject client if there's no Host-IP-Address.
-	ipaddr, err := m.FindAVP("Host-IP-Address")
+	ipaddr, err := m.FindAVP(avp.HostIPAddress)
 	if err != nil {
 		c.Close()
 		return
 	}
 	// Reject client if there's no Origin-State-Id.
-	stateId, err := m.FindAVP("Origin-State-Id")
+	stateId, err := m.FindAVP(avp.OriginStateId)
 	if err != nil {
 		c.Close()
 		return
@@ -89,14 +90,14 @@ func OnCER(c diam.Conn, m *diam.Message) {
 		log.Println(m)
 	}
 	// Craft CEA with result code 2001 (OK).
-	a := m.Answer(2001)
-	a.NewAVP("Origin-Host", 0x40, 0x00, Identity)
-	a.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
+	a := m.Answer(diam.Success)
+	a.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
+	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
 	laddr := c.LocalAddr()
 	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP("Host-IP-Address", 0x40, 0x0, diamtype.Address(net.ParseIP(ip)))
-	a.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
-	a.NewAVP("Product-Name", 0x40, 0x0, ProductName)
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, diamtype.Address(net.ParseIP(ip)))
+	a.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
+	a.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
 	// Copy origin Origin-State-Id.
 	a.AddAVP(stateId)
 	if !Quiet {
@@ -121,7 +122,7 @@ func OnCER(c diam.Conn, m *diam.Message) {
 // with a generic 2001 (OK) answer.
 func OnMSG(c diam.Conn, m *diam.Message) {
 	// Ignore message if there's no Origin-State-Id.
-	stateId, err := m.FindAVP("Origin-State-Id")
+	stateId, err := m.FindAVP(avp.OriginStateId)
 	if err != nil {
 		log.Println("Invalid message: missing Origin-State-Id\n", m)
 	}
@@ -130,9 +131,9 @@ func OnMSG(c diam.Conn, m *diam.Message) {
 		log.Println(m)
 	}
 	// Craft answer with result code 2001 (OK).
-	a := m.Answer(2001)
-	a.NewAVP("Origin-Host", 0x40, 0x00, Identity)
-	a.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
+	a := m.Answer(diam.Success)
+	a.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
+	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
 	a.AddAVP(stateId)
 	if !Quiet {
 		log.Printf("Sending message to %s", c.RemoteAddr().String())

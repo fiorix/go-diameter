@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package diam
+package avp
 
 import (
 	"bytes"
 	"encoding/hex"
 	"testing"
 
-	"github.com/fiorix/go-diameter/diam/diamdict"
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 var testAVP = [][]byte{ // Body of a CER message
@@ -52,8 +52,13 @@ var testAVP = [][]byte{ // Body of a CER message
 	},
 }
 
-func TestNewAVP(t *testing.T) {
-	a := NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("client"))
+func TestNew(t *testing.T) {
+	a := New(
+		OriginHost, // Code
+		Mbit,       // Flags
+		0,          // Vendor
+		diamtype.DiameterIdentity("foobar"), // Data
+	)
 	if a.Length != 14 { // Length in the AVP header
 		t.Fatalf("Unexpected length. Want 14, have %d", a.Length)
 	}
@@ -63,16 +68,16 @@ func TestNewAVP(t *testing.T) {
 	t.Log(a)
 }
 
-func TestDecodeAVP(t *testing.T) {
-	avp, err := decodeAVP(testAVP[0], 1, diamdict.Default)
+func TestDecode(t *testing.T) {
+	avp, err := Decode(testAVP[0], 1, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
 	switch {
-	case avp.Code != 264:
-		t.Fatalf("Unexpected Code. Want 264, have %d", avp.Code)
-	case avp.Flags != 0x40:
-		t.Fatalf("Unexpected Code. Want 0x40, have 0x%x", avp.Flags)
+	case avp.Code != OriginHost:
+		t.Fatalf("Unexpected Code. Want %d, have %d", OriginHost, avp.Code)
+	case avp.Flags != Mbit:
+		t.Fatalf("Unexpected Code. Want %#x, have %#x", Mbit, avp.Flags)
 	case avp.Length != 14:
 		t.Fatalf("Unexpected Length. Want 14, have %d", avp.Length)
 	case avp.Data.Padding() != 2:
@@ -81,10 +86,10 @@ func TestDecodeAVP(t *testing.T) {
 	t.Log(avp)
 }
 
-func TestEncodeAVP(t *testing.T) {
+func TestEncode(t *testing.T) {
 	avp := &AVP{
-		Code:  264,
-		Flags: 0x40,
+		Code:  OriginHost,
+		Flags: Mbit,
 		Data:  diamtype.DiameterIdentity("client"),
 	}
 	b, err := avp.Serialize()
@@ -98,10 +103,10 @@ func TestEncodeAVP(t *testing.T) {
 	t.Log(hex.Dump(b))
 }
 
-func TestEncodeEmptyAVP(t *testing.T) {
+func TestEncodeWithoutData(t *testing.T) {
 	avp := &AVP{
-		Code:  264,
-		Flags: 0x40,
+		Code:  OriginHost,
+		Flags: Mbit,
 	}
 	_, err := avp.Serialize()
 	if err != nil {
@@ -111,14 +116,14 @@ func TestEncodeEmptyAVP(t *testing.T) {
 	}
 }
 
-func BenchmarkDecodeAVP(b *testing.B) {
+func BenchmarkDecode(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		decodeAVP(testAVP[0], 1, diamdict.Default)
+		Decode(testAVP[0], 1, dict.Default)
 	}
 }
 
-func BenchmarkEncodeAVP(b *testing.B) {
-	a := NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("client"))
+func BenchmarkEncode(b *testing.B) {
+	a := New(OriginHost, Mbit, 0, diamtype.DiameterIdentity("client"))
 	for n := 0; n < b.N; n++ {
 		a.Serialize()
 	}

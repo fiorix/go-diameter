@@ -19,7 +19,7 @@ var testHeader = []byte{ // CER
 }
 
 func TestDecodeHeader(t *testing.T) {
-	hdr, err := decodeHeader(testHeader)
+	hdr, err := DecodeHeader(testHeader)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,8 +29,8 @@ func TestDecodeHeader(t *testing.T) {
 		t.Fatalf("Unexpected Version. Want 1, have %d", hdr.Version)
 	case hdr.MessageLength != 116:
 		t.Fatalf("Unexpected MessageLength. Want 116, have %d", hdr.MessageLength)
-	case hdr.CommandFlags != 0x80:
-		t.Fatalf("Unexpected CommandFlags. Want 0x80, have 0x%x", hdr.CommandFlags)
+	case hdr.CommandFlags != RequestFlag:
+		t.Fatalf("Unexpected CommandFlags. Want %#x, have %#x", RequestFlag, hdr.CommandFlags)
 	case hdr.CommandCode != 257:
 		t.Fatalf("Unexpected CommandCode. Want 257, have %d", hdr.CommandCode)
 	case hdr.ApplicationId != 1:
@@ -46,8 +46,8 @@ func TestEncodeHeader(t *testing.T) {
 	hdr := &Header{
 		Version:       1,
 		MessageLength: 116,
-		CommandFlags:  0x80,
-		CommandCode:   257,
+		CommandFlags:  RequestFlag,
+		CommandCode:   CapabilitiesExchange,
 		ApplicationId: 1,
 		HopByHopId:    0x2c0b6149,
 		EndToEndId:    0xdbbfd385,
@@ -61,7 +61,7 @@ func TestEncodeHeader(t *testing.T) {
 
 func BenchmarkDecodeHeader(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		decodeHeader(testHeader)
+		DecodeHeader(testHeader)
 	}
 }
 
@@ -69,8 +69,8 @@ func BenchmarkEncodeHeader(b *testing.B) {
 	hdr := &Header{
 		Version:       1,
 		MessageLength: 116,
-		CommandFlags:  0x80,
-		CommandCode:   257,
+		CommandFlags:  RequestFlag,
+		CommandCode:   CapabilitiesExchange,
 		ApplicationId: 1,
 		HopByHopId:    0x2c0b6149,
 		EndToEndId:    0xdbbfd385,

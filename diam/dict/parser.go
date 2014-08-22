@@ -4,7 +4,7 @@
 
 // Dictionary parser.  Part of go-diameter.
 
-package diamdict
+package dict
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 // Parser is the root element for dictionaries and supports multiple XML

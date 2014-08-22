@@ -12,8 +12,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/fiorix/go-diameter/diam/diamdict"
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diam/avp"
+	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 func init() {
@@ -23,21 +24,21 @@ func init() {
 // Diameter message.
 type Message struct {
 	Header *Header
-	AVP    []*AVP
+	AVP    []*avp.AVP
 
-	Dictionary *diamdict.Parser // Used to encode and decode AVPs.
+	Dictionary *dict.Parser // Used to encode and decode AVPs.
 }
 
 // ReadMessage returns a Message. It uses the dictionary to parse the
 // binary stream from the reader.
-func ReadMessage(reader io.Reader, dictionary *diamdict.Parser) (*Message, error) {
+func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	var err error
 	hbytes := make([]byte, HeaderLength)
 	if _, err = io.ReadFull(reader, hbytes); err != nil {
 		return nil, err
 	}
 	m := &Message{}
-	m.Header, err = decodeHeader(hbytes)
+	m.Header, err = DecodeHeader(hbytes)
 	if err != nil {
 		return nil, err
 	}
@@ -50,10 +51,10 @@ func ReadMessage(reader io.Reader, dictionary *diamdict.Parser) (*Message, error
 }
 
 func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {
-	var avp *AVP
+	var a *avp.AVP
 	var err error
 	for n := 0; n < cap(pbytes); {
-		avp, err = decodeAVP(
+		a, err = avp.Decode(
 			pbytes[n:],
 			m.Header.ApplicationId,
 			m.Dictionary,
@@ -61,16 +62,16 @@ func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Failed to decode AVP: %s", err)
 		}
-		m.AVP = append(m.AVP, avp)
-		n += avp.Len()
+		m.AVP = append(m.AVP, a)
+		n += a.Len()
 	}
 	return m, nil
 }
 
 // NewMessage creates and initializes Message.
-func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *diamdict.Parser) *Message {
+func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *dict.Parser) *Message {
 	if dictionary == nil {
-		dictionary = diamdict.Default
+		dictionary = dict.Default
 	}
 	if hopbyhop == 0 {
 		hopbyhop = rand.Uint32()
@@ -93,19 +94,18 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dicti
 }
 
 // NewRequest is an alias to NewMessage.
-func NewRequest(cmd uint32, appid uint32, dictionary *diamdict.Parser) *Message {
-	return NewMessage(cmd, 0x80, appid, 0, 0, dictionary)
+func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
+	return NewMessage(cmd, RequestFlag, appid, 0, 0, dictionary)
 }
 
 // NewAVP creates and initializes a new AVP and adds it to the Message.
-// @code can be int, uint32 or string (e.g. 268 or Result-Code)
-func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data diamtype.DataType) (*AVP, error) {
-	var a *AVP
+func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data diamtype.DataType) (*avp.AVP, error) {
+	var a *avp.AVP
 	switch code.(type) {
 	case int:
-		a = NewAVP(uint32(code.(int)), flags, vendor, data)
+		a = avp.New(uint32(code.(int)), flags, vendor, data)
 	case uint32:
-		a = NewAVP(code.(uint32), flags, vendor, data)
+		a = avp.New(code.(uint32), flags, vendor, data)
 	case string:
 		dictAVP, err := m.Dictionary.FindAVP(
 			m.Header.ApplicationId,
@@ -114,7 +114,7 @@ func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data diam
 		if err != nil {
 			return nil, err
 		}
-		a = NewAVP(dictAVP.Code, flags, vendor, data)
+		a = avp.New(dictAVP.Code, flags, vendor, data)
 	}
 	m.AVP = append(m.AVP, a)
 	m.Header.MessageLength += uint32(a.Len())
@@ -122,7 +122,7 @@ func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data diam
 }
 
 // AddAVP adds the AVP to the Message.
-func (m *Message) AddAVP(a *AVP) {
+func (m *Message) AddAVP(a *avp.AVP) {
 	m.AVP = append(m.AVP, a)
 	m.Header.MessageLength += uint32(a.Len())
 }
@@ -156,13 +156,13 @@ func (m *Message) Len() int {
 }
 
 // FindAVP searches the Message for a specific AVP.
-// @code can be either the AVP code (int, uint32) or name (string).
+// The code can be either the AVP code (int, uint32) or name (string).
 //
 // Example:
 //
 //	avp, err := m.FindAVP(264)
 //	avp, err := m.FindAVP("Origin-Host")
-func (m *Message) FindAVP(code interface{}) (*AVP, error) {
+func (m *Message) FindAVP(code interface{}) (*avp.AVP, error) {
 	dictAVP, err := m.Dictionary.FindAVP(m.Header.ApplicationId, code)
 	if err != nil {
 		return nil, err
@@ -212,35 +212,35 @@ func (m *Message) String() string {
 			typ[0],
 			m.Header)
 	}
-	for _, avp := range m.AVP {
+	for _, a := range m.AVP {
 		if dictAVP, err := m.Dictionary.FindAVP(
 			m.Header.ApplicationId,
-			avp.Code,
+			a.Code,
 		); err != nil {
-			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", avp, err)
-		} else if avp.Data.Type() == GroupedType {
-			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, avp))
+			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", a, err)
+		} else if a.Data.Type() == avp.GroupedType {
+			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, a))
 		} else {
-			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, avp)
+			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, a)
 		}
 	}
 	return b.String()
 }
 
-func printGrouped(prefix string, m *Message, avp *AVP) string {
+func printGrouped(prefix string, m *Message, a *avp.AVP) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "{Code:%d,Flags:0x%x,Length:%d,VendorId:%d,Value:Grouped{\n",
-		avp.Code,
-		avp.Flags,
-		avp.Len(),
-		avp.VendorId,
+		a.Code,
+		a.Flags,
+		a.Len(),
+		a.VendorId,
 	)
-	for _, a := range avp.Data.(*Grouped).AVP {
+	for _, ga := range a.Data.(*avp.Grouped).AVP {
 		if dictAVP, err := m.Dictionary.FindAVP(
 			m.Header.ApplicationId,
-			a.Code,
+			ga.Code,
 		); err != nil {
-			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, avp, err)
+			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, ga, err)
 		} else {
 			fmt.Fprintf(&b, "%s\t%s %s,\n", prefix, dictAVP.Name, a)
 		}

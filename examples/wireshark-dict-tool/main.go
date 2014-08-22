@@ -18,7 +18,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/fiorix/go-diameter/diam/diamdict"
+	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 func main() {
@@ -26,9 +26,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var new_dict = &diamdict.File{}
+	var new_dict = &dict.File{}
 	for _, app := range wsd.App {
-		new_app := &diamdict.App{
+		new_app := &dict.App{
 			Id:   app.Id,
 			Type: app.Type,
 			Name: app.Name,
@@ -44,18 +44,18 @@ func main() {
 	enc.Encode(new_dict)
 }
 
-func copy_vendors(src []*Vendor, dst *diamdict.App) {
+func copy_vendors(src []*Vendor, dst *dict.App) {
 	for _, vendor := range src {
-		dst.Vendor = append(dst.Vendor, &diamdict.Vendor{
+		dst.Vendor = append(dst.Vendor, &dict.Vendor{
 			Id:   vendor.Id,
 			Name: vendor.Name,
 		})
 	}
 }
 
-func copy_commands(src []*Cmd, dst *diamdict.App) {
+func copy_commands(src []*Cmd, dst *dict.App) {
 	for _, cmd := range src {
-		new_cmd := &diamdict.CMD{
+		new_cmd := &dict.CMD{
 			Code:  cmd.Code,
 			Name:  cmd.Name,
 			Short: cmd.Name,
@@ -70,9 +70,9 @@ func copy_commands(src []*Cmd, dst *diamdict.App) {
 	}
 }
 
-func copy_cmd_rules(src []*Rule, dst *diamdict.CMDRule, required bool) {
+func copy_cmd_rules(src []*Rule, dst *dict.CMDRule, required bool) {
 	for _, req := range src {
-		dst.Rule = append(dst.Rule, &diamdict.Rule{
+		dst.Rule = append(dst.Rule, &dict.Rule{
 			AVP:      req.Name,
 			Required: required,
 			Min:      req.Min,
@@ -81,16 +81,16 @@ func copy_cmd_rules(src []*Rule, dst *diamdict.CMDRule, required bool) {
 	}
 }
 
-func copy_avps(src []*AVP, dst *diamdict.App) {
+func copy_avps(src []*AVP, dst *dict.App) {
 	for _, avp := range src {
-		new_avp := &diamdict.AVP{
+		new_avp := &dict.AVP{
 			Name: avp.Name,
 			Code: avp.Code,
 		}
 		if avp.Type.Name == "" && avp.Grouped != nil {
-			new_avp.Data = diamdict.Data{TypeName: "Grouped"}
+			new_avp.Data = dict.Data{TypeName: "Grouped"}
 		} else {
-			new_avp.Data = diamdict.Data{TypeName: avp.Type.Name}
+			new_avp.Data = dict.Data{TypeName: avp.Type.Name}
 		}
 		switch avp.MayEncrypt {
 		case "yes":
@@ -118,7 +118,7 @@ func copy_avps(src []*AVP, dst *diamdict.App) {
 		}
 		for _, p := range avp.Enum {
 			new_avp.Data.Enum = append(new_avp.Data.Enum,
-				&diamdict.Enum{
+				&dict.Enum{
 					Name: p.Name,
 					Code: p.Code,
 				})
@@ -126,7 +126,7 @@ func copy_avps(src []*AVP, dst *diamdict.App) {
 		for _, grp := range avp.Grouped {
 			for _, p := range grp.GAVP {
 				new_avp.Data.Rule = append(new_avp.Data.Rule,
-					&diamdict.Rule{
+					&dict.Rule{
 						AVP: p.Name,
 						Min: p.Min,
 						Max: p.Max,
@@ -134,7 +134,7 @@ func copy_avps(src []*AVP, dst *diamdict.App) {
 			}
 			for _, p := range grp.Required.Rule {
 				new_avp.Data.Rule = append(new_avp.Data.Rule,
-					&diamdict.Rule{
+					&dict.Rule{
 						AVP:      p.Name,
 						Required: true,
 						Min:      p.Min,
@@ -143,7 +143,7 @@ func copy_avps(src []*AVP, dst *diamdict.App) {
 			}
 			for _, p := range grp.Optional.Rule {
 				new_avp.Data.Rule = append(new_avp.Data.Rule,
-					&diamdict.Rule{
+					&dict.Rule{
 						AVP:      p.Name,
 						Required: false,
 						Min:      p.Min,

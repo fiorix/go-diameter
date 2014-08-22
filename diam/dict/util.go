@@ -4,12 +4,12 @@
 
 // Dictionary parser, helper functions.  Part of go-diameter.
 
-package diamdict
+package dict
 
 import (
 	"fmt"
 
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 // Apps return a list of all applications loaded in the Parser instance.

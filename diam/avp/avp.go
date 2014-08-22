@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package diam
+package avp
 
 import (
 	"encoding/binary"
 	"errors"
 	"fmt"
 
-	"github.com/fiorix/go-diameter/diam/diamdict"
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diam/util"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 // Diameter AVP.
@@ -22,8 +23,15 @@ type AVP struct {
 	Data     diamtype.DataType // Data of this AVP (payload)
 }
 
-// NewAVP creates and initializes a new AVP.
-func NewAVP(code uint32, flags uint8, vendor uint32, data diamtype.DataType) *AVP {
+// AVP Flags. See section 4.1 of RFC 6733.
+const (
+	Vbit = 1 << 7
+	Mbit = 1 << 6
+	Pbit = 1 << 5
+)
+
+// New creates and initializes a new AVP.
+func New(code uint32, flags uint8, vendor uint32, data diamtype.DataType) *AVP {
 	a := &AVP{
 		Code:     code,
 		Flags:    flags,
@@ -34,7 +42,9 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data diamtype.DataType) *AV
 	return a
 }
 
-func decodeAVP(data []byte, application uint32, dictionary *diamdict.Parser) (*AVP, error) {
+// Decode decodes the bytes of a Diameter AVP.
+// It uses the given application id and dictionary for decoding the bytes.
+func Decode(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
 	avp := new(AVP)
 	if err := avp.DecodeFromBytes(data, application, dictionary); err != nil {
 		return nil, err
@@ -43,9 +53,8 @@ func decodeAVP(data []byte, application uint32, dictionary *diamdict.Parser) (*A
 }
 
 // DecodeFromBytes decodes the bytes of a Diameter AVP.
-// It requires a parent Header to be able to decode the AVP data by
-// consulting the ApplicationId and Dictionary of the Header.
-func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *diamdict.Parser) error {
+// It uses the given application id and dictionary for decoding the bytes.
+func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.Parser) error {
 	dl := len(data)
 	if len(data) < 8 {
 		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", dl)
@@ -57,7 +66,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *diamd
 		return err
 	}
 	a.Flags = data[4]
-	a.Length = int(uint24to32(data[5:8]))
+	a.Length = int(util.Uint24to32(data[5:8]))
 	if dl < int(a.Length) {
 		return fmt.Errorf("Not enough data to decode AVP: %d != %d",
 			dl, a.Length)
@@ -106,12 +115,12 @@ func (a *AVP) Serialize() ([]byte, error) {
 	var b []byte
 	if a.VendorId > 0 {
 		b = make([]byte, 12+payloadLen+a.Data.Padding())
-		copy(b[5:8], uint32to24(uint32(12+payloadLen)))
+		copy(b[5:8], util.Uint32to24(uint32(12+payloadLen)))
 		binary.BigEndian.PutUint32(b[8:12], a.VendorId)
 		copy(b[12:], payload)
 	} else {
 		b = make([]byte, 8+payloadLen+a.Data.Padding())
-		copy(b[5:8], uint32to24(uint32(8+payloadLen)))
+		copy(b[5:8], util.Uint32to24(uint32(8+payloadLen)))
 		copy(b[8:], payload)
 	}
 	binary.BigEndian.PutUint32(b[0:4], a.Code)
@@ -126,11 +135,11 @@ func (a *AVP) SerializeTo(b []byte) error {
 	payload := a.Data.Serialize()
 	payloadLen := len(payload)
 	if a.VendorId > 0 {
-		copy(b[5:8], uint32to24(uint32(12+payloadLen)))
+		copy(b[5:8], util.Uint32to24(uint32(12+payloadLen)))
 		binary.BigEndian.PutUint32(b[8:12], a.VendorId)
 		copy(b[12:], payload)
 	} else {
-		copy(b[5:8], uint32to24(uint32(8+payloadLen)))
+		copy(b[5:8], util.Uint32to24(uint32(8+payloadLen)))
 		copy(b[8:], payload)
 	}
 	binary.BigEndian.PutUint32(b[0:4], a.Code)

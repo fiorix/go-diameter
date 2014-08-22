@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package diam
+package avp
 
 import (
 	"bytes"
 	"fmt"
 
-	"github.com/fiorix/go-diameter/diam/diamdict"
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 const GroupedType = 50 // Must not conflict with other diamtype.DataTypeId.
@@ -19,11 +19,11 @@ type Grouped struct {
 	AVP []*AVP
 }
 
-func DecodeGrouped(data diamtype.Grouped, application uint32, dictionary *diamdict.Parser) (*Grouped, error) {
+func DecodeGrouped(data diamtype.Grouped, application uint32, dictionary *dict.Parser) (*Grouped, error) {
 	g := new(Grouped)
 	b := []byte(data)
 	for n := 0; n < len(b); {
-		avp, err := decodeAVP(b[n:], application, dictionary)
+		avp, err := Decode(b[n:], application, dictionary)
 		if err != nil {
 			return nil, err
 		}

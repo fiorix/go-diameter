@@ -4,12 +4,12 @@
 
 // Skeleton of the dictionary file.  Part of go-diameter.
 
-package diamdict
+package dict
 
 import (
 	"encoding/xml"
 
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 // File is the dictionary root element of a XML file.  See diam_base.xml.

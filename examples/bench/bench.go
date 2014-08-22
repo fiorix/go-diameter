@@ -18,7 +18,8 @@ import (
 	"time"
 
 	"github.com/fiorix/go-diameter/diam"
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diam/avp"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 const (
@@ -83,31 +84,29 @@ func NewClient(ssl bool) {
 		log.Fatal(err)
 	}
 	// Build CER
-	m := diam.NewRequest(257, 0, nil)
-	// Add AVPs
-	m.NewAVP("Origin-Host", 0x40, 0x00, Identity)
-	m.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
+	m := diam.NewRequest(diam.CapabilitiesExchange, 0, nil)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
 	laddr := c.LocalAddr()
 	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP("Host-IP-Address", 0x40, 0x0, diamtype.Address(net.ParseIP(ip)))
-	m.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
-	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
-	m.NewAVP("Origin-State-Id", 0x40, 0x0, diamtype.Unsigned32(rand.Uint32()))
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, diamtype.Address(net.ParseIP(ip)))
+	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
+	m.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
+	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, diamtype.Unsigned32(rand.Uint32()))
 	// Send message to the connection
 	if _, err := m.WriteTo(c); err != nil {
 		log.Println("Write failed:", err)
 		return
 	}
 	// Prepare the ACR that is used for benchmarking.
-	m = diam.NewRequest(271, 0, nil)
-	// Add AVPs
-	m.NewAVP("Session-Id", 0x40, 0x00, diamtype.UTF8String("Hello"))
-	m.NewAVP("Origin-Host", 0x40, 0x00, Identity)
-	m.NewAVP("Origin-Realm", 0x40, 0x00, Realm)
-	m.NewAVP("Host-IP-Address", 0x40, 0x0, diamtype.Address(net.ParseIP(ip)))
-	m.NewAVP("Vendor-Id", 0x40, 0x0, VendorId)
-	m.NewAVP("Product-Name", 0x40, 0x0, ProductName)
-	m.NewAVP("Origin-State-Id", 0x40, 0x0, diamtype.Unsigned32(rand.Uint32()))
+	m = diam.NewRequest(diam.Accounting, 0, nil)
+	m.NewAVP(avp.SessionId, avp.Mbit, 0, diamtype.UTF8String("Hello"))
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, diamtype.Address(net.ParseIP(ip)))
+	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
+	m.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
+	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, diamtype.Unsigned32(rand.Uint32()))
 	log.Println("OK, sending messages")
 	var n int
 	go func() {

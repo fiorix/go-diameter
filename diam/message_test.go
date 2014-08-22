@@ -11,8 +11,9 @@ import (
 	"net"
 	"testing"
 
-	"github.com/fiorix/go-diameter/diam/diamdict"
-	"github.com/fiorix/go-diameter/diam/diamtype"
+	"github.com/fiorix/go-diameter/diam/avp"
+	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diamtype"
 )
 
 // testMessage is used by the test cases below and also in reflect_test.go.
@@ -90,7 +91,7 @@ var testMessage = []byte{
 }
 
 func TestReadMessage(t *testing.T) {
-	msg, err := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
+	msg, err := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,25 +99,25 @@ func TestReadMessage(t *testing.T) {
 }
 
 func TestNewMessage(t *testing.T) {
-	want, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
-	m := NewMessage(257, 0x80, 0, 0xa8cc407d, 0xa8c1b2b4, diamdict.Default)
-	m.NewAVP(264, 0x40, 0, diamtype.DiameterIdentity("test"))
-	m.NewAVP(296, 0x40, 0, diamtype.DiameterIdentity("localhost"))
-	m.NewAVP(257, 0x40, 0, diamtype.Address(net.ParseIP("10.1.0.1")))
-	m.NewAVP(266, 0x40, 0, diamtype.Unsigned32(13))
-	m.NewAVP(269, 0, 0, diamtype.UTF8String("go-diameter"))
-	m.NewAVP(278, 0x40, 0, diamtype.Unsigned32(1397760650))
-	m.NewAVP(265, 0x40, 0, diamtype.Unsigned32(10415))
-	m.NewAVP(265, 0x40, 0, diamtype.Unsigned32(13))
-	m.NewAVP(258, 0x40, 0, diamtype.Unsigned32(4))
-	m.NewAVP(299, 0x40, 0, diamtype.Unsigned32(0))
-	m.NewAVP(260, 0x40, 0, &Grouped{
-		AVP: []*AVP{
-			NewAVP(258, 0x40, 0, diamtype.Unsigned32(4)),
-			NewAVP(266, 0x40, 0, diamtype.Unsigned32(10415)),
+	want, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	m := NewMessage(CapabilitiesExchange, RequestFlag, 0, 0xa8cc407d, 0xa8c1b2b4, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, diamtype.DiameterIdentity("test"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, diamtype.DiameterIdentity("localhost"))
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, diamtype.Address(net.ParseIP("10.1.0.1")))
+	m.NewAVP(avp.VendorId, avp.Mbit, 0, diamtype.Unsigned32(13))
+	m.NewAVP(avp.ProductName, 0, 0, diamtype.UTF8String("go-diameter"))
+	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, diamtype.Unsigned32(1397760650))
+	m.NewAVP(avp.SupportedVendorId, avp.Mbit, 0, diamtype.Unsigned32(10415))
+	m.NewAVP(avp.SupportedVendorId, avp.Mbit, 0, diamtype.Unsigned32(13))
+	m.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, diamtype.Unsigned32(4))
+	m.NewAVP(avp.InbandSecurityId, avp.Mbit, 0, diamtype.Unsigned32(0))
+	m.NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, &avp.Grouped{
+		AVP: []*avp.AVP{
+			avp.New(avp.AuthApplicationId, avp.Mbit, 0, diamtype.Unsigned32(4)),
+			avp.New(avp.VendorId, avp.Mbit, 0, diamtype.Unsigned32(10415)),
 		},
 	})
-	m.NewAVP(267, 0, 0, diamtype.Unsigned32(1))
+	m.NewAVP(avp.FirmwareRevision, 0, 0, diamtype.Unsigned32(1))
 	if m.Len() != want.Len() {
 		t.Fatalf("Unexpected message length.\nWant: %d\n%s\nHave: %d\n%s",
 			want.Len(), want, m.Len(), m)
@@ -131,8 +132,8 @@ func TestNewMessage(t *testing.T) {
 }
 
 func TestMessageFindAVP(t *testing.T) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
-	a, err := m.FindAVP(278)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	a, err := m.FindAVP(avp.OriginStateId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,13 +147,13 @@ func TestMessageFindAVP(t *testing.T) {
 func BenchmarkReadMessage(b *testing.B) {
 	reader := bytes.NewReader(testMessage)
 	for n := 0; n < b.N; n++ {
-		ReadMessage(reader, diamdict.Default)
+		ReadMessage(reader, dict.Default)
 		reader.Seek(0, 0)
 	}
 }
 
 func BenchmarkWriteMessage(b *testing.B) {
-	m, _ := ReadMessage(bytes.NewReader(testMessage), diamdict.Default)
+	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	for n := 0; n < b.N; n++ {
 		m.WriteTo(ioutil.Discard)
 	}

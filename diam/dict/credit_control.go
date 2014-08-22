@@ -4,7 +4,7 @@
 
 // Credit Control dictionary Parser and Credit Control Protocol XML.
 
-package diamdict
+package dict
 
 import "bytes"
 

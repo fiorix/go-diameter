@@ -5,4 +5,4 @@ go:
         - release
         - tip
 script:
-        - go test ./diam/util ./diam/avp/format ./diam/dict ./diam/avp ./diam
+        - go test ./diam/util ./diam/avp/format ./diam/dict ./diam

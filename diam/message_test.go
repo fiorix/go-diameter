@@ -111,10 +111,10 @@ func TestNewMessage(t *testing.T) {
 	m.NewAVP(avp.SupportedVendorId, avp.Mbit, 0, format.Unsigned32(13))
 	m.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4))
 	m.NewAVP(avp.InbandSecurityId, avp.Mbit, 0, format.Unsigned32(0))
-	m.NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, &avp.Grouped{
-		AVP: []*avp.AVP{
-			avp.New(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4)),
-			avp.New(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10415)),
+	m.NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, &GroupedAVP{
+		AVP: []*AVP{
+			NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4)),
+			NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10415)),
 		},
 	})
 	m.NewAVP(avp.FirmwareRevision, 0, 0, format.Unsigned32(1))

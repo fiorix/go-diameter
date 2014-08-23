@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package avp
+package diam
 
 import (
 	"encoding/binary"
@@ -23,15 +23,8 @@ type AVP struct {
 	Data     format.Format // Data of this AVP (payload)
 }
 
-// AVP Flags. See section 4.1 of RFC 6733.
-const (
-	Vbit = 1 << 7
-	Mbit = 1 << 6
-	Pbit = 1 << 5
-)
-
-// New creates and initializes a new AVP.
-func New(code uint32, flags uint8, vendor uint32, data format.Format) *AVP {
+// NewAVP creates and initializes a new AVP.
+func NewAVP(code uint32, flags uint8, vendor uint32, data format.Format) *AVP {
 	a := &AVP{
 		Code:     code,
 		Flags:    flags,
@@ -44,7 +37,7 @@ func New(code uint32, flags uint8, vendor uint32, data format.Format) *AVP {
 
 // Decode decodes the bytes of a Diameter AVP.
 // It uses the given application id and dictionary for decoding the bytes.
-func Decode(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
+func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
 	avp := new(AVP)
 	if err := avp.DecodeFromBytes(data, application, dictionary); err != nil {
 		return nil, err

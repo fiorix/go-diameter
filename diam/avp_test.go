@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package avp
+package diam
 
 import (
 	"bytes"
 	"encoding/hex"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
@@ -52,11 +53,11 @@ var testAVP = [][]byte{ // Body of a CER message
 	},
 }
 
-func TestNew(t *testing.T) {
-	a := New(
-		OriginHost, // Code
-		Mbit,       // Flags
-		0,          // Vendor
+func TestNewAVP(t *testing.T) {
+	a := NewAVP(
+		avp.OriginHost, // Code
+		avp.Mbit,       // Flags
+		0,              // Vendor
 		format.DiameterIdentity("foobar"), // Data
 	)
 	if a.Length != 14 { // Length in the AVP header
@@ -68,31 +69,31 @@ func TestNew(t *testing.T) {
 	t.Log(a)
 }
 
-func TestDecode(t *testing.T) {
-	avp, err := Decode(testAVP[0], 1, dict.Default)
+func TestDecodeAVP(t *testing.T) {
+	a, err := DecodeAVP(testAVP[0], 1, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
 	switch {
-	case avp.Code != OriginHost:
-		t.Fatalf("Unexpected Code. Want %d, have %d", OriginHost, avp.Code)
-	case avp.Flags != Mbit:
-		t.Fatalf("Unexpected Code. Want %#x, have %#x", Mbit, avp.Flags)
-	case avp.Length != 14:
-		t.Fatalf("Unexpected Length. Want 14, have %d", avp.Length)
-	case avp.Data.Padding() != 2:
-		t.Fatalf("Unexpected Padding. Want 2, have %d", avp.Data.Padding())
+	case a.Code != avp.OriginHost:
+		t.Fatalf("Unexpected Code. Want %d, have %d", avp.OriginHost, a.Code)
+	case a.Flags != avp.Mbit:
+		t.Fatalf("Unexpected Code. Want %#x, have %#x", avp.Mbit, a.Flags)
+	case a.Length != 14:
+		t.Fatalf("Unexpected Length. Want 14, have %d", a.Length)
+	case a.Data.Padding() != 2:
+		t.Fatalf("Unexpected Padding. Want 2, have %d", a.Data.Padding())
 	}
-	t.Log(avp)
+	t.Log(a)
 }
 
 func TestEncode(t *testing.T) {
-	avp := &AVP{
-		Code:  OriginHost,
-		Flags: Mbit,
+	a := &AVP{
+		Code:  avp.OriginHost,
+		Flags: avp.Mbit,
 		Data:  format.DiameterIdentity("client"),
 	}
-	b, err := avp.Serialize()
+	b, err := a.Serialize()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,11 +105,11 @@ func TestEncode(t *testing.T) {
 }
 
 func TestEncodeWithoutData(t *testing.T) {
-	avp := &AVP{
-		Code:  OriginHost,
-		Flags: Mbit,
+	a := &AVP{
+		Code:  avp.OriginHost,
+		Flags: avp.Mbit,
 	}
-	_, err := avp.Serialize()
+	_, err := a.Serialize()
 	if err != nil {
 		t.Log("Expected:", err)
 	} else {
@@ -118,12 +119,12 @@ func TestEncodeWithoutData(t *testing.T) {
 
 func BenchmarkDecode(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		Decode(testAVP[0], 1, dict.Default)
+		DecodeAVP(testAVP[0], 1, dict.Default)
 	}
 }
 
 func BenchmarkEncode(b *testing.B) {
-	a := New(OriginHost, Mbit, 0, format.DiameterIdentity("client"))
+	a := NewAVP(avp.OriginHost, avp.Mbit, 0, format.DiameterIdentity("client"))
 	for n := 0; n < b.N; n++ {
 		a.Serialize()
 	}

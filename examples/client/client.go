@@ -82,10 +82,10 @@ func NewClient(c diam.Conn) {
 	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
 	m.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
 	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(rand.Uint32()))
-	m.NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, &avp.Grouped{
-		AVP: []*avp.AVP{
-			avp.New(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4)),
-			avp.New(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10415)),
+	m.NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, &diam.GroupedAVP{
+		AVP: []*diam.AVP{
+			diam.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4)),
+			diam.NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10415)),
 		},
 	})
 	log.Printf("Sending message to %s", c.RemoteAddr().String())

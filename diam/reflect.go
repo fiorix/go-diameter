@@ -7,8 +7,6 @@ package diam
 import (
 	"errors"
 	"reflect"
-
-	"github.com/fiorix/go-diameter/diam/avp"
 )
 
 // Unmarshal stores the result of a diameter message in the struct
@@ -88,15 +86,15 @@ func (m *Message) Unmarshal(dst interface{}) error {
 }
 
 // newIndex returns a map of AVPs indexed by their code.
-func newIndex(avps []*avp.AVP) map[uint32][]*avp.AVP {
-	idx := make(map[uint32][]*avp.AVP)
+func newIndex(avps []*AVP) map[uint32][]*AVP {
+	idx := make(map[uint32][]*AVP)
 	for _, a := range avps {
 		idx[a.Code] = append(idx[a.Code], a)
 	}
 	return idx
 }
 
-func scanStruct(m *Message, field reflect.Value, avps []*avp.AVP) error {
+func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 	base := reflect.Indirect(field)
 	if base.Kind() != reflect.Struct {
 		return errors.New("dst is not a pointer to struct")
@@ -126,7 +124,7 @@ func scanStruct(m *Message, field reflect.Value, avps []*avp.AVP) error {
 	return nil
 }
 
-func unmarshal(m *Message, f reflect.Value, avps []*avp.AVP) {
+func unmarshal(m *Message, f reflect.Value, avps []*AVP) {
 	fieldType := f.Type()
 
 	switch f.Kind() {
@@ -167,7 +165,7 @@ func unmarshal(m *Message, f reflect.Value, avps []*avp.AVP) {
 		}
 
 		// Handle grouped AVPs.
-		if group, ok := avps[0].Data.(*avp.Grouped); ok {
+		if group, ok := avps[0].Data.(*GroupedAVP); ok {
 			scanStruct(m, f, group.AVP)
 		}
 

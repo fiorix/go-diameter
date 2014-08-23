@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package avp
+package diam
 
 import (
 	"bytes"
 	"encoding/hex"
 	"testing"
 
+	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
@@ -26,11 +27,11 @@ var testGroupedAVP = []byte{
 }
 
 func TestGroupedAVP(t *testing.T) {
-	a, err := Decode(testGroupedAVP, 0, dict.Default)
+	a, err := DecodeAVP(testGroupedAVP, 0, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if a.Data.Format() != GroupedFormat {
+	if a.Data.Format() != GroupedAVPFormat {
 		t.Fatal("AVP is not grouped")
 	}
 	b, err := a.Serialize()
@@ -52,13 +53,13 @@ func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 }
 
 func TestMakeGroupedAVP(t *testing.T) {
-	g := &Grouped{
+	g := &GroupedAVP{
 		AVP: []*AVP{
-			New(AuthApplicationId, Mbit, 0, format.Unsigned32(4)),
-			New(VendorId, Mbit, 0, format.Unsigned32(10415)),
+			NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4)),
+			NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10415)),
 		},
 	}
-	a := New(VendorSpecificApplicationId, Mbit, 0, g)
+	a := NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, g)
 	b, err := a.Serialize()
 	if err != nil {
 		t.Fatal(err)

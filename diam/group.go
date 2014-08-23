@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package avp
+package diam
 
 import (
 	"bytes"
@@ -12,18 +12,18 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-const GroupedFormat = 50 // Must not conflict with other format.DataFormatId.
+const GroupedAVPFormat = 50 // Must not conflict with other format.DataFormatId.
 
-// Grouped AVP.  This is different from the dummy format.Grouped.
-type Grouped struct {
+// GroupedAVP that is different from the dummy format.Grouped.
+type GroupedAVP struct {
 	AVP []*AVP
 }
 
-func DecodeGrouped(data format.Grouped, application uint32, dictionary *dict.Parser) (*Grouped, error) {
-	g := new(Grouped)
+func DecodeGrouped(data format.Grouped, application uint32, dictionary *dict.Parser) (*GroupedAVP, error) {
+	g := new(GroupedAVP)
 	b := []byte(data)
 	for n := 0; n < len(b); {
-		avp, err := Decode(b[n:], application, dictionary)
+		avp, err := DecodeAVP(b[n:], application, dictionary)
 		if err != nil {
 			return nil, err
 		}
@@ -34,7 +34,7 @@ func DecodeGrouped(data format.Grouped, application uint32, dictionary *dict.Par
 	return g, nil
 }
 
-func (g *Grouped) Serialize() []byte {
+func (g *GroupedAVP) Serialize() []byte {
 	b := make([]byte, g.Len())
 	var n int
 	for _, a := range g.AVP {
@@ -44,7 +44,7 @@ func (g *Grouped) Serialize() []byte {
 	return b
 }
 
-func (g *Grouped) Len() int {
+func (g *GroupedAVP) Len() int {
 	var l int
 	for _, a := range g.AVP {
 		l += a.Len()
@@ -52,15 +52,15 @@ func (g *Grouped) Len() int {
 	return l
 }
 
-func (g *Grouped) Padding() int {
+func (g *GroupedAVP) Padding() int {
 	return 0
 }
 
-func (g *Grouped) Format() format.FormatId {
-	return GroupedFormat
+func (g *GroupedAVP) Format() format.FormatId {
+	return GroupedAVPFormat
 }
 
-func (g *Grouped) String() string {
+func (g *GroupedAVP) String() string {
 	var b bytes.Buffer
 	for n, a := range g.AVP {
 		if n > 0 {

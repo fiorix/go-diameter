@@ -55,7 +55,7 @@ func copy_vendors(src []*Vendor, dst *dict.App) {
 
 func copy_commands(src []*Cmd, dst *dict.App) {
 	for _, cmd := range src {
-		new_cmd := &dict.CMD{
+		new_cmd := &dict.Command{
 			Code:  cmd.Code,
 			Name:  cmd.Name,
 			Short: cmd.Name,
@@ -66,11 +66,11 @@ func copy_commands(src []*Cmd, dst *dict.App) {
 		copy_cmd_rules(cmd.Answer.Fixed.Rule, &new_cmd.Answer, false)
 		copy_cmd_rules(cmd.Answer.Required.Rule, &new_cmd.Answer, true)
 		copy_cmd_rules(cmd.Answer.Optional.Rule, &new_cmd.Answer, false)
-		dst.CMD = append(dst.CMD, new_cmd)
+		dst.Command = append(dst.Command, new_cmd)
 	}
 }
 
-func copy_cmd_rules(src []*Rule, dst *dict.CMDRule, required bool) {
+func copy_cmd_rules(src []*Rule, dst *dict.CommandRule, required bool) {
 	for _, req := range src {
 		dst.Rule = append(dst.Rule, &dict.Rule{
 			AVP:      req.Name,

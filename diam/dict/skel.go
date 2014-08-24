@@ -20,12 +20,12 @@ type File struct {
 
 // App defines a diameter application in XML and its multiple AVPs.
 type App struct {
-	Id     uint32    `xml:"id,attr"`   // Application Id
-	Type   string    `xml:"type,attr"` // Application type
-	Name   string    `xml:"name,attr"` // Application name
-	Vendor []*Vendor `xml:"vendor"`    // Support for multiple vendors
-	CMD    []*CMD    `xml:"command"`   // Diameter commands
-	AVP    []*AVP    `xml:"avp"`       // Each application support multiple AVPs
+	Id      uint32     `xml:"id,attr"`   // Application Id
+	Type    string     `xml:"type,attr"` // Application type
+	Name    string     `xml:"name,attr"` // Application name
+	Vendor  []*Vendor  `xml:"vendor"`    // Support for multiple vendors
+	Command []*Command `xml:"command"`   // Diameter commands
+	AVP     []*AVP     `xml:"avp"`       // Each application support multiple AVPs
 }
 
 // Vendor defines diameter vendors in XML, that can be used to translate
@@ -35,16 +35,16 @@ type Vendor struct {
 	Name string `xml:"name,attr"`
 }
 
-// CMD defines a diameter command (CE, CC, etc)
-type CMD struct {
-	Code    uint32  `xml:"code,attr"`
-	Name    string  `xml:"name,attr"`
-	Short   string  `xml:"short,attr"`
-	Request CMDRule `xml:"request"`
-	Answer  CMDRule `xml:"answer"`
+// Command defines a diameter command (CE, CC, etc)
+type Command struct {
+	Code    uint32      `xml:"code,attr"`
+	Name    string      `xml:"name,attr"`
+	Short   string      `xml:"short,attr"`
+	Request CommandRule `xml:"request"`
+	Answer  CommandRule `xml:"answer"`
 }
 
-type CMDRule struct {
+type CommandRule struct {
 	Rule []*Rule `xml:"rule"`
 }
 

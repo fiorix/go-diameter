@@ -27,11 +27,11 @@ import (
 //
 // The Parser element has an index to make pre-loaded AVPs searcheable per App.
 type Parser struct {
-	file    []*File          // Dict supports multiple XML dictionaries
-	avpname map[nameIdx]*AVP // AVP index by name
-	avpcode map[codeIdx]*AVP // AVP index by code
-	command map[codeIdx]*CMD // CMD index
-	mu      sync.Mutex       // Protects all maps
+	file    []*File              // Dict supports multiple XML dictionaries
+	avpname map[nameIdx]*AVP     // AVP index by name
+	avpcode map[codeIdx]*AVP     // AVP index by code
+	command map[codeIdx]*Command // Command index
+	mu      sync.Mutex           // Protects all maps
 	once    sync.Once
 }
 
@@ -74,7 +74,7 @@ func (p *Parser) Load(r io.Reader) error {
 	p.once.Do(func() {
 		p.avpname = make(map[nameIdx]*AVP)
 		p.avpcode = make(map[codeIdx]*AVP)
-		p.command = make(map[codeIdx]*CMD)
+		p.command = make(map[codeIdx]*Command)
 	})
 	f := new(File)
 	d := xml.NewDecoder(r)
@@ -84,7 +84,7 @@ func (p *Parser) Load(r io.Reader) error {
 	p.file = append(p.file, f)
 	for _, app := range f.App {
 		// Cache commands.
-		for _, cmd := range app.CMD {
+		for _, cmd := range app.Command {
 			p.command[codeIdx{app.Id, cmd.Code}] = cmd
 		}
 		// Cache AVPs.
@@ -122,8 +122,8 @@ func (p Parser) String() string {
 				fmt.Fprintf(&b, "\t\tId=%d Name=%s\n", vendor.Id, vendor.Name)
 			}
 			fmt.Fprintf(&b, "\tCommands:\n")
-			for _, cmd := range app.CMD {
-				printCMD(&b, cmd)
+			for _, cmd := range app.Command {
+				printCommand(&b, cmd)
 			}
 			fmt.Fprintf(&b, "\tAVPs:\n")
 			for _, avp := range app.AVP {
@@ -134,7 +134,7 @@ func (p Parser) String() string {
 	return b.String()
 }
 
-func printCMD(w io.Writer, cmd *CMD) {
+func printCommand(w io.Writer, cmd *Command) {
 	fmt.Fprintf(w, "\t\t%-4d %s-Request (%sR)\n", cmd.Code, cmd.Name, cmd.Short)
 	for _, rule := range cmd.Request.Rule {
 		if rule.Required && rule.Min == 0 {

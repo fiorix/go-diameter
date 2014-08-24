@@ -26,10 +26,10 @@ func (p Parser) Apps() []*App {
 	return apps
 }
 
-// FindAVP is a helper function that returns a pre-loaded AVP from the Dict.
-// If the AVP code is not found in the given appid it tries with appid=0
+// FindAVP is a helper function that returns a pre-loaded AVP from the Parser.
+// If the AVP code is not found for the given appid it tries with appid=0
 // before returning an error.
-// @code can be either the AVP code (int, uint32) or name (string).
+// Code can be either the AVP code (int, uint32) or name (string).
 //
 // FindAVP must never be called concurrently with LoadFile or Load.
 func (p Parser) FindAVP(appid uint32, code interface{}) (*AVP, error) {
@@ -63,7 +63,7 @@ retry:
 	if ok {
 		return avp, nil
 	} else if appid != 0 {
-		// Try searching the back dictionary.
+		// Try searching the base dictionary.
 		appid = 0
 		goto retry
 	}
@@ -75,7 +75,7 @@ retry:
 // instead of looking into one specific appid.
 //
 // ScanAVP is 20x or more slower than FindAVP. Use with care.
-// @code can be either the AVP code (uint32) or name (string).
+// Code can be either the AVP code (uint32) or name (string).
 //
 // ScanAVP must never be called concurrently with LoadFile or Load.
 func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
@@ -107,10 +107,10 @@ func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
 	return nil, fmt.Errorf("Unsupported AVP code type %#v", code)
 }
 
-// FindCMD is a helper function that returns a pre-loaded CMD from the Dict.
+// FindCommand returns a pre-loaded Command from the Parser.
 //
-// FindCMD must never be called concurrently with LoadFile or Load.
-func (p Parser) FindCMD(appid, code uint32) (*CMD, error) {
+// FindCommand must never be called concurrently with LoadFile or Load.
+func (p Parser) FindCommand(appid, code uint32) (*Command, error) {
 	//p.mu.Lock()
 	//defer p.mu.Unlock()
 	if cmd, ok := p.command[codeIdx{appid, code}]; ok {
@@ -119,7 +119,7 @@ func (p Parser) FindCMD(appid, code uint32) (*CMD, error) {
 		// Always fall back to base dict.
 		return cmd, nil
 	}
-	return nil, fmt.Errorf("Could not find preloaded Cmd with code %d", code)
+	return nil, fmt.Errorf("Could not find preloaded Command with code %d", code)
 }
 
 // Enum is a helper function that returns a pre-loaded Enum item for the

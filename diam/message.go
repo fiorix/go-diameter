@@ -197,7 +197,7 @@ func (m *Message) String() string {
 	} else {
 		typ = "Answer"
 	}
-	if dictCMD, err := m.Dictionary.FindCMD(
+	if dictCMD, err := m.Dictionary.FindCommand(
 		m.Header.ApplicationId,
 		m.Header.CommandCode,
 	); err != nil {

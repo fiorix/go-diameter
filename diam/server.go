@@ -198,7 +198,10 @@ func (c *conn) serve() {
 				if h == nil {
 					h = DefaultServeMux
 				}
-				h.ErrorReports() <- ErrorReport{m, err}
+				select {
+				case h.ErrorReports() <- ErrorReport{m, err}:
+				default:
+				}
 			}
 			break
 		}
@@ -368,7 +371,7 @@ func (sh serverHandler) ServeDIAM(w Conn, m *Message) {
 // srv.Addr is blank, ":3868" is used.
 func (srv *Server) ListenAndServe() error {
 	addr := srv.Addr
-	if addr == "" {
+	if len(addr) == 0 {
 		addr = ":3868"
 	}
 	l, e := net.Listen("tcp", addr)
@@ -434,7 +437,7 @@ func ListenAndServe(addr string, handler Handler, dp *dict.Parser) error {
 // If srv.Addr is blank, ":3868" is used.
 func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 	addr := srv.Addr
-	if addr == "" {
+	if len(addr) == 0 {
 		addr = ":3868"
 	}
 	config := &tls.Config{}

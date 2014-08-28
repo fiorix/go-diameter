@@ -104,7 +104,7 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 		f := base.Field(n)
 		bt := base.Type().Field(n)
 		avpname := bt.Tag.Get("avp")
-		if avpname == "" || avpname == "-" {
+		if len(avpname) == 0 || avpname == "-" {
 			continue
 		}
 		// Lookup the AVP name (tag) in the dictionary.

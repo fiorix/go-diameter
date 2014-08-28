@@ -25,7 +25,7 @@ func Dial(addr string, handler Handler, dp *dict.Parser) (Conn, error) {
 
 func (srv *Server) dial() (Conn, error) {
 	addr := srv.Addr
-	if addr == "" {
+	if len(addr) == 0 {
 		addr = ":3868"
 	}
 	rw, err := net.Dial("tcp", addr)
@@ -48,14 +48,14 @@ func DialTLS(addr, certFile, keyFile string, handler Handler, dp *dict.Parser) (
 
 func (srv *Server) dialTLS(certFile, keyFile string) (Conn, error) {
 	addr := srv.Addr
-	if addr == "" {
+	if len(addr) == 0 {
 		addr = ":3868"
 	}
 	config := &tls.Config{InsecureSkipVerify: true}
 	if srv.TLSConfig != nil {
 		*config = *srv.TLSConfig
 	}
-	if certFile != "" {
+	if len(certFile) != 0 {
 		var err error
 		config.Certificates = make([]tls.Certificate, 1)
 		config.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)

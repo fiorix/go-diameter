@@ -241,7 +241,7 @@ func printGrouped(prefix string, m *Message, a *AVP) string {
 		); err != nil {
 			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, ga, err)
 		} else {
-			fmt.Fprintf(&b, "%s\t%s %s,\n", prefix, dictAVP.Name, a)
+			fmt.Fprintf(&b, "%s\t%s %s,\n", prefix, dictAVP.Name, ga)
 		}
 	}
 	fmt.Fprintf(&b, "%s}}", prefix)

@@ -43,13 +43,11 @@ func TestGroupedAVP(t *testing.T) {
 }
 
 func TestDecodeMessageWithGroupedAVP(t *testing.T) {
-	/*
-		m := NewRequest(257, 0, dict.Default)
-		m.NewAVP(264, 0x40, 0, format.DiameterIdentity("client"))
-		a, _ := decode(testGroupedAVP, 0, dict.Default)
-		m.AddAVP(a)
-		t.Logf("Message:\n%s", m)
-	*/
+	m := NewRequest(257, 0, dict.Default)
+	m.NewAVP(264, 0x40, 0, format.DiameterIdentity("client"))
+	a, _ := DecodeAVP(testGroupedAVP, 0, dict.Default)
+	m.AddAVP(a)
+	t.Logf("Message:\n%s", m)
 }
 
 func TestMakeGroupedAVP(t *testing.T) {

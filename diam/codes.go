@@ -4,7 +4,7 @@
 
 package diam
 
-// Diameter result codes.
+// Diameter codes for the Result-Code AVP.
 const (
 	MultiRoundAuth         = 1001
 	Success                = 2001
@@ -41,6 +41,7 @@ const (
 	NoCommonSecurity       = 5017
 )
 
+// Diameter command codes. Auto-generated from our dictionaries.
 const (
 	// List of command codes auto-generated from our dictionaries:
 	// cat dict/testdata/*.xml | sed -n 's/.*command code="\(.*\)" .* name="\(.*\)".*/\2 = \1/p' | tr -d '-' | sort -u

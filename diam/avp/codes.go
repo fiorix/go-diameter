@@ -4,6 +4,7 @@
 
 package avp
 
+// AVP types. Auto-generated from our dictionaries.
 const (
 	// List of AVP codes auto-generated from our dictionaries:
 	// cat ../dict/testdata/*.xml | sed -n 's/.*avp name="\(.*\)" code="\([0-9]*\)".*/\1 = \2/p' | tr -d '-' | sort -u

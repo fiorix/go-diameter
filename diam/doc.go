@@ -12,7 +12,7 @@ organized in sub-packages with specific functionality:
  * diam: the main package, provides the capability of encoding and
          decoding messages, and a client and server API similar to net/http.
 
- * diam/avp: implementation of Diameter attribute-value-pairs.
+ * diam/avp: Diameter attribute-value-pairs codes and flags.
 
  * diam/avp/format: AVP data formats (e.g. Unsigned32, OctetString).
 

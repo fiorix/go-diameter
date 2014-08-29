@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
@@ -22,9 +23,8 @@ func init() {
 
 // Diameter message.
 type Message struct {
-	Header *Header
-	AVP    []*AVP
-
+	Header     *Header
+	AVP        []*AVP       // AVPs in this message.
 	Dictionary *dict.Parser // Used to encode and decode AVPs.
 }
 
@@ -185,7 +185,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.EndToEndId,
 		m.Dictionary,
 	)
-	nm.NewAVP(268, 0x40, 0x00, format.Unsigned32(resultCode))
+	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, format.Unsigned32(resultCode))
 	return nm
 }
 

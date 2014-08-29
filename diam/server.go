@@ -110,6 +110,7 @@ func (c *conn) noteClientGone() {
 // A response represents the server side of a diameter response.
 type response struct {
 	conn *conn
+	wl   sync.Mutex
 }
 
 // Create new connection from rwc.
@@ -140,6 +141,8 @@ func (c *conn) readMessage() (*Message, *response, error) {
 
 // Write writes the message m to the connection.
 func (w *response) Write(b []byte) (int, error) {
+	w.wl.Lock()
+	defer w.wl.Unlock()
 	if w.conn.server.WriteTimeout > 0 {
 		w.conn.rwc.SetWriteDeadline(time.Now().Add(w.conn.server.WriteTimeout))
 	}

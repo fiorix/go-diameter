@@ -86,8 +86,9 @@ func (m *Message) Unmarshal(dst interface{}) error {
 }
 
 // newIndex returns a map of AVPs indexed by their code.
+// TODO: make this part of the Message.
 func newIndex(avps []*AVP) map[uint32][]*AVP {
-	idx := make(map[uint32][]*AVP)
+	idx := make(map[uint32][]*AVP, len(avps))
 	for _, a := range avps {
 		idx[a.Code] = append(idx[a.Code], a)
 	}
@@ -109,7 +110,7 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 		}
 		// Lookup the AVP name (tag) in the dictionary.
 		// The dictionary AVP has the code.
-		d, err := m.Dictionary.FindAVP(m.Header.ApplicationId, avpname)
+		d, err := m.dictionary.FindAVP(m.Header.ApplicationId, avpname)
 		if err != nil {
 			return err
 		}
@@ -150,14 +151,14 @@ func unmarshal(m *Message, f reflect.Value, avps []*AVP) {
 		unmarshal(m, f.Elem(), avps)
 
 	case reflect.Struct:
-		// Field is *AVP
+		// Test for *AVP
 		at := reflect.TypeOf(avps[0])
 		if fieldType.AssignableTo(at) {
 			f.Set(reflect.ValueOf(avps[0]))
 			break
 		}
 
-		// Field is AVP
+		// Test for AVP
 		at = reflect.TypeOf(*avps[0])
 		if fieldType.ConvertibleTo(at) {
 			f.Set(reflect.ValueOf(*avps[0]))
@@ -170,7 +171,7 @@ func unmarshal(m *Message, f reflect.Value, avps []*AVP) {
 		}
 
 	default:
-		// Field is AVP.Data (e.g. format.UTF8String, string)
+		// Test for AVP.Data (e.g. format.UTF8String, string)
 		dv := reflect.ValueOf(avps[0].Data)
 		if dv.Type().ConvertibleTo(fieldType) {
 			f.Set(dv.Convert(fieldType))

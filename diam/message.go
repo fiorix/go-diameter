@@ -23,9 +23,11 @@ func init() {
 
 // Diameter message.
 type Message struct {
-	Header     *Header
-	AVP        []*AVP       // AVPs in this message.
-	Dictionary *dict.Parser // Used to encode and decode AVPs.
+	Header *Header
+	AVP    []*AVP // AVPs in this message.
+
+	// dictionary parser object used to encode and decode AVPs.
+	dictionary *dict.Parser
 }
 
 // ReadMessage returns a Message. It uses the dictionary to parse the
@@ -45,7 +47,7 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	if _, err = io.ReadFull(reader, pbytes); err != nil {
 		return nil, err
 	}
-	m.Dictionary = dictionary
+	m.dictionary = dictionary
 	return decodeAVPs(m, pbytes)
 }
 
@@ -56,7 +58,7 @@ func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {
 		a, err = DecodeAVP(
 			pbytes[n:],
 			m.Header.ApplicationId,
-			m.Dictionary,
+			m.dictionary,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to decode AVP: %s", err)
@@ -67,7 +69,7 @@ func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {
 	return m, nil
 }
 
-// NewMessage creates and initializes Message.
+// NewMessage creates and initializes a Message.
 func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *dict.Parser) *Message {
 	if dictionary == nil {
 		dictionary = dict.Default
@@ -88,14 +90,18 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dicti
 			HopByHopId:    hopbyhop,
 			EndToEndId:    endtoend,
 		},
-		Dictionary: dictionary,
+		dictionary: dictionary,
 	}
 }
 
-// NewRequest is an alias to NewMessage.
+// NewRequest creates a new Message with the Request bit set.
 func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
 	return NewMessage(cmd, RequestFlag, appid, 0, 0, dictionary)
 }
+
+// Dictionary returns the dictionary parser object associated with this message.
+// This dictionary is used to encode and decode the message.
+func (m *Message) Dictionary() *dict.Parser { return m.dictionary }
 
 // NewAVP creates and initializes a new AVP and adds it to the Message.
 func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data format.Format) (*AVP, error) {
@@ -106,7 +112,7 @@ func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data form
 	case uint32:
 		a = NewAVP(code.(uint32), flags, vendor, data)
 	case string:
-		dictAVP, err := m.Dictionary.FindAVP(
+		dictAVP, err := m.dictionary.FindAVP(
 			m.Header.ApplicationId,
 			code.(string),
 		)
@@ -162,7 +168,7 @@ func (m *Message) Len() int {
 //	avp, err := m.FindAVP(264)
 //	avp, err := m.FindAVP("Origin-Host")
 func (m *Message) FindAVP(code interface{}) (*AVP, error) {
-	dictAVP, err := m.Dictionary.FindAVP(m.Header.ApplicationId, code)
+	dictAVP, err := m.dictionary.FindAVP(m.Header.ApplicationId, code)
 	if err != nil {
 		return nil, err
 	}
@@ -179,11 +185,11 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 func (m *Message) Answer(resultCode uint32) *Message {
 	nm := NewMessage(
 		m.Header.CommandCode,
-		m.Header.CommandFlags&^0x80,
+		m.Header.CommandFlags&^RequestFlag, // Reset the Request bit.
 		m.Header.ApplicationId,
 		m.Header.HopByHopId,
 		m.Header.EndToEndId,
-		m.Dictionary,
+		m.dictionary,
 	)
 	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, format.Unsigned32(resultCode))
 	return nm
@@ -192,27 +198,27 @@ func (m *Message) Answer(resultCode uint32) *Message {
 func (m *Message) String() string {
 	var b bytes.Buffer
 	var typ string
-	if m.Header.CommandFlags&0x80 > 0 {
+	if m.Header.CommandFlags&RequestFlag > 0 {
 		typ = "Request"
 	} else {
 		typ = "Answer"
 	}
-	if dictCMD, err := m.Dictionary.FindCommand(
+	if dictCMD, err := m.dictionary.FindCommand(
 		m.Header.ApplicationId,
 		m.Header.CommandCode,
 	); err != nil {
 		fmt.Fprintf(&b, "Unknown-%s\n%s\n", typ, m.Header)
 	} else {
-		fmt.Fprintf(&b,
-			"%s-%s (%s%c)\n%s\n",
+		fmt.Fprintf(&b, "%s-%s (%s%c)\n%s\n",
 			dictCMD.Name,
 			typ,
 			dictCMD.Short,
 			typ[0],
-			m.Header)
+			m.Header,
+		)
 	}
 	for _, a := range m.AVP {
-		if dictAVP, err := m.Dictionary.FindAVP(
+		if dictAVP, err := m.dictionary.FindAVP(
 			m.Header.ApplicationId,
 			a.Code,
 		); err != nil {
@@ -235,7 +241,7 @@ func printGrouped(prefix string, m *Message, a *AVP) string {
 		a.VendorId,
 	)
 	for _, ga := range a.Data.(*GroupedAVP).AVP {
-		if dictAVP, err := m.Dictionary.FindAVP(
+		if dictAVP, err := m.dictionary.FindAVP(
 			m.Header.ApplicationId,
 			ga.Code,
 		); err != nil {

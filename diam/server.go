@@ -275,7 +275,7 @@ func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 	mux.mu.RLock()
 	defer mux.mu.RUnlock()
 	var cmd string
-	if dcmd, err := m.Dictionary.FindCommand(
+	if dcmd, err := m.dictionary.FindCommand(
 		m.Header.ApplicationId,
 		m.Header.CommandCode,
 	); err != nil {

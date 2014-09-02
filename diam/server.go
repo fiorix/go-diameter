@@ -92,25 +92,25 @@ func (c *conn) closeNotify() <-chan struct{} {
 				err = io.EOF
 			}
 			pw.CloseWithError(err)
-			c.noteClientGone()
+			c.notifyClientGone()
 		}()
 	}
 	return c.closeNotifyc
 }
 
-func (c *conn) noteClientGone() {
+func (c *conn) notifyClientGone() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.closeNotifyc != nil && !c.clientGone {
-		close(c.closeNotifyc) // unblock reader
+		close(c.closeNotifyc) // unblock readers
+		c.clientGone = true
 	}
-	c.clientGone = true
 }
 
 // A response represents the server side of a diameter response.
 type response struct {
-	conn *conn
-	wl   sync.Mutex
+	conn *conn      // socket, reader and writer
+	mu   sync.Mutex // guards Write
 }
 
 // Create new connection from rwc.
@@ -141,8 +141,8 @@ func (c *conn) readMessage() (*Message, *response, error) {
 
 // Write writes the message m to the connection.
 func (w *response) Write(b []byte) (int, error) {
-	w.wl.Lock()
-	defer w.wl.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 	if w.conn.server.WriteTimeout > 0 {
 		w.conn.rwc.SetWriteDeadline(time.Now().Add(w.conn.server.WriteTimeout))
 	}
@@ -208,11 +208,7 @@ func (c *conn) serve() {
 			}
 			break
 		}
-		// Diameter cannot have multiple simultaneous active requests
-		// or pipelines.
-		// Until the server replies to this message, it can't
-		// read another, so we might as well run the handler in
-		// this goroutine.
+		// Handle messages in this goroutine.
 		serverHandler{c.server}.ServeDIAM(w, m)
 	}
 }

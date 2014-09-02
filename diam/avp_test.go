@@ -87,7 +87,7 @@ func TestDecodeAVP(t *testing.T) {
 	t.Log(a)
 }
 
-func TestEncode(t *testing.T) {
+func TestEncodeAVP(t *testing.T) {
 	a := &AVP{
 		Code:  avp.OriginHost,
 		Flags: avp.Mbit,
@@ -104,7 +104,7 @@ func TestEncode(t *testing.T) {
 	t.Log(hex.Dump(b))
 }
 
-func TestEncodeWithoutData(t *testing.T) {
+func TestEncodeAVPWithoutData(t *testing.T) {
 	a := &AVP{
 		Code:  avp.OriginHost,
 		Flags: avp.Mbit,
@@ -117,13 +117,13 @@ func TestEncodeWithoutData(t *testing.T) {
 	}
 }
 
-func BenchmarkDecode(b *testing.B) {
+func BenchmarkDecodeAVP(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		DecodeAVP(testAVP[0], 1, dict.Default)
 	}
 }
 
-func BenchmarkEncode(b *testing.B) {
+func BenchmarkEncodeAVP(b *testing.B) {
 	a := NewAVP(avp.OriginHost, avp.Mbit, 0, format.DiameterIdentity("client"))
 	for n := 0; n < b.N; n++ {
 		a.Serialize()

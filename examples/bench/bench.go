@@ -15,6 +15,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/fiorix/go-diameter/diam"
@@ -31,6 +32,7 @@ const (
 
 var (
 	BenchMessages int
+	TotalMessages int32
 	wg            sync.WaitGroup
 )
 
@@ -48,12 +50,17 @@ func main() {
 	// Use all CPUs.
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	// Launch clients.
+	start := time.Now()
 	for n := 0; n < *c; n++ {
 		wg.Add(1)
 		go NewClient(*ssl)
 	}
 	wg.Wait()
-	log.Println("Done.")
+	elapsed := time.Since(start)
+	mps := int(float64(TotalMessages) / elapsed.Seconds())
+	log.Println("Done")
+	log.Printf("Total of %d messages in %s: %d msg/s",
+		TotalMessages, elapsed, mps)
 }
 
 // NewClient connects to the server and sends a CER.
@@ -117,6 +124,7 @@ func NewClient(ssl bool) {
 		mps := int(float64(n) / elapsed.Seconds())
 		log.Printf("%d messages in %s seconds, %d msg/s",
 			n, elapsed, mps)
+		atomic.AddInt32(&TotalMessages, int32(n))
 		wg.Done()
 	}()
 	for ; n < BenchMessages; n++ {

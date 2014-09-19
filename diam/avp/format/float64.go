@@ -10,7 +10,7 @@ import (
 	"math"
 )
 
-// Float64 Diameter Format
+// Float64 Diameter Format.
 type Float64 float64
 
 func DecodeFloat64(b []byte) (Format, error) {

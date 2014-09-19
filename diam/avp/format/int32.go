@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-// Integer32 Diameter Format
+// Integer32 Diameter Format.
 type Integer32 int32
 
 func DecodeInteger32(b []byte) (Format, error) {

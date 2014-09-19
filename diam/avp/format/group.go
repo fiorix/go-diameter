@@ -6,7 +6,7 @@ package format
 
 import "fmt"
 
-// Grouped Diameter Format
+// Grouped Diameter Format.
 type Grouped []byte
 
 func DecodeGrouped(b []byte) (Format, error) {

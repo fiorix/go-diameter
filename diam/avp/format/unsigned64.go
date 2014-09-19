@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-// Unsigned64 Diameter Format
+// Unsigned64 Diameter Format.
 type Unsigned64 uint64
 
 func DecodeUnsigned64(b []byte) (Format, error) {

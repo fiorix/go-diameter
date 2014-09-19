@@ -10,7 +10,7 @@ import (
 	"math"
 )
 
-// Float32 Diameter Format
+// Float32 Diameter Format.
 type Float32 float32
 
 func DecodeFloat32(b []byte) (Format, error) {

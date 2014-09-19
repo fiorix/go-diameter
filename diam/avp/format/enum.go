@@ -6,7 +6,7 @@ package format
 
 import "fmt"
 
-// Enumerated Diameter Format
+// Enumerated Diameter Format.
 type Enumerated Integer32
 
 func DecodeEnumerated(b []byte) (Format, error) {

@@ -69,8 +69,8 @@ on the example server, make sure to use the `-q` (quiet) command line switch.
 TLS degrades performance a bit, as well as reflection (Unmarshal). Those are
 important tradeoffs you might have to consider.
 
-Besides this, the source code (and sub-packages) has function benchmarks
-that can help you understand what's fast and what's not. You'll see that
+Besides this, the source code (and sub-packages) have function benchmarks
+that can help you understand what's fast and isn't. You will see that
 parsing messages is much slower than writing them, for example. This is
 because in order to parse messages it makes numerous dictionary lookups
 for AVP types, to be able to decode them. Encoding messages require less

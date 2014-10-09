@@ -56,6 +56,7 @@ func main() {
 		go NewClient(*ssl)
 	}
 	wg.Wait()
+	TotalMessages *= 2 // request+answer
 	elapsed := time.Since(start)
 	mps := int(float64(TotalMessages) / elapsed.Seconds())
 	log.Println("Done")
@@ -120,9 +121,10 @@ func NewClient(ssl bool) {
 		start := time.Now()
 		// Wait until the connection is closed.
 		<-c.(diam.CloseNotifier).CloseNotify()
+		n *= 2 // request+answer
 		elapsed := time.Since(start)
 		mps := int(float64(n) / elapsed.Seconds())
-		log.Printf("%d messages in %s seconds, %d msg/s",
+		log.Printf("%d messages (request+answer) in %s seconds, %d msg/s",
 			n, elapsed, mps)
 		atomic.AddInt32(&TotalMessages, int32(n))
 		wg.Done()

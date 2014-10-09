@@ -56,7 +56,6 @@ func main() {
 		go NewClient(*ssl)
 	}
 	wg.Wait()
-	TotalMessages *= 2 // request+answer
 	elapsed := time.Since(start)
 	mps := int(float64(TotalMessages) / elapsed.Seconds())
 	log.Println("Done")

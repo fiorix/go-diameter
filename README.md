@@ -9,32 +9,31 @@ and a stack for the [Go programming language](http://golang.org).
 
 ### Status
 
-It can currently send and receive messages and build and parse AVPs based on
-dictionaries. API is subject to changes. See the [TODO](./TODO) list for
-details.
+The current implementation is solid and works fine for general purpose
+clients and servers. It can send and receive messages efficiently as
+well as build and parse AVPs based on dictionaries.
 
 See the API documentation at http://godoc.org/github.com/fiorix/go-diameter
 
-
 [![Build Status](https://secure.travis-ci.org/fiorix/go-diameter.png)](http://travis-ci.org/fiorix/go-diameter)
-
 
 ## Features
 
 - Comprehensive XML dictionary format
 - Embedded dictionaries (base protocol and credit control [RFC 4006](http://tools.ietf.org/html/rfc4006))
-- Human readable AVP representation
+- Human readable AVP representation (for debugging)
 - TLS support for both clients and servers
 - Stack based on [net/http](http://golang.org/pkg/net/http/) for simplicity
 - Ships with sample client, server, snoop agent and benchmark tool
 
 For now, [state machines](http://tools.ietf.org/html/rfc6733#section-4) are
-not part of this implementation on purpose.
-
+not part of the implementation.
 
 ## Install
 
-Make sure Go is installed, and both $GOPATH and $GOROOT are set.
+go-diameter requires at least [Go 1.3](https://golang.org/doc/go1.3).
+
+Make sure Go is installed, and both GOPATH and GOROOT are set.
 
 Install:
 
@@ -50,8 +49,8 @@ See the test cases for more specific examples.
 ## Performance
 
 Clients and servers written with the go-diameter package can be quite
-performant if done well. There's a simple benchmark tool to help testing
-servers and identifying bottlenecks.
+performant if done well. Besides Go benchmarks, the package ships with
+a simple benchmark tool to help testing servers and identifying bottlenecks.
 
 The results below are from two Intel i5 quad-core with 4GB ram on a 1Gbps
 network, with 4 concurrent clients hammering the example server:

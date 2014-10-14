@@ -40,6 +40,7 @@ func main() {
 	ssl := flag.Bool("ssl", false, "connect using SSL/TLS")
 	c := flag.Int("c", 1, "concurrent clients")
 	n := flag.Int("n", 1000, "messages per client")
+	t := flag.Int("t", 0, "threads (0 means one per core)")
 	flag.Parse()
 	BenchMessages = *n
 	if len(os.Args) < 2 {
@@ -47,8 +48,10 @@ func main() {
 		flag.Usage()
 		return
 	}
-	// Use all CPUs.
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	if *t == 0 {
+		*t = runtime.NumCPU()
+	}
+	runtime.GOMAXPROCS(*t)
 	// Launch clients.
 	start := time.Now()
 	for n := 0; n < *c; n++ {

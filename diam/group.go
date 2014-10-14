@@ -20,7 +20,7 @@ type GroupedAVP struct {
 }
 
 func DecodeGrouped(data format.Grouped, application uint32, dictionary *dict.Parser) (*GroupedAVP, error) {
-	g := new(GroupedAVP)
+	g := &GroupedAVP{}
 	b := []byte(data)
 	for n := 0; n < len(b); {
 		avp, err := DecodeAVP(b[n:], application, dictionary)

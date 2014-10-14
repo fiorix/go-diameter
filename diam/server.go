@@ -115,7 +115,7 @@ type response struct {
 
 // Create new connection from rwc.
 func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
-	c = new(conn)
+	c = &conn{}
 	c.server = srv
 	c.rwc = rwc
 	c.sr = liveSwitchReader{r: rwc}
@@ -188,7 +188,7 @@ func (c *conn) serve() {
 		if err := tlsConn.Handshake(); err != nil {
 			return
 		}
-		c.tlsState = new(tls.ConnectionState)
+		c.tlsState = &tls.ConnectionState{}
 		*c.tlsState = tlsConn.ConnectionState()
 	}
 	for {
@@ -278,7 +278,7 @@ func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 		cmd = "ALL"
 	} else {
 		cmd = dcmd.Short
-		if m.Header.CommandFlags&0x80 > 0 {
+		if m.Header.CommandFlags&RequestFlag > 0 {
 			cmd += "R"
 		} else {
 			cmd += "A"

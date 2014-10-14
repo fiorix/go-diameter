@@ -6,7 +6,7 @@ package avp
 
 // AVP Flags. See section 4.1 of RFC 6733.
 const (
-	Vbit = 1 << 7
-	Mbit = 1 << 6
-	Pbit = 1 << 5
+	Pbit = 1 << 5 // The 'P' bit, reserved for future use.
+	Mbit = 1 << 6 // The 'M' bit, known as the Mandatory bit.
+	Vbit = 1 << 7 // The 'V' bit, known as the Vendor-Specific bit.
 )

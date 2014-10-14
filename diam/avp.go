@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/avp/format"
 	"github.com/fiorix/go-diameter/diam/dict"
 	"github.com/fiorix/go-diameter/diam/util"
@@ -38,7 +39,7 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data format.Format) *AVP {
 // Decode decodes the bytes of a Diameter AVP.
 // It uses the given application id and dictionary for decoding the bytes.
 func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
-	avp := new(AVP)
+	avp := &AVP{}
 	if err := avp.DecodeFromBytes(data, application, dictionary); err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, 
 // It uses the given application id and dictionary for decoding the bytes.
 func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.Parser) error {
 	dl := len(data)
-	if len(data) < 8 {
+	if dl < 8 {
 		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", dl)
 	}
 	a.Code = binary.BigEndian.Uint32(data[0:4])
@@ -68,7 +69,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	var hdrLength int
 	var payload []byte
 	// Read VendorId when required.
-	if a.Flags&0x80 > 0 {
+	if a.Flags&avp.Vbit > 0 {
 		a.VendorId = binary.BigEndian.Uint32(data[8:12])
 		payload = data[12:]
 		hdrLength = 12
@@ -145,7 +146,7 @@ func (a *AVP) Len() int {
 }
 
 func (a *AVP) headerLen() int {
-	if a.Flags&0x80 > 0 {
+	if a.Flags&avp.Vbit > 0 {
 		return 12 + a.Data.Len()
 	} else {
 		return 8 + a.Data.Len()

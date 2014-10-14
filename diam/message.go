@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/fiorix/go-diameter/diam/avp"
@@ -33,46 +34,116 @@ type Message struct {
 // ReadMessage returns a Message. It uses the dictionary to parse the
 // binary stream from the reader.
 func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
-	var err error
-	hbytes := make([]byte, HeaderLength)
-	if _, err = io.ReadFull(reader, hbytes); err != nil {
-		return nil, err
-	}
-	m := &Message{}
-	m.Header, err = DecodeHeader(hbytes)
+	buf := newMessageBuffer()
+	defer putMessageBuffer(buf)
+	m := &Message{dictionary: dictionary}
+	cmd, err := readAndParseHeader(m, buf, reader)
 	if err != nil {
 		return nil, err
 	}
-	pbytes := make([]byte, m.Header.MessageLength-HeaderLength)
-	if _, err = io.ReadFull(reader, pbytes); err != nil {
+	if err = readAndParseBody(m, cmd, buf, reader); err != nil {
 		return nil, err
 	}
-	m.dictionary = dictionary
-	return decodeAVPs(m, pbytes)
+	return m, nil
 }
 
-func decodeAVPs(m *Message, pbytes []byte) (*Message, error) {
+var (
+	messageBufferPool   sync.Pool
+	MessageBufferLength = 1 << 10 // Default 1K per message.
+)
+
+func newMessageBuffer() *bytes.Buffer {
+	if v := messageBufferPool.Get(); v != nil {
+		return v.(*bytes.Buffer)
+	}
+	return bytes.NewBuffer(make([]byte, MessageBufferLength))
+}
+
+func putMessageBuffer(b *bytes.Buffer) {
+	b.Reset()
+	if cap(b.Bytes()) >= MessageBufferLength {
+		messageBufferPool.Put(b)
+	}
+}
+
+func messageBytes(b *bytes.Buffer, l int) []byte {
+	p := b.Bytes()
+	if l <= MessageBufferLength && cap(p) >= MessageBufferLength {
+		return p[0:l]
+	}
+	return make([]byte, l)
+}
+
+func readAndParseHeader(m *Message, buf *bytes.Buffer, r io.Reader) (cmd *dict.Command, err error) {
+	b := buf.Bytes()[:HeaderLength]
+	if _, err = io.ReadFull(r, b); err != nil {
+		return nil, err
+	}
+	m.Header, err = DecodeHeader(b)
+	if err != nil {
+		return nil, err
+	}
+	cmd, err = m.dictionary.FindCommand(
+		m.Header.ApplicationId,
+		m.Header.CommandCode,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return cmd, nil
+}
+
+func readAndParseBody(m *Message, cmd *dict.Command, buf *bytes.Buffer, r io.Reader) error {
+	b := messageBytes(buf, int(m.Header.MessageLength-HeaderLength))
+	_, err := io.ReadFull(r, b)
+	if err != nil {
+		return err
+	}
+	if n := maxAVPs(m, cmd); n == 0 {
+		// TODO: fail to load the dictionary instead.
+		return fmt.Errorf(
+			"Command %s (%d) has no AVPs defined in the dictionary.",
+			cmd.Name, cmd.Code)
+	} else {
+		// Pre-allocate max # of AVPs for this message.
+		m.AVP = make([]*AVP, 0, n)
+	}
+	if err = decodeAVPs(m, b); err != nil {
+		return err
+	}
+	return nil
+}
+
+func maxAVPs(m *Message, cmd *dict.Command) int {
+	if m.Header.CommandFlags&RequestFlag > 0 {
+		return len(cmd.Request.Rule)
+	} else {
+		return len(cmd.Answer.Rule)
+	}
+}
+
+func decodeAVPs(m *Message, pbytes []byte) error {
 	var a *AVP
 	var err error
-	for n := 0; n < cap(pbytes); {
+	for n := 0; n < len(pbytes); {
 		a, err = DecodeAVP(
 			pbytes[n:],
 			m.Header.ApplicationId,
 			m.dictionary,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to decode AVP: %s", err)
+			return fmt.Errorf("Failed to decode AVP: %s", err)
 		}
 		m.AVP = append(m.AVP, a)
 		n += a.Len()
 	}
-	return m, nil
+	return nil
 }
 
 // NewMessage creates and initializes a Message.
 func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *dict.Parser) *Message {
 	if dictionary == nil {
-		dictionary = dict.Default
+		dictionary = dict.Default // for safety.
 	}
 	if hopbyhop == 0 {
 		hopbyhop = rand.Uint32()
@@ -132,17 +203,23 @@ func (m *Message) AddAVP(a *AVP) {
 	m.Header.MessageLength += uint32(a.Len())
 }
 
+// WriteTo serializes the Message and writes into the writer.
 func (m *Message) WriteTo(writer io.Writer) (int64, error) {
 	n, err := writer.Write(m.Serialize())
+	if err != nil {
+		return 0, err
+	}
 	return int64(n), err
 }
 
+// Serialize returns the serialized bytes of the Message.
 func (m *Message) Serialize() []byte {
 	b := make([]byte, m.Len())
 	m.SerializeTo(b)
 	return b
 }
 
+// SerializeTo writes the serialized bytes of the Message into b.
 func (m *Message) SerializeTo(b []byte) {
 	m.Header.SerializeTo(b[0:HeaderLength])
 	offset := HeaderLength
@@ -152,6 +229,7 @@ func (m *Message) SerializeTo(b []byte) {
 	}
 }
 
+// Len returns the length of the Message in bytes.
 func (m *Message) Len() int {
 	l := HeaderLength
 	for _, avp := range m.AVP {

@@ -34,7 +34,7 @@ const (
 
 // DecodeHeader decodes the bytes of a Diameter Header.
 func DecodeHeader(data []byte) (*Header, error) {
-	p := new(Header)
+	p := &Header{}
 	if err := p.DecodeFromBytes(data); err != nil {
 		return nil, err
 	}

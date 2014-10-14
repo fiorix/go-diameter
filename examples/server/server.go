@@ -34,10 +34,13 @@ func main() {
 	cert := flag.String("cert", "", "SSL cert file (e.g. cert.pem)")
 	key := flag.String("key", "", "SSL key file (e.g. key.pem)")
 	q := flag.Bool("q", false, "quiet, do not print messages")
+	t := flag.Int("t", 0, "threads (0 means one per core)")
 	flag.Parse()
 	Quiet = *q
-	// Use all CPUs.
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	if *t == 0 {
+		*t = runtime.NumCPU()
+	}
+	runtime.GOMAXPROCS(*t)
 	// Message handlers:
 	diam.HandleFunc("CER", OnCER)
 	diam.HandleFunc("ALL", OnMSG) // Catch-all

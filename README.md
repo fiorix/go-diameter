@@ -55,18 +55,19 @@ a simple benchmark tool to help testing servers and identifying bottlenecks.
 The results below are from two Intel i5 quad-core with 4GB ram on a 1Gbps
 network, with 4 concurrent clients hammering the example server:
 
-	2014/05/11 10:32:26 1000000 messages in 10.449877643s seconds, 95694 msg/s
-	2014/05/11 10:32:26 1000000 messages in 10.604832166s seconds, 94296 msg/s
-	2014/05/11 10:32:26 1000000 messages in 10.699197777s seconds, 93464 msg/s
-	2014/05/11 10:32:27 1000000 messages in 10.727248401s seconds, 93220 msg/s
+	2014/10/14 17:19:35 200000 messages (request+answer) in 1.044636932s seconds, 191454 msg/s
+	2014/10/14 17:19:35 200000 messages (request+answer) in 1.051021203s seconds, 190291 msg/s
+	2014/10/14 17:19:35 200000 messages (request+answer) in 1.050285029s seconds, 190424 msg/s
+	2014/10/14 17:19:35 200000 messages (request+answer) in 1.070140824s seconds, 186891 msg/s
+	2014/10/14 17:19:35 Total of 800000 messages in 1.076188492s: 743364 msg/s
 
 For better performance, avoid printing diameter messages to the log.
 Although they're very useful for debugging purposes, they kill performance
-due to a number of convertions to make them pretty. If you run benchmarks
+due to a number of conversions to make them pretty. If you run benchmarks
 on the example server, make sure to use the `-q` (quiet) command line switch.
 
 TLS degrades performance a bit, as well as reflection (Unmarshal). Those are
-important tradeoffs you might have to consider.
+important trade offs you might have to consider.
 
 Besides this, the source code (and sub-packages) have function benchmarks
 that can help you understand what's fast and isn't. You will see that

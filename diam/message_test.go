@@ -122,7 +122,11 @@ func TestNewMessage(t *testing.T) {
 		t.Fatalf("Unexpected message length.\nWant: %d\n%s\nHave: %d\n%s",
 			want.Len(), want, m.Len(), m)
 	}
-	a, b := m.Serialize(), want.Serialize()
+	a, err := m.Serialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := want.Serialize()
 	if !bytes.Equal(a, b) {
 		t.Fatalf("Unexpected message.\nWant:\n%s\n%s\nHave:\n%s\n%s",
 			want, hex.Dump(b), m, hex.Dump(a))

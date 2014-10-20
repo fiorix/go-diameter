@@ -228,10 +228,8 @@ func (f HandlerFunc) ServeDIAM(c Conn, m *Message) {
 	f(c, m)
 }
 
-// ErrorReports calls f.ErrorReports()
-func (f HandlerFunc) ErrorReports() chan ErrorReport {
-	return f.ErrorReports()
-}
+// ErrorReports is defined to satisfy the Handler interface.
+func (f HandlerFunc) ErrorReports() chan ErrorReport { return nil }
 
 // ServeMux is a diameter message multiplexer.
 // It matches the command from the incoming message against a list

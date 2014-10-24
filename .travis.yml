@@ -7,4 +7,4 @@ script:
         - go test -v -cover -bench . ./diam/...
 
 install:
-        - code.google.com/p/go.tools/cmd/cover
+        - go get code.google.com/p/go.tools/cmd/cover

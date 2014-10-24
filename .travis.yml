@@ -5,3 +5,6 @@ go:
         - tip
 script:
         - go test -v -cover -bench . ./diam/...
+
+install:
+        - code.google.com/p/go.tools/cmd/cover

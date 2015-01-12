@@ -31,7 +31,7 @@ not part of the implementation.
 
 ## Install
 
-go-diameter requires at least [Go 1.3](https://golang.org/doc/go1.3).
+go-diameter requires at least Go 1.3.
 
 Make sure Go is installed, and both GOPATH and GOROOT are set.
 

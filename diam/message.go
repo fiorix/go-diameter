@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -332,7 +332,7 @@ func (m *Message) String() string {
 		); err != nil {
 			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", a, err)
 		} else if a.Data.Format() == GroupedAVPFormat {
-			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, a))
+			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, a, 1))
 		} else {
 			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, a)
 		}
@@ -340,7 +340,7 @@ func (m *Message) String() string {
 	return b.String()
 }
 
-func printGrouped(prefix string, m *Message, a *AVP) string {
+func printGrouped(prefix string, m *Message, a *AVP, indent int) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "{Code:%d,Flags:0x%x,Length:%d,VendorId:%d,Value:Grouped{\n",
 		a.Code,
@@ -355,9 +355,23 @@ func printGrouped(prefix string, m *Message, a *AVP) string {
 		); err != nil {
 			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, ga, err)
 		} else {
-			fmt.Fprintf(&b, "%s\t%s %s,\n", prefix, dictAVP.Name, ga)
+			if ga.Data.Format() == GroupedAVPFormat {
+				indent += 1
+				tabs := indentTabs(indent)
+				fmt.Fprintf(&b, "%s%s %s\n", tabs, dictAVP.Name, printGrouped(tabs, m, ga, indent))
+			} else {
+				fmt.Fprintf(&b, "%s\t%s %s,\n", prefix, dictAVP.Name, ga)
+			}
 		}
 	}
 	fmt.Fprintf(&b, "%s}}", prefix)
 	return b.String()
+}
+
+func indentTabs(n int) string {
+	var s string
+	for i := 0; i < n; i++ {
+		s += "\t"
+	}
+	return s
 }

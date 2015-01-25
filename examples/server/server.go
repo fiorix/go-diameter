@@ -1,8 +1,10 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter server.
+// Diameter server example. This is by no means a complete server.
+// The commands in here are not fully implemented. For that you have
+// to read the RFCs (base and credit control) and follow the spec.
 
 // Generate SSL certificates:
 // go run $GOROOT/src/pkg/crypto/tls/generate_cert.go --host localhost
@@ -10,6 +12,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"log"
 	"net"
@@ -18,6 +21,7 @@ import (
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 const (
@@ -41,8 +45,11 @@ func main() {
 		*t = runtime.NumCPU()
 	}
 	runtime.GOMAXPROCS(*t)
+	// Load the credit control dictionary on top of the base dictionary.
+	dict.Default.Load(bytes.NewReader(dict.CreditControlXML))
 	// Message handlers:
 	diam.HandleFunc("CER", OnCER)
+	diam.HandleFunc("CCR", OnCCR)
 	diam.HandleFunc("ALL", OnMSG) // Catch-all
 	// Handle server errors.
 	go func() {
@@ -119,6 +126,16 @@ func OnCER(c diam.Conn, m *diam.Message) {
 				c.RemoteAddr().String())
 		}
 	}()
+}
+
+// OnCCR handles Credit-Control-Request messages.
+func OnCCR(c diam.Conn, m *diam.Message) {
+	log.Println(m)
+	// Craft a CCA with result code 3001.
+	a := m.Answer(diam.CommandUnsupported)
+	a.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
+	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+	a.WriteTo(c)
 }
 
 // OnMSG handles all other messages and replies to them

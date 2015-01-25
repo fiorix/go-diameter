@@ -1,12 +1,15 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter client.
+// Diameter client example. This is by no means a complete client.
+// The commands in here are not fully implemented. For that you have
+// to read the RFCs (base and credit control) and follow the spec.
 
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -18,6 +21,7 @@ import (
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 const (
@@ -34,11 +38,12 @@ func main() {
 		fmt.Println("Use: client [-ssl] host:port")
 		return
 	}
+	// Load the credit control dictionary on top of the base dictionary.
+	dict.Default.Load(bytes.NewReader(dict.CreditControlXML))
 	// ALL incoming messages are handled here.
-	diam.HandleFunc("ALL", func(c diam.Conn, m *diam.Message) {
-		log.Printf("Receiving message from %s", c.RemoteAddr().String())
-		log.Println(m)
-	})
+	diam.HandleFunc("CEA", OnCEA)
+	diam.HandleFunc("CCA", OnCCA)
+	diam.HandleFunc("ALL", OnMSG) // Catch-all.
 	// Connect using the default handler and base.Dict.
 	addr := os.Args[len(os.Args)-1]
 	log.Println("Connecting to", addr)
@@ -63,16 +68,6 @@ func main() {
 // NewClient sends a CER to the server and then a DWR every 10 seconds.
 func NewClient(c diam.Conn) {
 	// Build CER
-	// Passing nil as the last argument to NewRequest will use the default Parser
-	// and load dict.Default. To load other dictionaries you can use your own parser:
-	// parser, _ := dict.NewParser()
-	// parser.Load(bytes.NewReader(dict.DefaultXML))
-	// parser.Load(bytes.NewReader(dict.CreditControlXML))
-	// m := diam.NewRequest(diam.CapabilitiesExchange, 0, parser)
-
-	// Alternatively you can load more dictionaries into the default parser. e.g.
-	// dict.Default.load(bytes.NewReader(dict.CreditControlXML))
-
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, nil)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
@@ -107,4 +102,36 @@ func NewClient(c diam.Conn) {
 			log.Fatal("Write failed:", err)
 		}
 	}
+}
+
+// OnCEA handles Capabilities-Exchange-Answer messages.
+func OnCEA(c diam.Conn, m *diam.Message) {
+	rc, err := m.FindAVP(avp.ResultCode)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if v, _ := rc.Data.(format.Unsigned32); v != diam.Success {
+		log.Fatal("Unexpected response:", rc)
+	}
+	// Craft a CCR message.
+	r := diam.NewRequest(diam.CreditControl, 4, nil)
+	r.NewAVP(avp.SessionId, avp.Mbit, 0, format.UTF8String("fake-session"))
+	r.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
+	r.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+	peerRealm, _ := m.FindAVP(avp.OriginRealm) // You should handle errors.
+	r.NewAVP(avp.DestinationRealm, avp.Mbit, 0, peerRealm.Data)
+	r.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4))
+	// Add Service-Context-Id and all other AVPs...
+	r.WriteTo(c)
+}
+
+// OnCCA handles Credit-Control-Answer messages.
+func OnCCA(c diam.Conn, m *diam.Message) {
+	log.Println(m)
+}
+
+// OnMSG handles all other messages and just print them.
+func OnMSG(c diam.Conn, m *diam.Message) {
+	log.Printf("Receiving message from %s", c.RemoteAddr().String())
+	log.Println(m)
 }

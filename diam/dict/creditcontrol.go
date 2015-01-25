@@ -8,11 +8,13 @@ package dict
 
 import "bytes"
 
-// CreditControl is a static Parser with a pre-loaded Base Protocol.
+// CreditControl is a Parser with a pre-loaded Base Protocol
+// and Credit Control dictionaries.
 var CreditControl *Parser
 
 func init() {
 	CreditControl, _ = NewParser()
+	CreditControl.Load(bytes.NewReader(BaseXML))
 	CreditControl.Load(bytes.NewReader(CreditControlXML))
 }
 

@@ -8,18 +8,18 @@ package dict
 
 import "bytes"
 
-// Default is a static Parser with a pre-loaded Base Protocol.
+// Default is a Parser with a pre-loaded Base Protocol dictionary.
 var Default *Parser
 
 func init() {
 	Default, _ = NewParser()
-	Default.Load(bytes.NewReader(DefaultXML))
+	Default.Load(bytes.NewReader(BaseXML))
 }
 
-// DefaultXML is an embedded version of the Diameter Base Protocol.
+// BaseXML is an embedded version of the Diameter Base Protocol.
 //
 // Copy of diam_base.xml
-var DefaultXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
+var BaseXML = []byte(`<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
   <application id="0"> <!-- Diameter Common Messages -->

@@ -41,7 +41,9 @@ func main() {
 	// Load the credit control dictionary on top of the base dictionary.
 	dict.Default.Load(bytes.NewReader(dict.CreditControlXML))
 	// ALL incoming messages are handled here.
-	diam.HandleFunc("CEA", OnCEA)
+	sessionID := "fake_session_id"
+	msisdn := "85589481811"
+	diam.Handle("CEA", OnCEA(sessionID, msisdn))
 	diam.HandleFunc("CCA", OnCCA)
 	diam.HandleFunc("ALL", OnMSG) // Catch-all.
 	// Connect using the default handler and base.Dict.
@@ -105,24 +107,32 @@ func NewClient(c diam.Conn) {
 }
 
 // OnCEA handles Capabilities-Exchange-Answer messages.
-func OnCEA(c diam.Conn, m *diam.Message) {
-	rc, err := m.FindAVP(avp.ResultCode)
-	if err != nil {
-		log.Fatal(err)
+func OnCEA(sessionID string, msisdn string) diam.HandlerFunc {
+	return func(c diam.Conn, m *diam.Message) {
+		rc, err := m.FindAVP(avp.ResultCode)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if v, _ := rc.Data.(format.Unsigned32); v != diam.Success {
+			log.Fatal("Unexpected response:", rc)
+		}
+		// Craft a CCR message.
+		r := diam.NewRequest(diam.CreditControl, 4, nil)
+		r.NewAVP(avp.SessionId, avp.Mbit, 0, format.UTF8String(sessionID))
+		r.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
+		r.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+		peerRealm, _ := m.FindAVP(avp.OriginRealm) // You should handle errors.
+		r.NewAVP(avp.DestinationRealm, avp.Mbit, 0, peerRealm.Data)
+		r.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4))
+		r.NewAVP(avp.SubscriptionId, avp.Mbit, 0, &diam.GroupedAVP{
+			AVP: []*diam.AVP{
+				diam.NewAVP(avp.SubscriptionIdType, avp.Mbit, 0, format.Enumerated(0x00)),
+				diam.NewAVP(avp.SubscriptionIdData, avp.Mbit, 0, format.UTF8String(msisdn)),
+			},
+		})
+		// Add Service-Context-Id and all other AVPs...
+		r.WriteTo(c)
 	}
-	if v, _ := rc.Data.(format.Unsigned32); v != diam.Success {
-		log.Fatal("Unexpected response:", rc)
-	}
-	// Craft a CCR message.
-	r := diam.NewRequest(diam.CreditControl, 4, nil)
-	r.NewAVP(avp.SessionId, avp.Mbit, 0, format.UTF8String("fake-session"))
-	r.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-	r.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
-	peerRealm, _ := m.FindAVP(avp.OriginRealm) // You should handle errors.
-	r.NewAVP(avp.DestinationRealm, avp.Mbit, 0, peerRealm.Data)
-	r.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4))
-	// Add Service-Context-Id and all other AVPs...
-	r.WriteTo(c)
 }
 
 // OnCCA handles Credit-Control-Answer messages.

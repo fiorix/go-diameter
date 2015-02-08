@@ -75,7 +75,7 @@ func NewClient(c diam.Conn) {
 	ip, _, _ := net.SplitHostPort(laddr.String())
 	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, format.Address(net.ParseIP(ip)))
 	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
-	m.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
+	m.NewAVP(avp.ProductName, 0, 0, ProductName)
 	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(rand.Uint32()))
 	m.NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, &diam.GroupedAVP{
 		AVP: []*diam.AVP{

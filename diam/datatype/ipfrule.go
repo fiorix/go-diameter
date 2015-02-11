@@ -10,32 +10,32 @@ import "fmt"
 type IPFilterRule OctetString
 
 // DecodeIPFilterRule decodes an IPFilterRule data type from byte array.
-func DecodeIPFilterRule(b []byte) (DataType, error) {
+func DecodeIPFilterRule(b []byte) (Type, error) {
 	return IPFilterRule(OctetString(b)), nil
 }
 
-// Serialize implements the DataType interface.
+// Serialize implements the Type interface.
 func (s IPFilterRule) Serialize() []byte {
 	return OctetString(s).Serialize()
 }
 
-// Len implements the DataType interface.
+// Len implements the Type interface.
 func (s IPFilterRule) Len() int {
 	return len(s)
 }
 
-// Padding implements the DataType interface.
+// Padding implements the Type interface.
 func (s IPFilterRule) Padding() int {
 	l := len(s)
 	return pad4(l) - l
 }
 
-// Type implements the DataType interface.
+// Type implements the Type interface.
 func (s IPFilterRule) Type() TypeID {
 	return IPFilterRuleType
 }
 
-// String implements the DataType interface.
+// String implements the Type interface.
 func (s IPFilterRule) String() string {
 	return fmt.Sprintf("IPFilterRule{%s},Padding:%d", string(s), s.Padding())
 }

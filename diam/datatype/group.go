@@ -10,31 +10,31 @@ import "fmt"
 type Grouped []byte
 
 // DecodeGrouped decodes a Grouped data type from byte array.
-func DecodeGrouped(b []byte) (DataType, error) {
+func DecodeGrouped(b []byte) (Type, error) {
 	return Grouped(b), nil
 }
 
-// Serialize implements the DataType interface.
+// Serialize implements the Type interface.
 func (g Grouped) Serialize() []byte {
 	return g
 }
 
-// Len implements the DataType interface.
+// Len implements the Type interface.
 func (g Grouped) Len() int {
 	return len(g)
 }
 
-// Padding implements the DataType interface.
+// Padding implements the Type interface.
 func (g Grouped) Padding() int {
 	return 0
 }
 
-// Type implements the DataType interface.
+// Type implements the Type interface.
 func (g Grouped) Type() TypeID {
 	return GroupedType
 }
 
-// String implements the DataType interface.
+// String implements the Type interface.
 func (g Grouped) String() string {
 	return fmt.Sprint("Grouped{...}")
 }

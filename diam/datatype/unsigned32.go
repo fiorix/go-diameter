@@ -13,33 +13,33 @@ import (
 type Unsigned32 uint32
 
 // DecodeUnsigned32 decodes an Unsigned32 data type from byte array.
-func DecodeUnsigned32(b []byte) (DataType, error) {
+func DecodeUnsigned32(b []byte) (Type, error) {
 	return Unsigned32(binary.BigEndian.Uint32(b)), nil
 }
 
-// Serialize implements the DataType interface.
+// Serialize implements the Type interface.
 func (n Unsigned32) Serialize() []byte {
 	b := make([]byte, 4)
 	binary.BigEndian.PutUint32(b, uint32(n))
 	return b
 }
 
-// Len implements the DataType interface.
+// Len implements the Type interface.
 func (n Unsigned32) Len() int {
 	return 4
 }
 
-// Padding implements the DataType interface.
+// Padding implements the Type interface.
 func (n Unsigned32) Padding() int {
 	return 0
 }
 
-// Type implements the DataType interface.
+// Type implements the Type interface.
 func (n Unsigned32) Type() TypeID {
 	return Unsigned32Type
 }
 
-// String implements the DataType interface.
+// String implements the Type interface.
 func (n Unsigned32) String() string {
 	return fmt.Sprintf("Unsigned32{%d}", n)
 }

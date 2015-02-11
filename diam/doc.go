@@ -14,7 +14,7 @@ organized in sub-packages with specific functionality:
 
  * diam/avp: Diameter attribute-value-pairs codes and flags.
 
- * diam/avp/format: AVP data formats (e.g. Unsigned32, OctetString).
+ * diam/datatype: AVP data types (e.g. Unsigned32, OctetString).
 
  * diam/dict: a dictionary parser that supports collections of dictionaries.
 
@@ -35,11 +35,11 @@ The diam/dict sub-package supports the base application (id 0, RFC 6733)
 and the credit control application (id 4, RFC 4006). Each application
 has its own commands and messages, and their pre-defined AVPs.
 
-AVP data have specific formats, like UTF8String, Unsigned32 and so on.
+AVP data have specific data types, like UTF8String, Unsigned32 and so on.
 Fortunately, those types map align well with Go types, which makes things
-easier for us. However, the AVP data formats have specific properties like
+easier for us. However, the AVP data types have specific properties like
 padding for certain strings, which have to be taken care of. The sub-package
-diam/avp/format handles it all.
+diam/datatype handles it all.
 
 At last, the diam package is used to build clients and servers using
 an API very similar to the one of net/http. To initiate the client or

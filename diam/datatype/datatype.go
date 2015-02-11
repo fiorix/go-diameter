@@ -4,8 +4,8 @@
 
 package datatype
 
-// DataType is an interface to support Diameter AVP data types.
-type DataType interface {
+// Type is an interface to support Diameter AVP data types.
+type Type interface {
 	Serialize() []byte
 	Len() int
 	Padding() int
@@ -36,3 +36,22 @@ const (
 	Unsigned32Type
 	Unsigned64Type
 )
+
+var Available = map[string]TypeID{
+	"Address":          AddressType,
+	"DiameterIdentity": DiameterIdentityType,
+	"DiameterURI":      DiameterURIType,
+	"Enumerated":       EnumeratedType,
+	"Float32":          Float32Type,
+	"Float64":          Float64Type,
+	"Grouped":          GroupedType,
+	"IPFilterRule":     IPFilterRuleType,
+	"IPv4":             IPv4Type,
+	"Integer32":        Integer32Type,
+	"Integer64":        Integer64Type,
+	"OctetString":      OctetStringType,
+	"Time":             TimeType,
+	"UTF8String":       UTF8StringType,
+	"Unsigned32":       Unsigned32Type,
+	"Unsigned64":       Unsigned64Type,
+}

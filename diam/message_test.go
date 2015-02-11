@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -101,23 +101,23 @@ func TestReadMessage(t *testing.T) {
 func TestNewMessage(t *testing.T) {
 	want, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	m := NewMessage(CapabilitiesExchange, RequestFlag, 0, 0xa8cc407d, 0xa8c1b2b4, dict.Default)
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, format.DiameterIdentity("test"))
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, format.DiameterIdentity("localhost"))
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, format.Address(net.ParseIP("10.1.0.1")))
-	m.NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(13))
-	m.NewAVP(avp.ProductName, 0, 0, format.UTF8String("go-diameter"))
-	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(1397760650))
-	m.NewAVP(avp.SupportedVendorId, avp.Mbit, 0, format.Unsigned32(10415))
-	m.NewAVP(avp.SupportedVendorId, avp.Mbit, 0, format.Unsigned32(13))
-	m.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4))
-	m.NewAVP(avp.InbandSecurityId, avp.Mbit, 0, format.Unsigned32(0))
-	m.NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, &GroupedAVP{
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("test"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("localhost"))
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP("10.1.0.1")))
+	m.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(13))
+	m.NewAVP(avp.ProductName, 0, 0, datatype.UTF8String("go-diameter"))
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1397760650))
+	m.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(10415))
+	m.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(13))
+	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4))
+	m.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(0))
+	m.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &GroupedAVP{
 		AVP: []*AVP{
-			NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4)),
-			NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10415)),
+			NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
+			NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(10415)),
 		},
 	})
-	m.NewAVP(avp.FirmwareRevision, 0, 0, format.Unsigned32(1))
+	m.NewAVP(avp.FirmwareRevision, 0, 0, datatype.Unsigned32(1))
 	if m.Len() != want.Len() {
 		t.Fatalf("Unexpected message length.\nWant: %d\n%s\nHave: %d\n%s",
 			want.Len(), want, m.Len(), m)
@@ -137,7 +137,7 @@ func TestNewMessage(t *testing.T) {
 
 func TestMessageFindAVP(t *testing.T) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
-	a, err := m.FindAVP(avp.OriginStateId)
+	a, err := m.FindAVP(avp.OriginStateID)
 	if err != nil {
 		t.Fatal(err)
 	}

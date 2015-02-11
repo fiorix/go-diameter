@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -58,7 +58,7 @@ func TestNewAVP(t *testing.T) {
 		avp.OriginHost, // Code
 		avp.Mbit,       // Flags
 		0,              // Vendor
-		format.DiameterIdentity("foobar"), // Data
+		datatype.DiameterIdentity("foobar"), // Data
 	)
 	if a.Length != 14 { // Length in the AVP header
 		t.Fatalf("Unexpected length. Want 14, have %d", a.Length)
@@ -91,7 +91,7 @@ func TestEncodeAVP(t *testing.T) {
 	a := &AVP{
 		Code:  avp.OriginHost,
 		Flags: avp.Mbit,
-		Data:  format.DiameterIdentity("client"),
+		Data:  datatype.DiameterIdentity("client"),
 	}
 	b, err := a.Serialize()
 	if err != nil {
@@ -124,7 +124,7 @@ func BenchmarkDecodeAVP(b *testing.B) {
 }
 
 func BenchmarkEncodeAVP(b *testing.B) {
-	a := NewAVP(avp.OriginHost, avp.Mbit, 0, format.DiameterIdentity("client"))
+	a := NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("client"))
 	for n := 0; n < b.N; n++ {
 		a.Serialize()
 	}

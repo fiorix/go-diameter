@@ -9,7 +9,7 @@ package dict
 import (
 	"encoding/xml"
 
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
 // File is the dictionary root element of a XML file.  See diam_base.xml.
@@ -20,7 +20,7 @@ type File struct {
 
 // App defines a diameter application in XML and its multiple AVPs.
 type App struct {
-	Id      uint32     `xml:"id,attr"`   // Application Id
+	ID      uint32     `xml:"id,attr"`   // Application Id
 	Type    string     `xml:"type,attr"` // Application type
 	Name    string     `xml:"name,attr"` // Application name
 	Vendor  []*Vendor  `xml:"vendor"`    // Support for multiple vendors
@@ -31,7 +31,7 @@ type App struct {
 // Vendor defines diameter vendors in XML, that can be used to translate
 // the VendorId AVP of incoming messages.
 type Vendor struct {
-	Id   uint32 `xml:"id,attr"`
+	ID   uint32 `xml:"id,attr"`
 	Name string `xml:"name,attr"`
 }
 
@@ -44,6 +44,7 @@ type Command struct {
 	Answer  CommandRule `xml:"answer"`
 }
 
+// CommandRule contains rules for a given command.
 type CommandRule struct {
 	Rule []*Rule `xml:"rule"`
 }
@@ -62,17 +63,19 @@ type AVP struct {
 
 // Data of an AVP can be EnumItem or a Parser of multiple AVPs.
 type Data struct {
-	Format     format.FormatId `xml:"-"`
-	FormatName string          `xml:"type,attr"`
-	Enum       []*Enum         `xml:"item"` // In case of Enumerated AVP data
-	Rule       []*Rule         `xml:"rule"` // In case of Grouped AVPs
+	Type     datatype.TypeID `xml:"-"`
+	TypeName string          `xml:"type,attr"`
+	Enum     []*Enum         `xml:"item"` // In case of Enumerated AVP data
+	Rule     []*Rule         `xml:"rule"` // In case of Grouped AVPs
 }
 
+// Enum contains the code and name of Enumerated items.
 type Enum struct {
 	Code uint8  `xml:"code,attr"`
 	Name string `xml:"name,attr"`
 }
 
+// Rule defines the usage rules of an AVP.
 type Rule struct {
 	AVP      string `xml:"avp,attr"` // AVP Name
 	Required bool   `xml:"required,attr"`

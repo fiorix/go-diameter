@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -174,7 +174,7 @@ func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
 func (m *Message) Dictionary() *dict.Parser { return m.dictionary }
 
 // NewAVP creates and initializes a new AVP and adds it to the Message.
-func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data format.Format) (*AVP, error) {
+func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data datatype.Type) (*AVP, error) {
 	var a *AVP
 	switch code.(type) {
 	case int:
@@ -299,7 +299,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.EndToEndId,
 		m.dictionary,
 	)
-	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, format.Unsigned32(resultCode))
+	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
 	return nm
 }
 
@@ -331,7 +331,7 @@ func (m *Message) String() string {
 			a.Code,
 		); err != nil {
 			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", a, err)
-		} else if a.Data.Format() == GroupedAVPFormat {
+		} else if a.Data.Type() == GroupedAVPType {
 			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, a, 1))
 		} else {
 			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, a)
@@ -355,7 +355,7 @@ func printGrouped(prefix string, m *Message, a *AVP, indent int) string {
 		); err != nil {
 			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, ga, err)
 		} else {
-			if ga.Data.Format() == GroupedAVPFormat {
+			if ga.Data.Type() == GroupedAVPType {
 				indent += 1
 				tabs := indentTabs(indent)
 				fmt.Fprintf(&b, "%s%s %s\n", tabs, dictAVP.Name, printGrouped(tabs, m, ga, indent))

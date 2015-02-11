@@ -13,11 +13,11 @@ import (
 type IPv4 net.IP
 
 // DecodeIPv4 decodes an IPv4 data type from byte array.
-func DecodeIPv4(b []byte) (DataType, error) {
+func DecodeIPv4(b []byte) (Type, error) {
 	return IPv4(b), nil
 }
 
-// Serialize implements the DataType interface.
+// Serialize implements the Type interface.
 func (ip IPv4) Serialize() []byte {
 	if ip4 := net.IP(ip).To4(); ip4 != nil {
 		return ip4
@@ -25,22 +25,22 @@ func (ip IPv4) Serialize() []byte {
 	return ip
 }
 
-// Len implements the DataType interface.
+// Len implements the Type interface.
 func (ip IPv4) Len() int {
 	return 4
 }
 
-// Padding implements the DataType interface.
+// Padding implements the Type interface.
 func (ip IPv4) Padding() int {
 	return 0
 }
 
-// Type implements the DataType interface.
+// Type implements the Type interface.
 func (ip IPv4) Type() TypeID {
 	return IPv4Type
 }
 
-// String implements the DataType interface.
+// String implements the Type interface.
 func (ip IPv4) String() string {
 	return fmt.Sprintf("IPv4{%s}", net.IP(ip))
 }

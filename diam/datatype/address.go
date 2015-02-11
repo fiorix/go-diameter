@@ -15,7 +15,7 @@ import (
 type Address net.IP
 
 // DecodeAddress decodes an Address data type from byte array.
-func DecodeAddress(b []byte) (DataType, error) {
+func DecodeAddress(b []byte) (Type, error) {
 	if len(b) < 6 {
 		return nil, errors.New("Not enough data to make an Address")
 	}
@@ -34,7 +34,7 @@ func DecodeAddress(b []byte) (DataType, error) {
 	return Address(b[2:]), nil
 }
 
-// Serialize implements the DataType interface.
+// Serialize implements the Type interface.
 func (addr Address) Serialize() []byte {
 	var b []byte
 	if ip4 := net.IP(addr).To4(); ip4 != nil {
@@ -50,7 +50,7 @@ func (addr Address) Serialize() []byte {
 	return b
 }
 
-// Len implements the DataType interface.
+// Len implements the Type interface.
 func (addr Address) Len() int {
 	ip4 := net.IP(addr).To4()
 	if ip4 != nil {
@@ -59,18 +59,18 @@ func (addr Address) Len() int {
 	return len(addr) + 2
 }
 
-// Padding implements the DataType interface.
+// Padding implements the Type interface.
 func (addr Address) Padding() int {
 	l := len(addr) + 2 // two bytes from the address family
 	return pad4(l) - l
 }
 
-// Type implements the DataType interface.
+// Type implements the Type interface.
 func (addr Address) Type() TypeID {
 	return AddressType
 }
 
-// String implements the DataType interface.
+// String implements the Type interface.
 func (addr Address) String() string {
 	return fmt.Sprintf("Address{%s},Padding:%d", net.IP(addr), addr.Padding())
 }

@@ -13,33 +13,33 @@ import (
 type Integer64 int64
 
 // DecodeInteger64 decodes an Integer64 data type from byte array.
-func DecodeInteger64(b []byte) (DataType, error) {
+func DecodeInteger64(b []byte) (Type, error) {
 	return Integer64(binary.BigEndian.Uint64(b)), nil
 }
 
-// Serialize implements the DataType interface.
+// Serialize implements the Type interface.
 func (n Integer64) Serialize() []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, uint64(n))
 	return b
 }
 
-// Len implements the DataType interface.
+// Len implements the Type interface.
 func (n Integer64) Len() int {
 	return 8
 }
 
-// Padding implements the DataType interface.
+// Padding implements the Type interface.
 func (n Integer64) Padding() int {
 	return 0
 }
 
-// Type implements the DataType interface.
+// Type implements the Type interface.
 func (n Integer64) Type() TypeID {
 	return Integer64Type
 }
 
-// String implements the DataType interface.
+// String implements the Type interface.
 func (n Integer64) String() string {
 	return fmt.Sprintf("Integer64{%d}", n)
 }

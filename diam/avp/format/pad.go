@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 // pad4 returns n padded to 4 bytes.
 func pad4(n int) int {

@@ -1,35 +1,41 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import "fmt"
 
-// DiameterIdentity Diameter Format.
+// DiameterIdentity data type.
 type DiameterIdentity OctetString
 
-func DecodeDiameterIdentity(b []byte) (Format, error) {
-	return DiameterIdentity(OctetString(b)), nil
+// DecodeDiameterIdentity decodes a DiameterIdentity from byte array.
+func DecodeDiameterIdentity(b []byte) (DataType, error) {
+	return DiameterIdentity(b), nil
 }
 
+// Serialize implements the DataType interface.
 func (s DiameterIdentity) Serialize() []byte {
-	return OctetString(s).Serialize()
+	return []byte(s)
 }
 
+// Len implements the DataType interface.
 func (s DiameterIdentity) Len() int {
 	return len(s)
 }
 
+// Padding implements the DataType interface.
 func (s DiameterIdentity) Padding() int {
 	l := len(s)
 	return pad4(l) - l
 }
 
-func (s DiameterIdentity) Format() FormatId {
-	return DiameterIdentityFormat
+// Type implements the DataType interface.
+func (s DiameterIdentity) Type() TypeID {
+	return DiameterIdentityType
 }
 
+// String implements the DataType interface.
 func (s DiameterIdentity) String() string {
 	return fmt.Sprintf("DiameterIdentity{%s},Padding:%d", string(s), s.Padding())
 }

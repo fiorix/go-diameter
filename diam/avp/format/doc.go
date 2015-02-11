@@ -2,5 +2,5 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Diameter AVP data formats.
-package format
+// Package datatype provides data types for Diameter AVPs.
+package datatype

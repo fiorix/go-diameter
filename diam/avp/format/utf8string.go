@@ -2,34 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import "fmt"
 
-// UTF8String Diameter Format.
+// UTF8String data type.
 type UTF8String OctetString
 
-func DecodeUTF8String(b []byte) (Format, error) {
+// DecodeUTF8String decodes an UTF8String data type from byte array.
+func DecodeUTF8String(b []byte) (DataType, error) {
 	return UTF8String(OctetString(b)), nil
 }
 
+// Serialize implements the DataType interface.
 func (s UTF8String) Serialize() []byte {
 	return OctetString(s).Serialize()
 }
 
+// Len implements the DataType interface.
 func (s UTF8String) Len() int {
 	return len(s)
 }
 
+// Padding implements the DataType interface.
 func (s UTF8String) Padding() int {
 	l := len(s)
 	return pad4(l) - l
 }
 
-func (s UTF8String) Format() FormatId {
-	return UTF8StringFormat
+// Type implements the DataType interface.
+func (s UTF8String) Type() TypeID {
+	return UTF8StringType
 }
 
+// String implements the DataType interface.
 func (s UTF8String) String() string {
 	return fmt.Sprintf("UTF8String{%s},Padding:%d", string(s), s.Padding())
 }

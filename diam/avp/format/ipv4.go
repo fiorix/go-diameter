@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"fmt"
 	"net"
 )
 
-// IPv4 Diameter Format for Framed-IP-Address AVP.
+// IPv4 data type for Framed-IP-Address AVP.
 type IPv4 net.IP
 
-func DecodeIPv4(b []byte) (Format, error) {
+// DecodeIPv4 decodes an IPv4 data type from byte array.
+func DecodeIPv4(b []byte) (DataType, error) {
 	return IPv4(b), nil
 }
 
+// Serialize implements the DataType interface.
 func (ip IPv4) Serialize() []byte {
 	if ip4 := net.IP(ip).To4(); ip4 != nil {
 		return ip4
@@ -23,18 +25,22 @@ func (ip IPv4) Serialize() []byte {
 	return ip
 }
 
+// Len implements the DataType interface.
 func (ip IPv4) Len() int {
 	return 4
 }
 
+// Padding implements the DataType interface.
 func (ip IPv4) Padding() int {
 	return 0
 }
 
-func (ip IPv4) Format() FormatId {
-	return IPv4Format
+// Type implements the DataType interface.
+func (ip IPv4) Type() TypeID {
+	return IPv4Type
 }
 
+// String implements the DataType interface.
 func (ip IPv4) String() string {
 	return fmt.Sprintf("IPv4{%s}", net.IP(ip))
 }

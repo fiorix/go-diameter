@@ -2,33 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import "fmt"
 
-// Grouped Diameter Format.
+// Grouped data type.
 type Grouped []byte
 
-func DecodeGrouped(b []byte) (Format, error) {
+// DecodeGrouped decodes a Grouped data type from byte array.
+func DecodeGrouped(b []byte) (DataType, error) {
 	return Grouped(b), nil
 }
 
+// Serialize implements the DataType interface.
 func (g Grouped) Serialize() []byte {
 	return g
 }
 
+// Len implements the DataType interface.
 func (g Grouped) Len() int {
 	return len(g)
 }
 
+// Padding implements the DataType interface.
 func (g Grouped) Padding() int {
 	return 0
 }
 
-func (g Grouped) Format() FormatId {
-	return GroupedFormat
+// Type implements the DataType interface.
+func (g Grouped) Type() TypeID {
+	return GroupedType
 }
 
+// String implements the DataType interface.
 func (g Grouped) String() string {
 	return fmt.Sprint("Grouped{...}")
 }

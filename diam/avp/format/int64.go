@@ -2,38 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"encoding/binary"
 	"fmt"
 )
 
-// Integer64 Diameter Format.
+// Integer64 data type.
 type Integer64 int64
 
-func DecodeInteger64(b []byte) (Format, error) {
+// DecodeInteger64 decodes an Integer64 data type from byte array.
+func DecodeInteger64(b []byte) (DataType, error) {
 	return Integer64(binary.BigEndian.Uint64(b)), nil
 }
 
+// Serialize implements the DataType interface.
 func (n Integer64) Serialize() []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, uint64(n))
 	return b
 }
 
+// Len implements the DataType interface.
 func (n Integer64) Len() int {
-	return 4
+	return 8
 }
 
+// Padding implements the DataType interface.
 func (n Integer64) Padding() int {
 	return 0
 }
 
-func (n Integer64) Format() FormatId {
-	return Integer64Format
+// Type implements the DataType interface.
+func (n Integer64) Type() TypeID {
+	return Integer64Type
 }
 
+// String implements the DataType interface.
 func (n Integer64) String() string {
 	return fmt.Sprintf("Integer64{%d}", n)
 }

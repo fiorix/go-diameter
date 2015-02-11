@@ -1,8 +1,8 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"bytes"
@@ -17,9 +17,42 @@ func TestAddressIPv4(t *testing.T) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, v)
 	}
 	if address.Padding() != 2 {
-		t.Fatalf("Unexpected padding. Want 2, have %d", address.Padding())
+		t.Fatalf("Unexpected padding. Want 2, have %d",
+			address.Padding())
 	}
-	t.Log(address)
+	if address.Type() != AddressType {
+		t.Fatalf("Unexpected type. Want %d, have %d",
+			AddressType, address.Type())
+	}
+	if address.Len() != 6 {
+		t.Fatalf("Unexpected len. Want 6, have %d", address.Len())
+	}
+	if len(address.String()) == 0 {
+		t.Fatalf("Unexpected empty string")
+	}
+	//t.Log(address)
+}
+
+func TestDecodeAddressEmpty(t *testing.T) {
+	_, err := DecodeAddress([]byte{})
+	if err == nil {
+		t.Fatal("Empty Address was decoded with no error.")
+	}
+}
+
+func TestDecodeAddressInvalid(t *testing.T) {
+	_, err := DecodeAddress([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+	if err == nil {
+		t.Fatal("Invalid Address was decoded with no error.")
+	}
+}
+
+func TestDecodeAddressBadIPv4(t *testing.T) {
+	_, err := DecodeAddress([]byte{
+		0x00, 0x01, 0x0a, 0x00, 0x00, 0x00, 0x00})
+	if err == nil {
+		t.Fatal("Bad IPv4 was decoded with no error.")
+	}
 }
 
 func TestDecodeAddressIPv4(t *testing.T) {
@@ -32,9 +65,10 @@ func TestDecodeAddressIPv4(t *testing.T) {
 		t.Fatalf("Unexpected value. Want 10.0.0.1, have %s", ip)
 	}
 	if address.Padding() != 2 {
-		t.Fatalf("Unexpected padding. Want 2, have %d", address.Padding())
+		t.Fatalf("Unexpected padding. Want 2, have %d",
+			address.Padding())
 	}
-	t.Log(address)
+	//t.Log(address)
 }
 
 func TestAddressIPv6(t *testing.T) {
@@ -47,9 +81,25 @@ func TestAddressIPv6(t *testing.T) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, v)
 	}
 	if address.Padding() != 2 {
-		t.Fatalf("Unexpected padding. Want 2, have %d", address.Padding())
+		t.Fatalf("Unexpected padding. Want 2, have %d",
+			address.Padding())
 	}
-	t.Log(address)
+	if address.Type() != AddressType {
+		t.Fatalf("Unexpected type. Want %d, have %d",
+			AddressType, address.Type())
+	}
+	if address.Len() != 18 {
+		t.Fatalf("Unexpected len. Want 18, have %d", address.Len())
+	}
+	//t.Log(address)
+}
+
+func TestDecodeAddressBadIPv6(t *testing.T) {
+	_, err := DecodeAddress([]byte{
+		0x00, 0x02, 0x0a, 0x00, 0x00, 0x00, 0x00})
+	if err == nil {
+		t.Fatal("Unexpected bad IPv6 was decoded with no error.")
+	}
 }
 
 func TestDecodeAddressIPv6(t *testing.T) {
@@ -68,7 +118,7 @@ func TestDecodeAddressIPv6(t *testing.T) {
 	if address.Padding() != 2 {
 		t.Fatalf("Unexpected padding. Want 2, have %d", address.Padding())
 	}
-	t.Log(address)
+	//t.Log(address)
 }
 
 func BenchmarkAddressIPv4(b *testing.B) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"bytes"
@@ -16,7 +16,19 @@ func TestUnsigned64(t *testing.T) {
 	if x := n.Serialize(); !bytes.Equal(b, x) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, x)
 	}
-	t.Log(n)
+	if n.Len() != 8 {
+		t.Fatalf("Unexpected len. Want 8, have %d", n.Len())
+	}
+	if n.Padding() != 0 {
+		t.Fatalf("Unexpected padding. Want 0, have %d", n.Padding())
+	}
+	if n.Type() != Unsigned64Type {
+		t.Fatalf("Unexpected type. Want %d, have %d",
+			Unsigned64Type, n.Type())
+	}
+	if len(n.String()) == 0 {
+		t.Fatalf("Unexpected empty string")
+	}
 }
 
 func TestDecodeUnsigned64(t *testing.T) {
@@ -29,7 +41,6 @@ func TestDecodeUnsigned64(t *testing.T) {
 	if uint64(n.(Unsigned64)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
-	t.Log(n)
 }
 
 func BenchmarkUnsigned64(b *testing.B) {

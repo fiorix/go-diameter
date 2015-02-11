@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"bytes"
@@ -15,7 +15,19 @@ func TestFloat64(t *testing.T) {
 	if x := n.Serialize(); !bytes.Equal(b, x) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, x)
 	}
-	t.Log(n)
+	if n.Len() != 8 {
+		t.Fatalf("Unexpected len. Want 8, have %d", n.Len())
+	}
+	if n.Padding() != 0 {
+		t.Fatalf("Unexpected padding. Want 0, have %d", n.Padding())
+	}
+	if n.Type() != Float64Type {
+		t.Fatalf("Unexpected type. Want %d, have %d",
+			Float64Type, n.Type())
+	}
+	if len(n.String()) == 0 {
+		t.Fatalf("Unexpected empty string")
+	}
 }
 
 func TestDecodeFloat64(t *testing.T) {
@@ -27,7 +39,6 @@ func TestDecodeFloat64(t *testing.T) {
 	if v := n.(Float64); v != 3.1415926535 {
 		t.Fatalf("Unexpected value. Want 3.1415926535, have %0.4f", v)
 	}
-	t.Log(n)
 }
 
 func BenchmarkFloat64(b *testing.B) {

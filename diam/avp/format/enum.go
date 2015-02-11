@@ -2,34 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import "fmt"
 
-// Enumerated Diameter Format.
+// Enumerated data type.
 type Enumerated Integer32
 
-func DecodeEnumerated(b []byte) (Format, error) {
+// DecodeEnumerated decodes an Enumerated data type from byte array.
+func DecodeEnumerated(b []byte) (DataType, error) {
 	v, err := DecodeInteger32(b)
 	return Enumerated(v.(Integer32)), err
 }
 
+// Serialize implements the DataType interface.
 func (n Enumerated) Serialize() []byte {
 	return Integer32(n).Serialize()
 }
 
+// Len implements the DataType interface.
 func (n Enumerated) Len() int {
 	return 4
 }
 
+// Padding implements the DataType interface.
 func (n Enumerated) Padding() int {
 	return 0
 }
 
-func (n Enumerated) Format() FormatId {
-	return EnumeratedFormat
+// Type implements the DataType interface.
+func (n Enumerated) Type() TypeID {
+	return EnumeratedType
 }
 
+// String implements the DataType interface.
 func (n Enumerated) String() string {
 	return fmt.Sprintf("Enumerated{%d}", n)
 }

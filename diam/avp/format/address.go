@@ -1,8 +1,8 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"encoding/binary"
@@ -11,13 +11,11 @@ import (
 	"net"
 )
 
-// Address Diameter Format.
+// Address data type.
 type Address net.IP
 
-// DecodeAddress decodes the byte representation of a Diameter Address.
-// Example:
-// 	b := Address(net.ParseIP("10.0.0.1"))
-func DecodeAddress(b []byte) (Format, error) {
+// DecodeAddress decodes an Address data type from byte array.
+func DecodeAddress(b []byte) (DataType, error) {
 	if len(b) < 6 {
 		return nil, errors.New("Not enough data to make an Address")
 	}
@@ -36,9 +34,7 @@ func DecodeAddress(b []byte) (Format, error) {
 	return Address(b[2:]), nil
 }
 
-// Serialize returns the byte representation of the Diameter Address.
-// Example:
-// 	ip := net.IP(addr.Serialize())
+// Serialize implements the DataType interface.
 func (addr Address) Serialize() []byte {
 	var b []byte
 	if ip4 := net.IP(addr).To4(); ip4 != nil {
@@ -54,23 +50,27 @@ func (addr Address) Serialize() []byte {
 	return b
 }
 
+// Len implements the DataType interface.
 func (addr Address) Len() int {
-	if ip4 := net.IP(addr).To4(); ip4 != nil {
-		return len(ip4) + 2 // two from address family
-	} else {
-		return len(addr) + 2
+	ip4 := net.IP(addr).To4()
+	if ip4 != nil {
+		return len(ip4) + 2 // Two from address family.
 	}
+	return len(addr) + 2
 }
 
+// Padding implements the DataType interface.
 func (addr Address) Padding() int {
 	l := len(addr) + 2 // two bytes from the address family
 	return pad4(l) - l
 }
 
-func (addr Address) Format() FormatId {
-	return AddressFormat
+// Type implements the DataType interface.
+func (addr Address) Type() TypeID {
+	return AddressType
 }
 
+// String implements the DataType interface.
 func (addr Address) String() string {
 	return fmt.Sprintf("Address{%s},Padding:%d", net.IP(addr), addr.Padding())
 }

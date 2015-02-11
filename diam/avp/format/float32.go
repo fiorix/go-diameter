@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"encoding/binary"
@@ -10,31 +10,37 @@ import (
 	"math"
 )
 
-// Float32 Diameter Format.
+// Float32 data type.
 type Float32 float32
 
-func DecodeFloat32(b []byte) (Format, error) {
+// DecodeFloat32 decodes a Float32 data type from a byte array.
+func DecodeFloat32(b []byte) (DataType, error) {
 	return Float32(math.Float32frombits(binary.BigEndian.Uint32(b))), nil
 }
 
+// Serialize implements the DataType interface.
 func (n Float32) Serialize() []byte {
 	b := make([]byte, 4)
 	binary.BigEndian.PutUint32(b, math.Float32bits(float32(n)))
 	return b
 }
 
+// Len implements the DataType interface.
 func (n Float32) Len() int {
 	return 4
 }
 
+// Padding implements the DataType interface.
 func (n Float32) Padding() int {
 	return 0
 }
 
-func (n Float32) Format() FormatId {
-	return Float32Format
+// Type implements the DataType interface.
+func (n Float32) Type() TypeID {
+	return Float32Type
 }
 
+// String implements the DataType interface.
 func (n Float32) String() string {
 	return fmt.Sprintf("Float32{%0.4f}", n)
 }

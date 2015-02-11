@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"encoding/binary"
@@ -10,31 +10,37 @@ import (
 	"time"
 )
 
-// Time Diameter Format.
+// Time data type.
 type Time time.Time
 
-func DecodeTime(b []byte) (Format, error) {
+// DecodeTime decodes a Time data type from byte array.
+func DecodeTime(b []byte) (DataType, error) {
 	return Time(time.Unix(int64(binary.BigEndian.Uint32(b)), 0)), nil
 }
 
+// Serialize implements the DataType interface.
 func (t Time) Serialize() []byte {
 	b := make([]byte, 4)
 	binary.BigEndian.PutUint32(b, uint32(time.Time(t).Unix()))
 	return b
 }
 
+// Len implements the DataType interface.
 func (t Time) Len() int {
 	return 4
 }
 
+// Padding implements the DataType interface.
 func (t Time) Padding() int {
 	return 0
 }
 
-func (t Time) Format() FormatId {
-	return TimeFormat
+// Type implements the DataType interface.
+func (t Time) Type() TypeID {
+	return TimeType
 }
 
+// String implements the DataType interface.
 func (t Time) String() string {
 	return fmt.Sprintf("Time{%s}", time.Time(t))
 }

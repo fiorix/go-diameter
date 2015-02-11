@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"bytes"
@@ -16,7 +16,19 @@ func TestTime(t *testing.T) {
 	if v := n.Serialize(); !bytes.Equal(v, b) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, v)
 	}
-	t.Log(n)
+	if n.Len() != 4 {
+		t.Fatalf("Unexpected len. Want 4, have %d", n.Len())
+	}
+	if n.Padding() != 0 {
+		t.Fatalf("Unexpected padding. Want 0, have %d", n.Padding())
+	}
+	if n.Type() != TimeType {
+		t.Fatalf("Unexpected type. Want %d, have %d",
+			TimeType, n.Type())
+	}
+	if len(n.String()) == 0 {
+		t.Fatalf("Unexpected empty string")
+	}
 }
 
 func TestDecodeTime(t *testing.T) {
@@ -28,7 +40,6 @@ func TestDecodeTime(t *testing.T) {
 	if n := time.Time(v.(Time)).Unix(); n != 1377093974 {
 		t.Fatalf("Unexpected value. Want 1377093974, have %d", n)
 	}
-	t.Log(v)
 }
 
 func BenchmarkTime(b *testing.B) {

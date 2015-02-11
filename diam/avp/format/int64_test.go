@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package format
+package datatype
 
 import (
 	"bytes"
@@ -16,7 +16,19 @@ func TestInteger64(t *testing.T) {
 	if x := n.Serialize(); !bytes.Equal(b, x) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, x)
 	}
-	t.Log(n)
+	if n.Len() != 8 {
+		t.Fatalf("Unexpected len. Want 8, have %d", n.Len())
+	}
+	if n.Padding() != 0 {
+		t.Fatalf("Unexpected padding. Want 0, have %d", n.Padding())
+	}
+	if n.Type() != Integer64Type {
+		t.Fatalf("Unexpected type. Want %d, have %d",
+			Integer64Type, n.Type())
+	}
+	if len(n.String()) == 0 {
+		t.Fatalf("Unexpected empty string")
+	}
 }
 
 func TestNegativeInteger64(t *testing.T) {
@@ -25,7 +37,6 @@ func TestNegativeInteger64(t *testing.T) {
 	if x := n.Serialize(); !bytes.Equal(b, x) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, x)
 	}
-	t.Log(n)
 }
 
 func TestDecodeInteger64(t *testing.T) {
@@ -38,7 +49,6 @@ func TestDecodeInteger64(t *testing.T) {
 	if int64(n.(Integer64)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
-	t.Log(n)
 }
 
 func TestDecodeNegativeInteger64(t *testing.T) {
@@ -51,7 +61,6 @@ func TestDecodeNegativeInteger64(t *testing.T) {
 	if int64(n.(Integer64)) != z {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", z, n)
 	}
-	t.Log(n)
 }
 
 func BenchmarkInteger64(b *testing.B) {

@@ -15,12 +15,12 @@ import (
 	"github.com/fiorix/go-diameter/diam/util"
 )
 
-// Diameter AVP.
+// AVP is a Diameter attribute-value-pair.
 type AVP struct {
 	Code     uint32        // Code of this AVP
 	Flags    uint8         // Flags of this AVP
 	Length   int           // Length of this AVP's payload
-	VendorId uint32        // VendorId of this AVP
+	VendorID uint32        // VendorId of this AVP
 	Data     datatype.Type // Data of this AVP (payload)
 }
 
@@ -29,14 +29,14 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data datatype.Type) *AVP {
 	a := &AVP{
 		Code:     code,
 		Flags:    flags,
-		VendorId: vendor,
+		VendorID: vendor,
 		Data:     data,
 	}
 	a.Length = a.headerLen()
 	return a
 }
 
-// Decode decodes the bytes of a Diameter AVP.
+// DecodeAVP decodes the bytes of a Diameter AVP.
 // It uses the given application id and dictionary for decoding the bytes.
 func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
 	avp := &AVP{}
@@ -70,7 +70,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	var payload []byte
 	// Read VendorId when required.
 	if a.Flags&avp.Vbit > 0 {
-		a.VendorId = binary.BigEndian.Uint32(data[8:12])
+		a.VendorID = binary.BigEndian.Uint32(data[8:12])
 		payload = data[12:]
 		hdrLength = 12
 	} else {
@@ -110,10 +110,10 @@ func (a *AVP) Serialize() ([]byte, error) {
 	payload := a.Data.Serialize()
 	payloadLen := len(payload)
 	var b []byte
-	if a.VendorId > 0 {
+	if a.VendorID > 0 {
 		b = make([]byte, 12+payloadLen+a.Data.Padding())
 		copy(b[5:8], util.Uint32to24(uint32(12+payloadLen)))
-		binary.BigEndian.PutUint32(b[8:12], a.VendorId)
+		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
 		copy(b[12:], payload)
 	} else {
 		b = make([]byte, 8+payloadLen+a.Data.Padding())
@@ -125,15 +125,16 @@ func (a *AVP) Serialize() ([]byte, error) {
 	return b, nil
 }
 
+// SerializeTo writes the byte sequence that represents this AVP to a byte array.
 func (a *AVP) SerializeTo(b []byte) error {
 	if a.Data == nil {
 		return errors.New("Failed to serialize AVP: Data is nil")
 	}
 	payload := a.Data.Serialize()
 	payloadLen := len(payload)
-	if a.VendorId > 0 {
+	if a.VendorID > 0 {
 		copy(b[5:8], util.Uint32to24(uint32(12+payloadLen)))
-		binary.BigEndian.PutUint32(b[8:12], a.VendorId)
+		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
 		copy(b[12:], payload)
 	} else {
 		copy(b[5:8], util.Uint32to24(uint32(8+payloadLen)))
@@ -144,6 +145,7 @@ func (a *AVP) SerializeTo(b []byte) error {
 	return nil
 }
 
+// Len returns the length of this AVP in bytes with padding.
 func (a *AVP) Len() int {
 	return a.headerLen() + a.Data.Padding()
 }
@@ -151,9 +153,8 @@ func (a *AVP) Len() int {
 func (a *AVP) headerLen() int {
 	if a.Flags&avp.Vbit > 0 {
 		return 12 + a.Data.Len()
-	} else {
-		return 8 + a.Data.Len()
 	}
+	return 8 + a.Data.Len()
 }
 
 func (a *AVP) String() string {
@@ -161,7 +162,7 @@ func (a *AVP) String() string {
 		a.Code,
 		a.Flags,
 		a.Len(),
-		a.VendorId,
+		a.VendorID,
 		a.Data,
 	)
 }

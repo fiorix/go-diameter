@@ -12,7 +12,9 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-const GroupedAVPType = 50 // Must not conflict with other datatype.TypeID.
+// GroupedAVPType is the identifier of the GroupedAVP data type.
+// It must not conflict with other values from the datatype package.
+const GroupedAVPType = 50
 
 // GroupedAVP that is different from the dummy datatype.Grouped.
 type GroupedAVP struct {

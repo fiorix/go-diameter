@@ -19,7 +19,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-// Objects implementing the Handler interface can be
+// The Handler interface allow arbitrary objects to be
 // registered to serve particular messages like CER, DWR.
 //
 // ServeDIAM should write messages to the Conn and then return.
@@ -270,7 +270,7 @@ func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 	defer mux.mu.RUnlock()
 	var cmd string
 	if dcmd, err := m.dictionary.FindCommand(
-		m.Header.ApplicationId,
+		m.Header.ApplicationID,
 		m.Header.CommandCode,
 	); err != nil {
 		cmd = "ALL"
@@ -326,7 +326,7 @@ func HandleFunc(cmd string, handler func(Conn, *Message)) {
 	DefaultServeMux.HandleFunc(cmd, handler)
 }
 
-// ErrorReport returns the ErrorReport channel of the DefaultServeMux.
+// ErrorReports returns the ErrorReport channel of the DefaultServeMux.
 func ErrorReports() chan ErrorReport {
 	return DefaultServeMux.ErrorReports()
 }

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /*
-Package go-diameter provides support for the Diameter protocol for Go.
+Package diam provides support for the Diameter protocol for Go.
 See RFC 6733.
 
 go-diameter is minimalist implementation of the Diameter base protocol,

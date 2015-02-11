@@ -11,18 +11,19 @@ import (
 	"github.com/fiorix/go-diameter/diam/util"
 )
 
-// Diameter Header.
+// Header is the header representation of a Diameter message.
 type Header struct {
 	Version       uint8
 	MessageLength uint32
 	CommandFlags  uint8
 	CommandCode   uint32
-	ApplicationId uint32
-	HopByHopId    uint32
-	EndToEndId    uint32
+	ApplicationID uint32
+	HopByHopID    uint32
+	EndToEndID    uint32
 }
 
-const HeaderLength = 20 // Diameter header length.
+// HeaderLength is the length of a Diameter header data structure.
+const HeaderLength = 20
 
 // Command flags.
 const (
@@ -50,12 +51,13 @@ func (h *Header) DecodeFromBytes(data []byte) error {
 	h.MessageLength = util.Uint24to32(data[1:4])
 	h.CommandFlags = data[4]
 	h.CommandCode = util.Uint24to32(data[5:8])
-	h.ApplicationId = binary.BigEndian.Uint32(data[8:12])
-	h.HopByHopId = binary.BigEndian.Uint32(data[12:16])
-	h.EndToEndId = binary.BigEndian.Uint32(data[16:20])
+	h.ApplicationID = binary.BigEndian.Uint32(data[8:12])
+	h.HopByHopID = binary.BigEndian.Uint32(data[12:16])
+	h.EndToEndID = binary.BigEndian.Uint32(data[16:20])
 	return nil
 }
 
+// Serialize returns a byte sequence of the header in network byte order.
 func (h *Header) Serialize() []byte {
 	b := make([]byte, HeaderLength)
 	h.SerializeTo(b)
@@ -68,9 +70,9 @@ func (h *Header) SerializeTo(b []byte) {
 	copy(b[1:4], util.Uint32to24(h.MessageLength))
 	b[4] = h.CommandFlags
 	copy(b[5:8], util.Uint32to24(h.CommandCode))
-	binary.BigEndian.PutUint32(b[8:12], h.ApplicationId)
-	binary.BigEndian.PutUint32(b[12:16], h.HopByHopId)
-	binary.BigEndian.PutUint32(b[16:20], h.EndToEndId)
+	binary.BigEndian.PutUint32(b[8:12], h.ApplicationID)
+	binary.BigEndian.PutUint32(b[12:16], h.HopByHopID)
+	binary.BigEndian.PutUint32(b[16:20], h.EndToEndID)
 }
 
 func (h *Header) String() string {
@@ -79,8 +81,8 @@ func (h *Header) String() string {
 		h.CommandFlags,
 		h.Version,
 		h.MessageLength,
-		h.ApplicationId,
-		h.HopByHopId,
-		h.EndToEndId,
+		h.ApplicationID,
+		h.HopByHopID,
+		h.EndToEndID,
 	)
 }

@@ -22,9 +22,10 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var MessageBufferLength = 1 << 10 // Default 1K per message.
+// MessageBufferLength is the default buffer length for Diameter messages.
+var MessageBufferLength = 1 << 10
 
-// Diameter message.
+// Message represents a Diameter message.
 type Message struct {
 	Header *Header
 	AVP    []*AVP // AVPs in this message.
@@ -83,7 +84,7 @@ func readAndParseHeader(m *Message, buf *bytes.Buffer, r io.Reader) (cmd *dict.C
 		return nil, err
 	}
 	cmd, err = m.dictionary.FindCommand(
-		m.Header.ApplicationId,
+		m.Header.ApplicationID,
 		m.Header.CommandCode,
 	)
 	if err != nil {
@@ -98,15 +99,15 @@ func readAndParseBody(m *Message, cmd *dict.Command, buf *bytes.Buffer, r io.Rea
 	if err != nil {
 		return err
 	}
-	if n := maxAVPs(m, cmd); n == 0 {
+	n := maxAVPs(m, cmd)
+	if n == 0 {
 		// TODO: fail to load the dictionary instead.
 		return fmt.Errorf(
 			"Command %s (%d) has no AVPs defined in the dictionary.",
 			cmd.Name, cmd.Code)
-	} else {
-		// Pre-allocate max # of AVPs for this message.
-		m.AVP = make([]*AVP, 0, n)
 	}
+	// Pre-allocate max # of AVPs for this message.
+	m.AVP = make([]*AVP, 0, n)
 	if err = decodeAVPs(m, b); err != nil {
 		return err
 	}
@@ -116,9 +117,8 @@ func readAndParseBody(m *Message, cmd *dict.Command, buf *bytes.Buffer, r io.Rea
 func maxAVPs(m *Message, cmd *dict.Command) int {
 	if m.Header.CommandFlags&RequestFlag > 0 {
 		return len(cmd.Request.Rule)
-	} else {
-		return len(cmd.Answer.Rule)
 	}
+	return len(cmd.Answer.Rule)
 }
 
 func decodeAVPs(m *Message, pbytes []byte) error {
@@ -127,7 +127,7 @@ func decodeAVPs(m *Message, pbytes []byte) error {
 	for n := 0; n < len(pbytes); {
 		a, err = DecodeAVP(
 			pbytes[n:],
-			m.Header.ApplicationId,
+			m.Header.ApplicationID,
 			m.dictionary,
 		)
 		if err != nil {
@@ -156,9 +156,9 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dicti
 			MessageLength: HeaderLength,
 			CommandFlags:  flags,
 			CommandCode:   cmd,
-			ApplicationId: appid,
-			HopByHopId:    hopbyhop,
-			EndToEndId:    endtoend,
+			ApplicationID: appid,
+			HopByHopID:    hopbyhop,
+			EndToEndID:    endtoend,
 		},
 		dictionary: dictionary,
 	}
@@ -183,7 +183,7 @@ func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data data
 		a = NewAVP(code.(uint32), flags, vendor, data)
 	case string:
 		dictAVP, err := m.dictionary.FindAVP(
-			m.Header.ApplicationId,
+			m.Header.ApplicationID,
 			code.(string),
 		)
 		if err != nil {
@@ -276,7 +276,7 @@ func (m *Message) Len() int {
 //	avp, err := m.FindAVP(264)
 //	avp, err := m.FindAVP("Origin-Host")
 func (m *Message) FindAVP(code interface{}) (*AVP, error) {
-	dictAVP, err := m.dictionary.FindAVP(m.Header.ApplicationId, code)
+	dictAVP, err := m.dictionary.FindAVP(m.Header.ApplicationID, code)
 	if err != nil {
 		return nil, err
 	}
@@ -294,9 +294,9 @@ func (m *Message) Answer(resultCode uint32) *Message {
 	nm := NewMessage(
 		m.Header.CommandCode,
 		m.Header.CommandFlags&^RequestFlag, // Reset the Request bit.
-		m.Header.ApplicationId,
-		m.Header.HopByHopId,
-		m.Header.EndToEndId,
+		m.Header.ApplicationID,
+		m.Header.HopByHopID,
+		m.Header.EndToEndID,
 		m.dictionary,
 	)
 	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
@@ -312,7 +312,7 @@ func (m *Message) String() string {
 		typ = "Answer"
 	}
 	if dictCMD, err := m.dictionary.FindCommand(
-		m.Header.ApplicationId,
+		m.Header.ApplicationID,
 		m.Header.CommandCode,
 	); err != nil {
 		fmt.Fprintf(&b, "Unknown-%s\n%s\n", typ, m.Header)
@@ -327,7 +327,7 @@ func (m *Message) String() string {
 	}
 	for _, a := range m.AVP {
 		if dictAVP, err := m.dictionary.FindAVP(
-			m.Header.ApplicationId,
+			m.Header.ApplicationID,
 			a.Code,
 		); err != nil {
 			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", a, err)
@@ -346,17 +346,17 @@ func printGrouped(prefix string, m *Message, a *AVP, indent int) string {
 		a.Code,
 		a.Flags,
 		a.Len(),
-		a.VendorId,
+		a.VendorID,
 	)
 	for _, ga := range a.Data.(*GroupedAVP).AVP {
 		if dictAVP, err := m.dictionary.FindAVP(
-			m.Header.ApplicationId,
+			m.Header.ApplicationID,
 			ga.Code,
 		); err != nil {
 			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, ga, err)
 		} else {
 			if ga.Data.Type() == GroupedAVPType {
-				indent += 1
+				indent++
 				tabs := indentTabs(indent)
 				fmt.Fprintf(&b, "%s%s %s\n", tabs, dictAVP.Name, printGrouped(tabs, m, ga, indent))
 			} else {

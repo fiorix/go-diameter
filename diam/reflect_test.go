@@ -70,18 +70,18 @@ func TestUnmarshalNetIP(t *testing.T) {
 func TestUnmarshalInt(t *testing.T) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	type Data struct {
-		VendorId1 *AVP `avp:"Vendor-Id"`
-		VendorId2 int  `avp:"Vendor-Id"`
+		VendorID1 *AVP `avp:"Vendor-Id"`
+		VendorID2 int  `avp:"Vendor-Id"`
 	}
 	var d Data
 	if err := m.Unmarshal(&d); err != nil {
 		t.Fatal(err)
 	}
-	if v := d.VendorId1.Data.(datatype.Unsigned32); v != 13 {
+	if v := d.VendorID1.Data.(datatype.Unsigned32); v != 13 {
 		t.Fatalf("Unexpected value. Want 13, have %d", v)
 	}
-	if d.VendorId2 != 13 {
-		t.Fatalf("Unexpected value. Want 13, have %d", d.VendorId2)
+	if d.VendorID2 != 13 {
+		t.Fatalf("Unexpected value. Want 13, have %d", d.VendorID2)
 	}
 }
 
@@ -118,12 +118,12 @@ func TestUnmarshalSlice(t *testing.T) {
 func TestUnmarshalGrouped(t *testing.T) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	type VSA struct {
-		AuthAppId1 AVP  `avp:"Auth-Application-Id"`
-		AuthAppId2 *AVP `avp:"Auth-Application-Id"`
-		AuthAppId3 int  `avp:"Auth-Application-Id"`
-		VendorId1  AVP  `avp:"Vendor-Id"`
-		VendorId2  *AVP `avp:"Vendor-Id"`
-		VendorId3  int  `avp:"Vendor-Id"`
+		AuthAppID1 AVP  `avp:"Auth-Application-Id"`
+		AuthAppID2 *AVP `avp:"Auth-Application-Id"`
+		AuthAppID3 int  `avp:"Auth-Application-Id"`
+		VendorID1  AVP  `avp:"Vendor-Id"`
+		VendorID2  *AVP `avp:"Vendor-Id"`
+		VendorID3  int  `avp:"Vendor-Id"`
 	}
 	type Data struct {
 		VSA1 AVP  `avp:"Vendor-Specific-Application-Id"`
@@ -131,12 +131,12 @@ func TestUnmarshalGrouped(t *testing.T) {
 		VSA3 VSA  `avp:"Vendor-Specific-Application-Id"`
 		VSA4 *VSA `avp:"Vendor-Specific-Application-Id"`
 		VSA5 struct {
-			AuthAppId1 AVP  `avp:"Auth-Application-Id"`
-			AuthAppId2 *AVP `avp:"Auth-Application-Id"`
-			AuthAppId3 int  `avp:"Auth-Application-Id"`
-			VendorId1  AVP  `avp:"Vendor-Id"`
-			VendorId2  *AVP `avp:"Vendor-Id"`
-			VendorId3  int  `avp:"Vendor-Id"`
+			AuthAppID1 AVP  `avp:"Auth-Application-Id"`
+			AuthAppID2 *AVP `avp:"Auth-Application-Id"`
+			AuthAppID3 int  `avp:"Auth-Application-Id"`
+			VendorID1  AVP  `avp:"Vendor-Id"`
+			VendorID2  *AVP `avp:"Vendor-Id"`
+			VendorID3  int  `avp:"Vendor-Id"`
 		} `avp:"Vendor-Specific-Application-Id"`
 	}
 	var d Data
@@ -153,67 +153,67 @@ func TestUnmarshalGrouped(t *testing.T) {
 	} else if len(v.AVP) != 2 { // There must be 2 AVPs in it.
 		t.Fatalf("Unexpected value. Want 2, have %d", len(v.AVP))
 	}
-	if v := int(d.VSA3.AuthAppId1.Data.(datatype.Unsigned32)); v != 4 {
+	if v := int(d.VSA3.AuthAppID1.Data.(datatype.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if v := int(d.VSA3.AuthAppId2.Data.(datatype.Unsigned32)); v != 4 {
+	if v := int(d.VSA3.AuthAppID2.Data.(datatype.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if d.VSA3.AuthAppId3 != 4 {
-		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA3.AuthAppId3)
+	if d.VSA3.AuthAppID3 != 4 {
+		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA3.AuthAppID3)
 	}
-	if v := int(d.VSA3.VendorId1.Data.(datatype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA3.VendorID1.Data.(datatype.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if v := int(d.VSA3.VendorId2.Data.(datatype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA3.VendorID2.Data.(datatype.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if d.VSA3.VendorId3 != 10415 {
-		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA3.VendorId3)
+	if d.VSA3.VendorID3 != 10415 {
+		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA3.VendorID3)
 	}
-	if v := int(d.VSA4.AuthAppId1.Data.(datatype.Unsigned32)); v != 4 {
+	if v := int(d.VSA4.AuthAppID1.Data.(datatype.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if v := int(d.VSA4.AuthAppId2.Data.(datatype.Unsigned32)); v != 4 {
+	if v := int(d.VSA4.AuthAppID2.Data.(datatype.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if d.VSA4.AuthAppId3 != 4 {
-		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA4.AuthAppId3)
+	if d.VSA4.AuthAppID3 != 4 {
+		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA4.AuthAppID3)
 	}
-	if v := int(d.VSA4.VendorId1.Data.(datatype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA4.VendorID1.Data.(datatype.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if v := int(d.VSA4.VendorId2.Data.(datatype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA4.VendorID2.Data.(datatype.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if d.VSA4.VendorId3 != 10415 {
-		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA4.VendorId3)
+	if d.VSA4.VendorID3 != 10415 {
+		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA4.VendorID3)
 	}
-	if v := int(d.VSA5.AuthAppId1.Data.(datatype.Unsigned32)); v != 4 {
+	if v := int(d.VSA5.AuthAppID1.Data.(datatype.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if v := int(d.VSA5.AuthAppId2.Data.(datatype.Unsigned32)); v != 4 {
+	if v := int(d.VSA5.AuthAppID2.Data.(datatype.Unsigned32)); v != 4 {
 		t.Fatalf("Unexpected value. Want 4, have %d", v)
 	}
-	if d.VSA5.AuthAppId3 != 4 {
-		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA5.AuthAppId3)
+	if d.VSA5.AuthAppID3 != 4 {
+		t.Fatalf("Unexpected value. Want 4, have %d", d.VSA5.AuthAppID3)
 	}
-	if v := int(d.VSA5.VendorId1.Data.(datatype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA5.VendorID1.Data.(datatype.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if v := int(d.VSA5.VendorId2.Data.(datatype.Unsigned32)); v != 10415 {
+	if v := int(d.VSA5.VendorID2.Data.(datatype.Unsigned32)); v != 10415 {
 		t.Fatalf("Unexpected value. Want 10415, have %d", v)
 	}
-	if d.VSA5.VendorId3 != 10415 {
-		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA5.VendorId3)
+	if d.VSA5.VendorID3 != 10415 {
+		t.Fatalf("Unexpected value. Want 10415, have %d", d.VSA5.VendorID3)
 	}
 }
 
 func TestUnmarshalGroupedSlice(t *testing.T) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	type VSA struct {
-		AuthAppId int `avp:"Auth-Application-Id"`
-		VendorId  int `avp:"Vendor-Id"`
+		AuthAppID int `avp:"Auth-Application-Id"`
+		VendorID  int `avp:"Vendor-Id"`
 	}
 	type Data struct {
 		VSA1 []*VSA `avp:"Vendor-Specific-Application-Id"`
@@ -245,15 +245,15 @@ func TestUnmarshalCER(t *testing.T) {
 		OriginHost  string `avp:"Origin-Host"`
 		OriginRealm string `avp:"Origin-Realm"`
 		HostIP      net.IP `avp:"Host-IP-Address"`
-		VendorId    int    `avp:"Vendor-Id"`
+		VendorID    int    `avp:"Vendor-Id"`
 		ProductName string `avp:"Product-Name"`
-		StateId     int    `avp:"Origin-State-Id"`
+		StateID     int    `avp:"Origin-State-Id"`
 		Vendors     []int  `avp:"Supported-Vendor-Id"`
-		AuthAppId   int    `avp:"Auth-Application-Id"`
-		InbandSecId int    `avp:"Inband-Security-Id"`
+		AuthAppID   int    `avp:"Auth-Application-Id"`
+		InbandSecID int    `avp:"Inband-Security-Id"`
 		VSA         struct {
-			AuthAppId int `avp:"Auth-Application-Id"`
-			VendorId  int `avp:"Vendor-Id"`
+			AuthAppID int `avp:"Auth-Application-Id"`
+			VendorID  int `avp:"Vendor-Id"`
 		} `avp:"Vendor-Specific-Application-Id"`
 		Firmware int `avp:"Firmware-Revision"`
 	}
@@ -268,24 +268,24 @@ func TestUnmarshalCER(t *testing.T) {
 		t.Fatalf("Unexpected Code. Want localhost, have %s", d.OriginRealm)
 	case d.HostIP.String() != "10.1.0.1":
 		t.Fatalf("Unexpected Host-IP-Address. Want 10.1.0.1, have %s", d.HostIP)
-	case d.VendorId != 13:
-		t.Fatalf("Unexpected Host-Vendor-Id. Want 13, have %d", d.VendorId)
+	case d.VendorID != 13:
+		t.Fatalf("Unexpected Host-Vendor-Id. Want 13, have %d", d.VendorID)
 	case d.ProductName != "go-diameter":
 		t.Fatalf("Unexpected Product-Name. Want go-diameter, have %s", d.ProductName)
-	case d.StateId != 1397760650:
-		t.Fatalf("Unexpected Origin-State-Id. Want 1397760650, have %d", d.StateId)
+	case d.StateID != 1397760650:
+		t.Fatalf("Unexpected Origin-State-Id. Want 1397760650, have %d", d.StateID)
 	case d.Vendors[0] != 10415:
-		t.Fatalf("Unexpected Origin-State-Id. Want 10415, have %d", d.StateId)
+		t.Fatalf("Unexpected Origin-State-Id. Want 10415, have %d", d.StateID)
 	case d.Vendors[1] != 13:
-		t.Fatalf("Unexpected Origin-State-Id. Want 13, have %d", d.StateId)
-	case d.AuthAppId != 4:
-		t.Fatalf("Unexpected Origin-State-Id. Want 4, have %d", d.AuthAppId)
-	case d.InbandSecId != 0:
-		t.Fatalf("Unexpected Origin-State-Id. Want 0, have %d", d.InbandSecId)
-	case d.VSA.AuthAppId != 4:
-		t.Fatalf("Unexpected Origin-State-Id. Want 4, have %d", d.VSA.AuthAppId)
-	case d.VSA.VendorId != 10415:
-		t.Fatalf("Unexpected Origin-State-Id. Want 10415, have %d", d.VSA.VendorId)
+		t.Fatalf("Unexpected Origin-State-Id. Want 13, have %d", d.StateID)
+	case d.AuthAppID != 4:
+		t.Fatalf("Unexpected Origin-State-Id. Want 4, have %d", d.AuthAppID)
+	case d.InbandSecID != 0:
+		t.Fatalf("Unexpected Origin-State-Id. Want 0, have %d", d.InbandSecID)
+	case d.VSA.AuthAppID != 4:
+		t.Fatalf("Unexpected Origin-State-Id. Want 4, have %d", d.VSA.AuthAppID)
+	case d.VSA.VendorID != 10415:
+		t.Fatalf("Unexpected Origin-State-Id. Want 10415, have %d", d.VSA.VendorID)
 	case d.Firmware != 1:
 		t.Fatalf("Unexpected Origin-State-Id. Want 1, have %d", d.Firmware)
 	}
@@ -300,9 +300,9 @@ func BenchmarkUnmarshal(b *testing.B) {
 		OriginHost  AVP    `avp:"Origin-Host"`
 		OriginRealm *AVP   `avp:"Origin-Realm"`
 		HostIP      net.IP `avp:"Host-IP-Address"`
-		VendorId    int    `avp:"Vendor-Id"`
+		VendorID    int    `avp:"Vendor-Id"`
 		ProductName string `avp:"Product-Name"`
-		StateId     int    `avp:"Origin-State-Id"`
+		StateID     int    `avp:"Origin-State-Id"`
 	}
 	var cer CER
 	for n := 0; n < b.N; n++ {

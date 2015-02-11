@@ -52,8 +52,8 @@ import (
 // Grouped AVPs:
 //
 //	type VSA struct {
-//		AuthAppId int `avp:"Auth-Application-Id"`
-//		VendorId  int `avp:"Vendor-Id"`
+//		AuthAppID int `avp:"Auth-Application-Id"`
+//		VendorID  int `avp:"Vendor-Id"`
 //	}
 //	type CER struct {
 //		VSA VSA  `avp:"Vendor-Specific-Application-Id"`
@@ -61,8 +61,8 @@ import (
 //		VSA *VSA `avp:"Vendor-Specific-Application-Id"`
 //		.. or
 //		VSA struct {
-//			AuthAppId int `avp:"Auth-Application-Id"`
-//			VendorId  int `avp:"Vendor-Id"`
+//			AuthAppID int `avp:"Auth-Application-Id"`
+//			VendorID  int `avp:"Vendor-Id"`
 //		} `avp:"Vendor-Specific-Application-Id"`
 //	}
 //	var d CER
@@ -110,7 +110,7 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 		}
 		// Lookup the AVP name (tag) in the dictionary.
 		// The dictionary AVP has the code.
-		d, err := m.dictionary.FindAVP(m.Header.ApplicationId, avpname)
+		d, err := m.dictionary.FindAVP(m.Header.ApplicationID, avpname)
 		if err != nil {
 			return err
 		}

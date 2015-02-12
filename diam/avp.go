@@ -12,7 +12,6 @@ import (
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diam/util"
 )
 
 // AVP is a Diameter attribute-value-pair.
@@ -60,7 +59,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 		return err
 	}
 	a.Flags = data[4]
-	a.Length = int(util.Uint24to32(data[5:8]))
+	a.Length = int(uint24to32(data[5:8]))
 	if dl < int(a.Length) {
 		return fmt.Errorf("Not enough data to decode AVP: %d != %d",
 			dl, a.Length)
@@ -112,12 +111,12 @@ func (a *AVP) Serialize() ([]byte, error) {
 	var b []byte
 	if a.VendorID > 0 {
 		b = make([]byte, 12+payloadLen+a.Data.Padding())
-		copy(b[5:8], util.Uint32to24(uint32(12+payloadLen)))
+		copy(b[5:8], uint32to24(uint32(12+payloadLen)))
 		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
 		copy(b[12:], payload)
 	} else {
 		b = make([]byte, 8+payloadLen+a.Data.Padding())
-		copy(b[5:8], util.Uint32to24(uint32(8+payloadLen)))
+		copy(b[5:8], uint32to24(uint32(8+payloadLen)))
 		copy(b[8:], payload)
 	}
 	binary.BigEndian.PutUint32(b[0:4], a.Code)
@@ -133,11 +132,11 @@ func (a *AVP) SerializeTo(b []byte) error {
 	payload := a.Data.Serialize()
 	payloadLen := len(payload)
 	if a.VendorID > 0 {
-		copy(b[5:8], util.Uint32to24(uint32(12+payloadLen)))
+		copy(b[5:8], uint32to24(uint32(12+payloadLen)))
 		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
 		copy(b[12:], payload)
 	} else {
-		copy(b[5:8], util.Uint32to24(uint32(8+payloadLen)))
+		copy(b[5:8], uint32to24(uint32(8+payloadLen)))
 		copy(b[8:], payload)
 	}
 	binary.BigEndian.PutUint32(b[0:4], a.Code)

@@ -18,8 +18,6 @@ organized in sub-packages with specific functionality:
 
  * diam/dict: a dictionary parser that supports collections of dictionaries.
 
- * diam/util: utilities for our sub-packages.
-
 If you're looking to go right into code, see the examples subdirectory for
 applications like clients and servers.
 

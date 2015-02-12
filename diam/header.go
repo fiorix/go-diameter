@@ -7,8 +7,6 @@ package diam
 import (
 	"encoding/binary"
 	"fmt"
-
-	"github.com/fiorix/go-diameter/diam/util"
 )
 
 // Header is the header representation of a Diameter message.
@@ -48,9 +46,9 @@ func (h *Header) DecodeFromBytes(data []byte) error {
 		return fmt.Errorf("Not enough data to decode Header: %d", n)
 	}
 	h.Version = data[0]
-	h.MessageLength = util.Uint24to32(data[1:4])
+	h.MessageLength = uint24to32(data[1:4])
 	h.CommandFlags = data[4]
-	h.CommandCode = util.Uint24to32(data[5:8])
+	h.CommandCode = uint24to32(data[5:8])
 	h.ApplicationID = binary.BigEndian.Uint32(data[8:12])
 	h.HopByHopID = binary.BigEndian.Uint32(data[12:16])
 	h.EndToEndID = binary.BigEndian.Uint32(data[16:20])
@@ -67,9 +65,9 @@ func (h *Header) Serialize() []byte {
 // SerializeTo serializes the header to a byte sequence in network byte order.
 func (h *Header) SerializeTo(b []byte) {
 	b[0] = h.Version
-	copy(b[1:4], util.Uint32to24(h.MessageLength))
+	copy(b[1:4], uint32to24(h.MessageLength))
 	b[4] = h.CommandFlags
-	copy(b[5:8], util.Uint32to24(h.CommandCode))
+	copy(b[5:8], uint32to24(h.CommandCode))
 	binary.BigEndian.PutUint32(b[8:12], h.ApplicationID)
 	binary.BigEndian.PutUint32(b[12:16], h.HopByHopID)
 	binary.BigEndian.PutUint32(b[16:20], h.EndToEndID)

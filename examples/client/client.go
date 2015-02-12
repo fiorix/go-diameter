@@ -9,7 +9,6 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -20,15 +19,14 @@ import (
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
-	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
 const (
-	Identity    = format.DiameterIdentity("client")
-	Realm       = format.DiameterIdentity("localhost")
-	VendorId    = format.Unsigned32(13)
-	ProductName = format.UTF8String("go-diameter")
+	identity    = datatype.DiameterIdentity("client")
+	realm       = datatype.DiameterIdentity("localhost")
+	vendorID    = datatype.Unsigned32(13)
+	productName = datatype.UTF8String("go-diameter")
 )
 
 func main() {
@@ -38,8 +36,6 @@ func main() {
 		fmt.Println("Use: client [-ssl] host:port")
 		return
 	}
-	// Load the credit control dictionary on top of the base dictionary.
-	dict.Default.Load(bytes.NewReader(dict.CreditControlXML))
 	// ALL incoming messages are handled here.
 	sessionID := "fake_session_id"
 	msisdn := "85589481811"
@@ -71,18 +67,18 @@ func main() {
 func NewClient(c diam.Conn) {
 	// Build CER
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, nil)
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
 	laddr := c.LocalAddr()
 	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, format.Address(net.ParseIP(ip)))
-	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
-	m.NewAVP(avp.ProductName, 0, 0, ProductName)
-	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(rand.Uint32()))
-	m.NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, &diam.GroupedAVP{
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(ip)))
+	m.NewAVP(avp.VendorID, avp.Mbit, 0, vendorID)
+	m.NewAVP(avp.ProductName, 0, 0, productName)
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(rand.Uint32()))
+	m.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
 		AVP: []*diam.AVP{
-			diam.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4)),
-			diam.NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10415)),
+			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
+			diam.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(10415)),
 		},
 	})
 	log.Printf("Sending message to %s", c.RemoteAddr().String())
@@ -95,9 +91,9 @@ func NewClient(c diam.Conn) {
 	for {
 		time.Sleep(5 * time.Second)
 		m = diam.NewRequest(diam.DeviceWatchdog, 0, nil)
-		m.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-		m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
-		m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(rand.Uint32()))
+		m.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+		m.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
+		m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(rand.Uint32()))
 		log.Printf("Sending message to %s", c.RemoteAddr().String())
 		log.Println(m)
 		if _, err := m.WriteTo(c); err != nil {
@@ -113,21 +109,21 @@ func OnCEA(sessionID string, msisdn string) diam.HandlerFunc {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if v, _ := rc.Data.(format.Unsigned32); v != diam.Success {
+		if v, _ := rc.Data.(datatype.Unsigned32); v != diam.Success {
 			log.Fatal("Unexpected response:", rc)
 		}
 		// Craft a CCR message.
 		r := diam.NewRequest(diam.CreditControl, 4, nil)
-		r.NewAVP(avp.SessionId, avp.Mbit, 0, format.UTF8String(sessionID))
-		r.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-		r.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+		r.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sessionID))
+		r.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+		r.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
 		peerRealm, _ := m.FindAVP(avp.OriginRealm) // You should handle errors.
 		r.NewAVP(avp.DestinationRealm, avp.Mbit, 0, peerRealm.Data)
-		r.NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4))
-		r.NewAVP(avp.SubscriptionId, avp.Mbit, 0, &diam.GroupedAVP{
+		r.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4))
+		r.NewAVP(avp.SubscriptionID, avp.Mbit, 0, &diam.GroupedAVP{
 			AVP: []*diam.AVP{
-				diam.NewAVP(avp.SubscriptionIdType, avp.Mbit, 0, format.Enumerated(0x00)),
-				diam.NewAVP(avp.SubscriptionIdData, avp.Mbit, 0, format.UTF8String(msisdn)),
+				diam.NewAVP(avp.SubscriptionIDType, avp.Mbit, 0, datatype.Enumerated(0x00)),
+				diam.NewAVP(avp.SubscriptionIDData, avp.Mbit, 0, datatype.UTF8String(msisdn)),
 			},
 		})
 		// Add Service-Context-Id and all other AVPs...

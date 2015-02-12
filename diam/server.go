@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-// Objects implementing the Handler interface can be
+// The Handler interface allow arbitrary objects to be
 // registered to serve particular messages like CER, DWR.
 //
 // ServeDIAM should write messages to the Conn and then return.
@@ -269,8 +269,8 @@ func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 	mux.mu.RLock()
 	defer mux.mu.RUnlock()
 	var cmd string
-	if dcmd, err := m.dictionary.FindCommand(
-		m.Header.ApplicationId,
+	if dcmd, err := m.Dictionary().FindCommand(
+		m.Header.ApplicationID,
 		m.Header.CommandCode,
 	); err != nil {
 		cmd = "ALL"
@@ -326,7 +326,7 @@ func HandleFunc(cmd string, handler func(Conn, *Message)) {
 	DefaultServeMux.HandleFunc(cmd, handler)
 }
 
-// ErrorReport returns the ErrorReport channel of the DefaultServeMux.
+// ErrorReports returns the ErrorReport channel of the DefaultServeMux.
 func ErrorReports() chan ErrorReport {
 	return DefaultServeMux.ErrorReports()
 }
@@ -343,7 +343,7 @@ func Serve(l net.Listener, handler Handler) error {
 // A Server defines parameters for running a diameter server.
 type Server struct {
 	Addr         string        // TCP address to listen on, ":3868" if empty
-	Handler      Handler       // handler to invoke, diam.DefaultServeMux if nil
+	Handler      Handler       // handler to invoke, DefaultServeMux if nil
 	Dict         *dict.Parser  // diameter dictionaries for this server
 	ReadTimeout  time.Duration // maximum duration before timing out read of the request
 	WriteTimeout time.Duration // maximum duration before timing out write of the response
@@ -415,7 +415,7 @@ func (srv *Server) Serve(l net.Listener) error {
 // and then calls Serve with handler to handle requests
 // on incoming connections.
 //
-// If handler is nil, diam.DefaultServeMux is used.
+// If handler is nil, DefaultServeMux is used.
 //
 // If dict is nil, dict.Default is used.
 func ListenAndServe(addr string, handler Handler, dp *dict.Parser) error {

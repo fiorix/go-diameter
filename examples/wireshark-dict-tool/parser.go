@@ -12,16 +12,16 @@ import (
 	"os"
 )
 
-func LoadFile(filename string) (*File, error) {
+func loadFile(filename string) (*File, error) {
 	fd, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
 	defer fd.Close()
-	return Load(fd)
+	return load(fd)
 }
 
-func Load(r io.Reader) (*File, error) {
+func load(r io.Reader) (*File, error) {
 	var (
 		d = xml.NewDecoder(r)
 		f = new(File)

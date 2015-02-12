@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
 // Parser is the root element for dictionaries and supports multiple XML
@@ -36,16 +36,16 @@ type Parser struct {
 }
 
 type codeIdx struct {
-	appId uint32
+	appID uint32
 	code  uint32
 }
 
 type nameIdx struct {
-	appId uint32
+	appID uint32
 	name  string
 }
 
-// New allocates a new Parser optionally loading dictionary XML files.
+// NewParser allocates a new Parser optionally loading dictionary XML files.
 func NewParser(filename ...string) (*Parser, error) {
 	p := new(Parser)
 	var err error
@@ -85,14 +85,14 @@ func (p *Parser) Load(r io.Reader) error {
 	for _, app := range f.App {
 		// Cache commands.
 		for _, cmd := range app.Command {
-			p.command[codeIdx{app.Id, cmd.Code}] = cmd
+			p.command[codeIdx{app.ID, cmd.Code}] = cmd
 		}
 		// Cache AVPs.
 		for _, avp := range app.AVP {
 			// Link AVP to its Application
 			avp.App = app
-			p.avpname[nameIdx{app.Id, avp.Name}] = avp
-			p.avpcode[codeIdx{app.Id, avp.Code}] = avp
+			p.avpname[nameIdx{app.ID, avp.Name}] = avp
+			p.avpcode[codeIdx{app.ID, avp.Code}] = avp
 			// Check the AVP type.
 			if err := updateType(avp); err != nil {
 				return err
@@ -103,23 +103,23 @@ func (p *Parser) Load(r io.Reader) error {
 }
 
 func updateType(a *AVP) error {
-	id, exists := format.Available[a.Data.FormatName]
+	id, exists := datatype.Available[a.Data.TypeName]
 	if !exists {
-		return fmt.Errorf("Unsupported data type: %s", a.Data.FormatName)
+		return fmt.Errorf("Unsupported data type: %s", a.Data.TypeName)
 	}
-	a.Data.Format = id
+	a.Data.Type = id
 	return nil
 }
 
 // String returns the Parser represented in a human readable form.
-func (p Parser) String() string {
+func (p *Parser) String() string {
 	var b bytes.Buffer
 	for _, f := range p.file {
 		for _, app := range f.App {
-			fmt.Fprintf(&b, "Application Id: %d\n", app.Id)
+			fmt.Fprintf(&b, "Application Id: %d\n", app.ID)
 			fmt.Fprintf(&b, "\tVendors:\n")
 			for _, vendor := range app.Vendor {
-				fmt.Fprintf(&b, "\t\tId=%d Name=%s\n", vendor.Id, vendor.Name)
+				fmt.Fprintf(&b, "\t\tId=%d Name=%s\n", vendor.ID, vendor.Name)
 			}
 			fmt.Fprintf(&b, "\tCommands:\n")
 			for _, cmd := range app.Command {
@@ -155,7 +155,7 @@ func printCommand(w io.Writer, cmd *Command) {
 
 func printAVP(w io.Writer, avp *AVP) {
 	fmt.Fprintf(w, "\t%-4d %s: %s\n",
-		avp.Code, avp.Name, avp.Data.FormatName)
+		avp.Code, avp.Name, avp.Data.TypeName)
 	// Enumerated
 	if len(avp.Data.Enum) > 0 {
 		fmt.Fprintf(w, "\t\tItems:\n")

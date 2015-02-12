@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ const (
 	OutOfSpace             = 4002
 	ElectionLost           = 4003
 	AVPUnsupported         = 5001
-	UnknownSessionId       = 5002
+	UnknownSessionID       = 5002
 	AuthorizationRejected  = 5003
 	InvalidAVPValue        = 5004
 	MissingAVP             = 5005
@@ -39,19 +39,4 @@ const (
 	InvalidMessageLength   = 5015
 	InvalidAVPBitCombo     = 5016
 	NoCommonSecurity       = 5017
-)
-
-// Diameter command codes. Auto-generated from our dictionaries.
-const (
-	// List of command codes auto-generated from our dictionaries:
-	// cat dict/testdata/*.xml | sed -n 's/.*command code="\(.*\)" .* name="\(.*\)".*/\2 = \1/p' | tr -d '-' | sort -u
-
-	AbortSession         = 274
-	Accounting           = 271
-	CapabilitiesExchange = 257
-	CreditControl        = 272
-	DeviceWatchdog       = 280
-	DisconnectPeer       = 282
-	ReAuth               = 258
-	SessionTermination   = 275
 )

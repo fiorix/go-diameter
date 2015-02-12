@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,12 @@ package dict
 import (
 	"fmt"
 
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
 // Apps return a list of all applications loaded in the Parser instance.
 // Apps must never be called concurrently with LoadFile or Load.
-func (p Parser) Apps() []*App {
+func (p *Parser) Apps() []*App {
 	//p.mu.Lock()
 	//defer p.mu.Unlock()
 	var apps []*App
@@ -32,7 +32,7 @@ func (p Parser) Apps() []*App {
 // Code can be either the AVP code (int, uint32) or name (string).
 //
 // FindAVP must never be called concurrently with LoadFile or Load.
-func (p Parser) FindAVP(appid uint32, code interface{}) (*AVP, error) {
+func (p *Parser) FindAVP(appid uint32, code interface{}) (*AVP, error) {
 	//p.mu.Lock()
 	//defer p.mu.Unlock()
 	var (
@@ -78,7 +78,7 @@ retry:
 // Code can be either the AVP code (uint32) or name (string).
 //
 // ScanAVP must never be called concurrently with LoadFile or Load.
-func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
+func (p *Parser) ScanAVP(code interface{}) (*AVP, error) {
 	//p.mu.Lock()
 	//defer p.mu.Unlock()
 	switch code.(type) {
@@ -110,7 +110,7 @@ func (p Parser) ScanAVP(code interface{}) (*AVP, error) {
 // FindCommand returns a pre-loaded Command from the Parser.
 //
 // FindCommand must never be called concurrently with LoadFile or Load.
-func (p Parser) FindCommand(appid, code uint32) (*Command, error) {
+func (p *Parser) FindCommand(appid, code uint32) (*Command, error) {
 	//p.mu.Lock()
 	//defer p.mu.Unlock()
 	if cmd, ok := p.command[codeIdx{appid, code}]; ok {
@@ -126,12 +126,12 @@ func (p Parser) FindCommand(appid, code uint32) (*Command, error) {
 // given AVP appid, code and n. (n is the enum code in the dictionary)
 //
 // Enum must never be called concurrently with LoadFile or Load.
-func (p Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
+func (p *Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
 	avp, err := p.FindAVP(appid, code)
 	if err != nil {
 		return nil, err
 	}
-	if avp.Data.Format != format.EnumeratedFormat {
+	if avp.Data.Type != datatype.EnumeratedType {
 		return nil, fmt.Errorf(
 			"Data of AVP %s (%d) data is not Enumerated.",
 			avp.Name, avp.Code)
@@ -150,12 +150,12 @@ func (p Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
 // given AVP code and name.
 //
 // Rule must never be called concurrently with LoadFile or Load.
-func (p Parser) Rule(appid, code uint32, n string) (*Rule, error) {
+func (p *Parser) Rule(appid, code uint32, n string) (*Rule, error) {
 	avp, err := p.FindAVP(appid, code)
 	if err != nil {
 		return nil, err
 	}
-	if avp.Data.Format != format.GroupedFormat {
+	if avp.Data.Type != datatype.GroupedType {
 		return nil, fmt.Errorf(
 			"Data of AVP %s (%d) data is not Grouped.",
 			avp.Name, avp.Code)

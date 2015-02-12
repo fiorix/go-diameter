@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -58,7 +58,7 @@ func TestNewAVP(t *testing.T) {
 		avp.OriginHost, // Code
 		avp.Mbit,       // Flags
 		0,              // Vendor
-		format.DiameterIdentity("foobar"), // Data
+		datatype.DiameterIdentity("foobar"), // Data
 	)
 	if a.Length != 14 { // Length in the AVP header
 		t.Fatalf("Unexpected length. Want 14, have %d", a.Length)
@@ -87,11 +87,33 @@ func TestDecodeAVP(t *testing.T) {
 	t.Log(a)
 }
 
+func TestDecodeAVPMalformed(t *testing.T) {
+	_, err := DecodeAVP(testAVP[0][:1], 1, dict.Default)
+	if err == nil {
+		t.Fatal("Malformed AVP decoded with no error")
+	}
+}
+
+func TestDecodeAVPWithVendorID(t *testing.T) {
+	a := NewAVP(avp.UserName, avp.Mbit|avp.Vbit, 999, datatype.UTF8String("foobar"))
+	b, err := a.Serialize()
+	if err != nil {
+		t.Fatal("Failed to serialize AVP:", err)
+	}
+	a, err = DecodeAVP(b, 1, dict.Default)
+	if err != nil {
+		t.Fatal("Failed to decode AVP:", err)
+	}
+	if a.VendorID != 999 {
+		t.Fatalf("Unexpected VendorID. Want 999, have %d", a.VendorID)
+	}
+}
+
 func TestEncodeAVP(t *testing.T) {
 	a := &AVP{
 		Code:  avp.OriginHost,
 		Flags: avp.Mbit,
-		Data:  format.DiameterIdentity("client"),
+		Data:  datatype.DiameterIdentity("client"),
 	}
 	b, err := a.Serialize()
 	if err != nil {
@@ -124,7 +146,7 @@ func BenchmarkDecodeAVP(b *testing.B) {
 }
 
 func BenchmarkEncodeAVP(b *testing.B) {
-	a := NewAVP(avp.OriginHost, avp.Mbit, 0, format.DiameterIdentity("client"))
+	a := NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("client"))
 	for n := 0; n < b.N; n++ {
 		a.Serialize()
 	}

@@ -20,15 +20,16 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
+// A Bridge between two peers.
 type Bridge struct {
 	Client chan *diam.Message // Remote client connecting to this server
 	Server chan *diam.Message // Upstream connection (real server)
 }
 
 var (
-	UpstreamAddr string
-	LiveMu       sync.RWMutex
-	Live         = make(map[string]*Bridge) // ip:bridge
+	upstreamAddr string
+	liveMu       sync.RWMutex
+	liveBridge   = make(map[string]*Bridge) // ip:bridge
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 	remote := flag.String("remote", "", "set remote addr")
 	files := flag.String("dict", "", "comma separated list of dictionaries")
 	flag.Parse()
-	UpstreamAddr = *remote
+	upstreamAddr = *remote
 	log.Println("Diameter sn🔍 op agent")
 	if len(*remote) == 0 {
 		log.Fatal("Missing argument -remote")
@@ -74,19 +75,19 @@ func main() {
 // Otherwise GetBridge connects to the upstream server and set up the
 // bridge with the client, returning the newly created Bridge object.
 func GetBridge(c diam.Conn) *Bridge {
-	LiveMu.RLock()
-	if b, ok := Live[c.RemoteAddr().String()]; ok {
-		LiveMu.RUnlock()
+	liveMu.RLock()
+	if b, ok := liveBridge[c.RemoteAddr().String()]; ok {
+		liveMu.RUnlock()
 		return b
 	}
-	LiveMu.RUnlock()
-	LiveMu.Lock()
-	defer LiveMu.Unlock()
+	liveMu.RUnlock()
+	liveMu.Lock()
+	defer liveMu.Unlock()
 	b := &Bridge{
 		Client: make(chan *diam.Message),
 		Server: make(chan *diam.Message),
 	}
-	Live[c.RemoteAddr().String()] = b
+	liveBridge[c.RemoteAddr().String()] = b
 	// Prepare for the upstream connection.
 	mux := diam.NewServeMux()
 	mux.HandleFunc("ALL", func(c diam.Conn, m *diam.Message) {
@@ -94,7 +95,7 @@ func GetBridge(c diam.Conn) *Bridge {
 		b.Client <- m
 	})
 	// Connect to upstream server.
-	s, err := diam.Dial(UpstreamAddr, mux, nil)
+	s, err := diam.Dial(upstreamAddr, mux, nil)
 	if err != nil {
 		return nil
 	}
@@ -124,17 +125,17 @@ func Pump(src, dst diam.Conn, srcChan, dstChan chan *diam.Message) {
 				src.Close() // triggers the case below
 			}
 		case <-src.(diam.CloseNotifier).CloseNotify():
-			LiveMu.Lock()
-			defer LiveMu.Unlock()
-			if _, ok := Live[src.RemoteAddr().String()]; ok {
-				delete(Live, src.RemoteAddr().String())
+			liveMu.Lock()
+			defer liveMu.Unlock()
+			if _, ok := liveBridge[src.RemoteAddr().String()]; ok {
+				delete(liveBridge, src.RemoteAddr().String())
 				log.Printf(
 					"Destroying bridge from %s to %s",
 					src.RemoteAddr().String(),
 					dst.RemoteAddr().String(),
 				)
 			} else {
-				delete(Live, dst.RemoteAddr().String())
+				delete(liveBridge, dst.RemoteAddr().String())
 				log.Printf(
 					"Destroying bridge from %s to %s",
 					dst.RemoteAddr().String(),

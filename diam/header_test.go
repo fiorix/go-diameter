@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@ func TestDecodeHeader(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(hdr)
 	switch {
 	case hdr.Version != 1:
 		t.Fatalf("Unexpected Version. Want 1, have %d", hdr.Version)
@@ -33,12 +32,20 @@ func TestDecodeHeader(t *testing.T) {
 		t.Fatalf("Unexpected CommandFlags. Want %#x, have %#x", RequestFlag, hdr.CommandFlags)
 	case hdr.CommandCode != 257:
 		t.Fatalf("Unexpected CommandCode. Want 257, have %d", hdr.CommandCode)
-	case hdr.ApplicationId != 1:
-		t.Fatalf("Unexpected ApplicationId. Want 1, have %d", hdr.ApplicationId)
-	case hdr.HopByHopId != 0x2c0b6149:
-		t.Fatalf("Unexpected HopByHopId. Want 0x2c0b6149, have 0x%x", hdr.HopByHopId)
-	case hdr.EndToEndId != 0xdbbfd385:
-		t.Fatalf("Unexpected EndToEndId. Want 0xdbbf0385, have 0x%x", hdr.EndToEndId)
+	case hdr.ApplicationID != 1:
+		t.Fatalf("Unexpected ApplicationId. Want 1, have %d", hdr.ApplicationID)
+	case hdr.HopByHopID != 0x2c0b6149:
+		t.Fatalf("Unexpected HopByHopId. Want 0x2c0b6149, have 0x%x", hdr.HopByHopID)
+	case hdr.EndToEndID != 0xdbbfd385:
+		t.Fatalf("Unexpected EndToEndId. Want 0xdbbf0385, have 0x%x", hdr.EndToEndID)
+	}
+	t.Log(hdr)
+}
+
+func TestDecodeHeaderMalformed(t *testing.T) {
+	_, err := DecodeHeader(testHeader[:10])
+	if err == nil {
+		t.Fatal("Malformed header decoded with no errors")
 	}
 }
 
@@ -48,9 +55,9 @@ func TestEncodeHeader(t *testing.T) {
 		MessageLength: 116,
 		CommandFlags:  RequestFlag,
 		CommandCode:   CapabilitiesExchange,
-		ApplicationId: 1,
-		HopByHopId:    0x2c0b6149,
-		EndToEndId:    0xdbbfd385,
+		ApplicationID: 1,
+		HopByHopID:    0x2c0b6149,
+		EndToEndID:    0xdbbfd385,
 	}
 	b := hdr.Serialize()
 	if !bytes.Equal(testHeader, b) {
@@ -71,9 +78,9 @@ func BenchmarkEncodeHeader(b *testing.B) {
 		MessageLength: 116,
 		CommandFlags:  RequestFlag,
 		CommandCode:   CapabilitiesExchange,
-		ApplicationId: 1,
-		HopByHopId:    0x2c0b6149,
-		EndToEndId:    0xdbbfd385,
+		ApplicationID: 1,
+		HopByHopID:    0x2c0b6149,
+		EndToEndID:    0xdbbfd385,
 	}
 	for n := 0; n < b.N; n++ {
 		hdr.Serialize()

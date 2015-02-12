@@ -12,7 +12,6 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"log"
 	"net"
@@ -20,18 +19,17 @@ import (
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
-	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
 const (
-	Identity    = format.DiameterIdentity("server")
-	Realm       = format.DiameterIdentity("localhost")
-	VendorId    = format.Unsigned32(13)
-	ProductName = format.UTF8String("go-diameter")
+	identity    = datatype.DiameterIdentity("server")
+	realm       = datatype.DiameterIdentity("localhost")
+	vendorID    = datatype.Unsigned32(13)
+	productName = datatype.UTF8String("go-diameter")
 )
 
-var Quiet bool
+var quiet bool
 
 func main() {
 	addr := flag.String("l", ":3868", "listen address and port")
@@ -40,13 +38,11 @@ func main() {
 	q := flag.Bool("q", false, "quiet, do not print messages")
 	t := flag.Int("t", 0, "threads (0 means one per core)")
 	flag.Parse()
-	Quiet = *q
+	quiet = *q
 	if *t == 0 {
 		*t = runtime.NumCPU()
 	}
 	runtime.GOMAXPROCS(*t)
-	// Load the credit control dictionary on top of the base dictionary.
-	dict.Default.Load(bytes.NewReader(dict.CreditControlXML))
 	// Message handlers:
 	diam.HandleFunc("CER", OnCER)
 	diam.HandleFunc("CCR", OnCCR)
@@ -77,7 +73,7 @@ func OnCER(c diam.Conn, m *diam.Message) {
 		return
 	}
 	// Reject client if there's no Origin-Realm.
-	realm, err := m.FindAVP(avp.OriginRealm)
+	crealm, err := m.FindAVP(avp.OriginRealm)
 	if err != nil {
 		c.Close()
 		return
@@ -89,28 +85,28 @@ func OnCER(c diam.Conn, m *diam.Message) {
 		return
 	}
 	// Reject client if there's no Origin-State-Id.
-	stateId, err := m.FindAVP(avp.OriginStateId)
+	stateID, err := m.FindAVP(avp.OriginStateID)
 	if err != nil {
 		c.Close()
 		return
 	}
-	if !Quiet {
+	if !quiet {
 		//log.Println("Receiving message from %s", c.RemoteAddr().String())
-		log.Printf("Receiving message from %s.%s (%s)", host, realm, ipaddr)
+		log.Printf("Receiving message from %s.%s (%s)", host, crealm, ipaddr)
 		log.Println(m)
 	}
 	// Craft CEA with result code 2001 (OK).
 	a := m.Answer(diam.Success)
-	a.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+	a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
 	laddr := c.LocalAddr()
 	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, format.Address(net.ParseIP(ip)))
-	a.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
-	a.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(ip)))
+	a.NewAVP(avp.VendorID, avp.Mbit, 0, vendorID)
+	a.NewAVP(avp.ProductName, avp.Mbit, 0, productName)
 	// Copy origin Origin-State-Id.
-	a.AddAVP(stateId)
-	if !Quiet {
+	a.AddAVP(stateID)
+	if !quiet {
 		log.Printf("Sending message to %s", c.RemoteAddr().String())
 		log.Println(a)
 	}
@@ -121,7 +117,7 @@ func OnCER(c diam.Conn, m *diam.Message) {
 	}
 	go func() {
 		<-c.(diam.CloseNotifier).CloseNotify()
-		if !Quiet {
+		if !quiet {
 			log.Printf("Client %s disconnected",
 				c.RemoteAddr().String())
 		}
@@ -133,8 +129,8 @@ func OnCCR(c diam.Conn, m *diam.Message) {
 	log.Println(m)
 	// Craft a CCA with result code 3001.
 	a := m.Answer(diam.CommandUnsupported)
-	a.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+	a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
 	a.WriteTo(c)
 }
 
@@ -142,20 +138,20 @@ func OnCCR(c diam.Conn, m *diam.Message) {
 // with a generic 2001 (OK) answer.
 func OnMSG(c diam.Conn, m *diam.Message) {
 	// Ignore message if there's no Origin-State-Id.
-	stateId, err := m.FindAVP(avp.OriginStateId)
+	stateID, err := m.FindAVP(avp.OriginStateID)
 	if err != nil {
 		log.Println("Invalid message: missing Origin-State-Id\n", m)
 	}
-	if !Quiet {
+	if !quiet {
 		log.Printf("Receiving message from %s", c.RemoteAddr().String())
 		log.Println(m)
 	}
 	// Craft answer with result code 2001 (OK).
 	a := m.Answer(diam.Success)
-	a.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
-	a.AddAVP(stateId)
-	if !Quiet {
+	a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
+	a.AddAVP(stateID)
+	if !quiet {
 		log.Printf("Sending message to %s", c.RemoteAddr().String())
 		log.Println(a)
 	}

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -31,7 +31,7 @@ func TestGroupedAVP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if a.Data.Format() != GroupedAVPFormat {
+	if a.Data.Type() != GroupedAVPType {
 		t.Fatal("AVP is not grouped")
 	}
 	b, err := a.Serialize()
@@ -44,7 +44,7 @@ func TestGroupedAVP(t *testing.T) {
 
 func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 	m := NewRequest(257, 0, dict.Default)
-	m.NewAVP(264, 0x40, 0, format.DiameterIdentity("client"))
+	m.NewAVP(264, 0x40, 0, datatype.DiameterIdentity("client"))
 	a, _ := DecodeAVP(testGroupedAVP, 0, dict.Default)
 	m.AddAVP(a)
 	t.Logf("Message:\n%s", m)
@@ -53,11 +53,11 @@ func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 func TestMakeGroupedAVP(t *testing.T) {
 	g := &GroupedAVP{
 		AVP: []*AVP{
-			NewAVP(avp.AuthApplicationId, avp.Mbit, 0, format.Unsigned32(4)),
-			NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10415)),
+			NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
+			NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(10415)),
 		},
 	}
-	a := NewAVP(avp.VendorSpecificApplicationId, avp.Mbit, 0, g)
+	a := NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, g)
 	b, err := a.Serialize()
 	if err != nil {
 		t.Fatal(err)

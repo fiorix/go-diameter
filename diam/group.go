@@ -1,4 +1,4 @@
-// Copyright 2013-2014 go-diameter authors.  All rights reserved.
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,18 +8,21 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-const GroupedAVPFormat = 50 // Must not conflict with other format.DataFormatId.
+// GroupedAVPType is the identifier of the GroupedAVP data type.
+// It must not conflict with other values from the datatype package.
+const GroupedAVPType = 50
 
-// GroupedAVP that is different from the dummy format.Grouped.
+// GroupedAVP that is different from the dummy datatype.Grouped.
 type GroupedAVP struct {
 	AVP []*AVP
 }
 
-func DecodeGrouped(data format.Grouped, application uint32, dictionary *dict.Parser) (*GroupedAVP, error) {
+// DecodeGrouped decodes a Grouped AVP from a datatype.Grouped (byte array).
+func DecodeGrouped(data datatype.Grouped, application uint32, dictionary *dict.Parser) (*GroupedAVP, error) {
 	g := &GroupedAVP{}
 	b := []byte(data)
 	for n := 0; n < len(b); {
@@ -34,6 +37,7 @@ func DecodeGrouped(data format.Grouped, application uint32, dictionary *dict.Par
 	return g, nil
 }
 
+// Serialize implements the datatype.Type interface.
 func (g *GroupedAVP) Serialize() []byte {
 	b := make([]byte, g.Len())
 	var n int
@@ -44,6 +48,7 @@ func (g *GroupedAVP) Serialize() []byte {
 	return b
 }
 
+// Len implements the datatype.Type interface.
 func (g *GroupedAVP) Len() int {
 	var l int
 	for _, a := range g.AVP {
@@ -52,14 +57,17 @@ func (g *GroupedAVP) Len() int {
 	return l
 }
 
+// Padding implements the datatype.Type interface.
 func (g *GroupedAVP) Padding() int {
 	return 0
 }
 
-func (g *GroupedAVP) Format() format.FormatId {
-	return GroupedAVPFormat
+// Type implements the datatype.Type interface.
+func (g *GroupedAVP) Type() datatype.TypeID {
+	return GroupedAVPType
 }
 
+// String implements the datatype.Type interface.
 func (g *GroupedAVP) String() string {
 	var b bytes.Buffer
 	for n, a := range g.AVP {

@@ -112,7 +112,7 @@ func updateType(a *AVP) error {
 }
 
 // String returns the Parser represented in a human readable form.
-func (p Parser) String() string {
+func (p *Parser) String() string {
 	var b bytes.Buffer
 	for _, f := range p.file {
 		for _, app := range f.App {

@@ -105,7 +105,7 @@ func TestDecodeAVPWithVendorID(t *testing.T) {
 		t.Fatal("Failed to decode AVP:", err)
 	}
 	if a.VendorID != 999 {
-		t.Fatal("Unexpected VendorID. Want 999, have %d", a.VendorID)
+		t.Fatalf("Unexpected VendorID. Want 999, have %d", a.VendorID)
 	}
 }
 

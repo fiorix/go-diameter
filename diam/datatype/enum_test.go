@@ -36,8 +36,8 @@ func TestDecodeEnumerated(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if s.(Enumerated) != 255 {
-		t.Fatalf("Unexpected value. Want 255, have %d", s)
+	if v := s.(Enumerated); v != 255 {
+		t.Fatalf("Unexpected value. Want 255, have %d", v)
 	}
 	if s.Len() != 4 {
 		t.Fatalf("Unexpected len. Want 4, have %d", s.Len())

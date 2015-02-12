@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 /*
-Package diam provides support for the Diameter protocol for Go.
-See RFC 6733.
+Package diam provides support for the Diameter Base Protocol for Go.
+See RFC 6733 for details.
 
-go-diameter is minimalist implementation of the Diameter base protocol,
+go-diameter is minimalist implementation of the Diameter Base Protocol,
 organized in sub-packages with specific functionality:
 
  * diam: the main package, provides the capability of encoding and
          decoding messages, and a client and server API similar to net/http.
+
+ * diam/diamtest: Server test API analogous to net/http/httptest.
 
  * diam/avp: Diameter attribute-value-pairs codes and flags.
 
@@ -34,7 +36,7 @@ and the credit control application (id 4, RFC 4006). Each application
 has its own commands and messages, and their pre-defined AVPs.
 
 AVP data have specific data types, like UTF8String, Unsigned32 and so on.
-Fortunately, those types map align well with Go types, which makes things
+Fortunately, those data types map well with Go types, which makes things
 easier for us. However, the AVP data types have specific properties like
 padding for certain strings, which have to be taken care of. The sub-package
 diam/datatype handles it all.

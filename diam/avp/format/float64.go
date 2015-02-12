@@ -24,7 +24,7 @@ func (n Float64) Serialize() []byte {
 }
 
 func (n Float64) Len() int {
-	return 4
+	return 8
 }
 
 func (n Float64) Padding() int {

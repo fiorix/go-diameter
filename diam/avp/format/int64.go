@@ -23,7 +23,7 @@ func (n Integer64) Serialize() []byte {
 }
 
 func (n Integer64) Len() int {
-	return 4
+	return 8
 }
 
 func (n Integer64) Padding() int {

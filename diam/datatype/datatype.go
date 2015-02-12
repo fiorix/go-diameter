@@ -37,6 +37,7 @@ const (
 	Unsigned64Type
 )
 
+// Available is a map of data types available, indexed by name.
 var Available = map[string]TypeID{
 	"Address":          AddressType,
 	"DiameterIdentity": DiameterIdentityType,

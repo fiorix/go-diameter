@@ -14,11 +14,11 @@ var Default *Parser
 
 func init() {
 	Default, _ = NewParser()
-	Default.Load(bytes.NewReader([]byte(base_xml)))
-	Default.Load(bytes.NewReader([]byte(credit_control_xml)))
+	Default.Load(bytes.NewReader([]byte(baseXML)))
+	Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
 }
 
-var base_xml = `<?xml version="1.0" encoding="UTF-8"?>
+var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
   <application id="0"> <!-- Diameter Common Messages -->
@@ -484,7 +484,7 @@ var base_xml = `<?xml version="1.0" encoding="UTF-8"?>
   </application>
 </diameter>`
 
-var credit_control_xml = `<?xml version="1.0" encoding="UTF-8"?>
+var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
   <application id="4">

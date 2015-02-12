@@ -84,8 +84,8 @@ var Default *Parser
 
 func init() {
 	Default, _ = NewParser()
-	Default.Load(bytes.NewReader([]byte(base_xml)))
-	Default.Load(bytes.NewReader([]byte(credit_control_xml)))
+	Default.Load(bytes.NewReader([]byte(baseXML)))
+	Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
 }
 
 EOF
@@ -93,7 +93,7 @@ EOF
 for f in $dict
 do
 
-var=`basename $f | sed 's/\.xml/_xml/g'`
+var=`basename $f | sed -e 's/\.xml/XML/g' -e 's/_//g'`
 cat << EOF >> $src
 var $var=\``cat $f`\`
 

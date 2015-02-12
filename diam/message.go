@@ -271,7 +271,9 @@ func (m *Message) Len() int {
 // Example:
 //
 //	avp, err := m.FindAVP(264)
+//	avp, err := m.FindAVP(avp.OriginHost)
 //	avp, err := m.FindAVP("Origin-Host")
+//
 func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 	dictAVP, err := m.dictionary.FindAVP(m.Header.ApplicationID, code)
 	if err != nil {

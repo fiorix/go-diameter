@@ -20,19 +20,19 @@ import (
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
 const (
-	Identity    = format.DiameterIdentity("client")
-	Realm       = format.DiameterIdentity("localhost")
-	VendorId    = format.Unsigned32(13)
-	ProductName = format.UTF8String("go-diameter")
+	identity    = datatype.DiameterIdentity("client")
+	realm       = datatype.DiameterIdentity("localhost")
+	vendorID    = datatype.Unsigned32(13)
+	productName = datatype.UTF8String("go-diameter")
 )
 
 var (
-	BenchMessages int
-	TotalMessages int32
+	benchMessages int
+	totalMessages int32
 	wg            sync.WaitGroup
 )
 
@@ -42,7 +42,7 @@ func main() {
 	n := flag.Int("n", 1000, "messages per client")
 	t := flag.Int("t", 0, "threads (0 means one per core)")
 	flag.Parse()
-	BenchMessages = *n
+	benchMessages = *n
 	if len(os.Args) < 2 {
 		fmt.Println("Use: bench [options] host:port")
 		flag.Usage()
@@ -60,10 +60,10 @@ func main() {
 	}
 	wg.Wait()
 	elapsed := time.Since(start)
-	mps := int(float64(TotalMessages) / elapsed.Seconds())
+	mps := int(float64(totalMessages) / elapsed.Seconds())
 	log.Println("Done")
 	log.Printf("Total of %d messages in %s: %d msg/s",
-		TotalMessages, elapsed, mps)
+		totalMessages, elapsed, mps)
 }
 
 // NewClient connects to the server and sends a CER.
@@ -80,7 +80,7 @@ func NewClient(ssl bool) {
 	mux := diam.NewServeMux()
 	mux.HandleFunc("ACA", func(c diam.Conn, m *diam.Message) {
 		counter++
-		if counter == BenchMessages {
+		if counter == benchMessages {
 			c.Close()
 		}
 	})
@@ -95,14 +95,14 @@ func NewClient(ssl bool) {
 	}
 	// Build CER
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, nil)
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
 	laddr := c.LocalAddr()
 	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, format.Address(net.ParseIP(ip)))
-	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
-	m.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
-	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(rand.Uint32()))
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(ip)))
+	m.NewAVP(avp.VendorID, avp.Mbit, 0, vendorID)
+	m.NewAVP(avp.ProductName, 0, 0, productName)
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(rand.Uint32()))
 	// Send message to the connection
 	if _, err := m.WriteTo(c); err != nil {
 		log.Println("Write failed:", err)
@@ -110,13 +110,13 @@ func NewClient(ssl bool) {
 	}
 	// Prepare the ACR that is used for benchmarking.
 	m = diam.NewRequest(diam.Accounting, 0, nil)
-	m.NewAVP(avp.SessionId, avp.Mbit, 0, format.UTF8String("Hello"))
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, Identity)
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, Realm)
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, format.Address(net.ParseIP(ip)))
-	m.NewAVP(avp.VendorId, avp.Mbit, 0, VendorId)
-	m.NewAVP(avp.ProductName, avp.Mbit, 0, ProductName)
-	m.NewAVP(avp.OriginStateId, avp.Mbit, 0, format.Unsigned32(rand.Uint32()))
+	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String("Hello"))
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(ip)))
+	m.NewAVP(avp.VendorID, avp.Mbit, 0, vendorID)
+	m.NewAVP(avp.ProductName, 0, 0, productName)
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(rand.Uint32()))
 	log.Println("OK, sending messages")
 	var n int
 	go func() {
@@ -128,10 +128,10 @@ func NewClient(ssl bool) {
 		mps := int(float64(n) / elapsed.Seconds())
 		log.Printf("%d messages (request+answer) in %s seconds, %d msg/s",
 			n, elapsed, mps)
-		atomic.AddInt32(&TotalMessages, int32(n))
+		atomic.AddInt32(&totalMessages, int32(n))
 		wg.Done()
 	}()
-	for ; n < BenchMessages; n++ {
+	for ; n < benchMessages; n++ {
 		// Send message to the connection
 		if _, err := m.WriteTo(c); err != nil {
 			log.Fatal("Write failed:", err)

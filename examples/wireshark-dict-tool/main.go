@@ -29,7 +29,7 @@ func main() {
 	var new_dict = &dict.File{}
 	for _, app := range wsd.App {
 		new_app := &dict.App{
-			Id:   app.Id,
+			ID:   app.Id,
 			Type: app.Type,
 			Name: app.Name,
 		}
@@ -47,7 +47,7 @@ func main() {
 func copy_vendors(src []*Vendor, dst *dict.App) {
 	for _, vendor := range src {
 		dst.Vendor = append(dst.Vendor, &dict.Vendor{
-			Id:   vendor.Id,
+			ID:   vendor.Id,
 			Name: vendor.Name,
 		})
 	}
@@ -88,9 +88,9 @@ func copy_avps(src []*AVP, dst *dict.App) {
 			Code: avp.Code,
 		}
 		if avp.Type.Name == "" && avp.Grouped != nil {
-			new_avp.Data = dict.Data{FormatName: "Grouped"}
+			new_avp.Data = dict.Data{TypeName: "Grouped"}
 		} else {
-			new_avp.Data = dict.Data{FormatName: avp.Type.Name}
+			new_avp.Data = dict.Data{TypeName: avp.Type.Name}
 		}
 		switch avp.MayEncrypt {
 		case "yes":

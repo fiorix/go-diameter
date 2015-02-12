@@ -40,18 +40,3 @@ const (
 	InvalidAVPBitCombo     = 5016
 	NoCommonSecurity       = 5017
 )
-
-// Diameter command codes. Auto-generated from our dictionaries.
-const (
-	// List of command codes auto-generated from our dictionaries:
-	// cat dict/testdata/*.xml | sed -n 's/.*command code="\(.*\)" .* name="\(.*\)".*/\2 = \1/p' | tr -d '-' | sort -u
-
-	AbortSession         = 274
-	Accounting           = 271
-	CapabilitiesExchange = 257
-	CreditControl        = 272
-	DeviceWatchdog       = 280
-	DisconnectPeer       = 282
-	ReAuth               = 258
-	SessionTermination   = 275
-)

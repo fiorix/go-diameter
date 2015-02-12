@@ -9,6 +9,12 @@ import (
 	"testing"
 )
 
+func TestUint24to32Malformed(t *testing.T) {
+	if v := uint24to32([]byte{1}); v != 0 {
+		t.Fatalf("Unexpected result. Want 0, have 0x%x", v)
+	}
+}
+
 func TestUint24to32(t *testing.T) {
 	if v := uint24to32([]byte{218, 190, 239}); v != 0xdabeef {
 		t.Fatalf("Unexpected result. Want 0xdeadbeef, have 0x%x", v)

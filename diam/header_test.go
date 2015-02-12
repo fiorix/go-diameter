@@ -23,7 +23,6 @@ func TestDecodeHeader(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(hdr)
 	switch {
 	case hdr.Version != 1:
 		t.Fatalf("Unexpected Version. Want 1, have %d", hdr.Version)
@@ -39,6 +38,14 @@ func TestDecodeHeader(t *testing.T) {
 		t.Fatalf("Unexpected HopByHopId. Want 0x2c0b6149, have 0x%x", hdr.HopByHopID)
 	case hdr.EndToEndID != 0xdbbfd385:
 		t.Fatalf("Unexpected EndToEndId. Want 0xdbbf0385, have 0x%x", hdr.EndToEndID)
+	}
+	t.Log(hdr)
+}
+
+func TestDecodeHeaderMalformed(t *testing.T) {
+	_, err := DecodeHeader(testHeader[:10])
+	if err == nil {
+		t.Fatal("Malformed header decoded with no errors")
 	}
 }
 

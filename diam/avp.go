@@ -106,21 +106,16 @@ func (a *AVP) Serialize() ([]byte, error) {
 	if a.Data == nil {
 		return nil, errors.New("Failed to serialize AVP: Data is nil")
 	}
-	payload := a.Data.Serialize()
-	payloadLen := len(payload)
 	var b []byte
 	if a.VendorID > 0 {
-		b = make([]byte, 12+payloadLen+a.Data.Padding())
-		copy(b[5:8], uint32to24(uint32(12+payloadLen)))
-		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
-		copy(b[12:], payload)
+		b = make([]byte, 12+a.Data.Len()+a.Data.Padding())
 	} else {
-		b = make([]byte, 8+payloadLen+a.Data.Padding())
-		copy(b[5:8], uint32to24(uint32(8+payloadLen)))
-		copy(b[8:], payload)
+		b = make([]byte, 8+a.Data.Len()+a.Data.Padding())
 	}
-	binary.BigEndian.PutUint32(b[0:4], a.Code)
-	b[4] = a.Flags
+	err := a.SerializeTo(b)
+	if err != nil {
+		return nil, err
+	}
 	return b, nil
 }
 
@@ -130,13 +125,12 @@ func (a *AVP) SerializeTo(b []byte) error {
 		return errors.New("Failed to serialize AVP: Data is nil")
 	}
 	payload := a.Data.Serialize()
-	payloadLen := len(payload)
 	if a.VendorID > 0 {
-		copy(b[5:8], uint32to24(uint32(12+payloadLen)))
+		copy(b[5:8], uint32to24(uint32(12+a.Data.Len())))
 		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
 		copy(b[12:], payload)
 	} else {
-		copy(b[5:8], uint32to24(uint32(8+payloadLen)))
+		copy(b[5:8], uint32to24(uint32(8+a.Data.Len())))
 		copy(b[8:], payload)
 	}
 	binary.BigEndian.PutUint32(b[0:4], a.Code)

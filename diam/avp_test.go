@@ -87,6 +87,28 @@ func TestDecodeAVP(t *testing.T) {
 	t.Log(a)
 }
 
+func TestDecodeAVPMalformed(t *testing.T) {
+	_, err := DecodeAVP(testAVP[0][:1], 1, dict.Default)
+	if err == nil {
+		t.Fatal("Malformed AVP decoded with no error")
+	}
+}
+
+func TestDecodeAVPWithVendorID(t *testing.T) {
+	a := NewAVP(avp.UserName, avp.Mbit|avp.Vbit, 999, datatype.UTF8String("foobar"))
+	b, err := a.Serialize()
+	if err != nil {
+		t.Fatal("Failed to serialize AVP:", err)
+	}
+	a, err = DecodeAVP(b, 1, dict.Default)
+	if err != nil {
+		t.Fatal("Failed to decode AVP:", err)
+	}
+	if a.VendorID != 999 {
+		t.Fatal("Unexpected VendorID. Want 999, have %d", a.VendorID)
+	}
+}
+
 func TestEncodeAVP(t *testing.T) {
 	a := &AVP{
 		Code:  avp.OriginHost,

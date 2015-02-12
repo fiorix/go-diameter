@@ -40,11 +40,11 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	buf := newReaderBuffer()
 	defer putReaderBuffer(buf)
 	m := &Message{dictionary: dictionary}
-	cmd, err := readAndParseHeader(m, buf, reader)
+	cmd, err := readAndParseHeader(reader, buf, m)
 	if err != nil {
 		return nil, err
 	}
-	if err = readAndParseBody(m, cmd, buf, reader); err != nil {
+	if err = readAndParseBody(reader, buf, cmd, m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -60,8 +60,8 @@ func newReaderBuffer() *bytes.Buffer {
 }
 
 func putReaderBuffer(b *bytes.Buffer) {
-	b.Reset()
 	if cap(b.Bytes()) == MessageBufferLength {
+		b.Reset()
 		readerBufferPool.Put(b)
 	}
 }
@@ -74,7 +74,7 @@ func readerBufferSlice(b *bytes.Buffer, l int) []byte {
 	return make([]byte, l)
 }
 
-func readAndParseHeader(m *Message, buf *bytes.Buffer, r io.Reader) (cmd *dict.Command, err error) {
+func readAndParseHeader(r io.Reader, buf *bytes.Buffer, m *Message) (cmd *dict.Command, err error) {
 	b := buf.Bytes()[:HeaderLength]
 	if _, err = io.ReadFull(r, b); err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func readAndParseHeader(m *Message, buf *bytes.Buffer, r io.Reader) (cmd *dict.C
 	return cmd, nil
 }
 
-func readAndParseBody(m *Message, cmd *dict.Command, buf *bytes.Buffer, r io.Reader) error {
+func readAndParseBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, m *Message) error {
 	b := readerBufferSlice(buf, int(m.Header.MessageLength-HeaderLength))
 	_, err := io.ReadFull(r, b)
 	if err != nil {
@@ -125,11 +125,8 @@ func decodeAVPs(m *Message, pbytes []byte) error {
 	var a *AVP
 	var err error
 	for n := 0; n < len(pbytes); {
-		a, err = DecodeAVP(
-			pbytes[n:],
-			m.Header.ApplicationID,
-			m.dictionary,
-		)
+		a, err = DecodeAVP(pbytes[n:],
+			m.Header.ApplicationID, m.dictionary)
 		if err != nil {
 			return fmt.Errorf("Failed to decode AVP: %s", err)
 		}

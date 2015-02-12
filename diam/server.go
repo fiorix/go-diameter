@@ -269,7 +269,7 @@ func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 	mux.mu.RLock()
 	defer mux.mu.RUnlock()
 	var cmd string
-	if dcmd, err := m.dictionary.FindCommand(
+	if dcmd, err := m.Dictionary().FindCommand(
 		m.Header.ApplicationID,
 		m.Header.CommandCode,
 	); err != nil {
@@ -343,7 +343,7 @@ func Serve(l net.Listener, handler Handler) error {
 // A Server defines parameters for running a diameter server.
 type Server struct {
 	Addr         string        // TCP address to listen on, ":3868" if empty
-	Handler      Handler       // handler to invoke, diam.DefaultServeMux if nil
+	Handler      Handler       // handler to invoke, DefaultServeMux if nil
 	Dict         *dict.Parser  // diameter dictionaries for this server
 	ReadTimeout  time.Duration // maximum duration before timing out read of the request
 	WriteTimeout time.Duration // maximum duration before timing out write of the response
@@ -415,7 +415,7 @@ func (srv *Server) Serve(l net.Listener) error {
 // and then calls Serve with handler to handle requests
 // on incoming connections.
 //
-// If handler is nil, diam.DefaultServeMux is used.
+// If handler is nil, DefaultServeMux is used.
 //
 // If dict is nil, dict.Default is used.
 func ListenAndServe(addr string, handler Handler, dp *dict.Parser) error {

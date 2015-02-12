@@ -12,7 +12,7 @@ import (
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/avp/format"
+	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -23,17 +23,17 @@ func main() {
 	}
 
 	m := diam.NewMessage(1111, diam.RequestFlag, 999, 1, 2, dict.Default)
-	m.NewAVP(avp.ProductName, avp.Mbit, 0, format.Unsigned32(1))
+	m.NewAVP(avp.ProductName, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(7070, avp.Mbit, 0, &diam.GroupedAVP{
 		AVP: []*diam.AVP{
-			diam.NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(10)),
+			diam.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(10)),
 			diam.NewAVP(8080, avp.Mbit, 0, &diam.GroupedAVP{
 				AVP: []*diam.AVP{
-					diam.NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(20)),
+					diam.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(20)),
 					diam.NewAVP(9090, avp.Mbit, 0, &diam.GroupedAVP{
 						AVP: []*diam.AVP{
-							diam.NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(30)),
-							diam.NewAVP(avp.VendorId, avp.Mbit, 0, format.Unsigned32(40)),
+							diam.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(30)),
+							diam.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(40)),
 						},
 					}),
 				},
@@ -71,17 +71,17 @@ type customMsg struct {
 }
 
 type nestedA struct {
-	VendorId     int     `avp:"Vendor-Id"`
+	VendorID     int     `avp:"Vendor-Id"`
 	NestedGroupB nestedB `avp:"Nested-Group-B"`
 }
 
 type nestedB struct {
-	VendorId     int     `avp:"Vendor-Id"`
+	VendorID     int     `avp:"Vendor-Id"`
 	NestedGroupC nestedC `avp:"Nested-Group-C"`
 }
 
 type nestedC struct {
-	VendorId []int `avp:"Vendor-Id"`
+	VendorID []int `avp:"Vendor-Id"`
 }
 
 var customApp = []byte(`<?xml version="1.0" encoding="UTF-8"?>

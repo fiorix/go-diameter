@@ -19,7 +19,7 @@ type File struct {
 // Vendor defines diameter vendors in XML, that can be used to translate
 // the VendorId AVP of incoming messages.
 type Vendor struct {
-	Id   uint32 `xml:"vendor-id,attr"`
+	ID   uint32 `xml:"vendor-id,attr"`
 	Name string `xml:"name,attr"`
 }
 
@@ -48,26 +48,30 @@ type AVP struct {
 	Grouped    []*Grouped `xml:"grouped"` // In case of Grouped AVP
 }
 
+// DataType represents a dictionary data type.
 type DataType struct {
 	Name string `xml:"type-name,attr"`
 }
 
+// Enum contains the code and name of Enumerated items.
 type Enum struct {
 	Name string `xml:"name,attr"`
 	Code uint8  `xml:"code,attr"`
 }
 
+// Grouped represents a grouped AVP definition.
 type Grouped struct {
 	GAVP     []*Rule     `xml:"gavp"`
 	Required GroupedRule `xml:"required"`
 	Optional GroupedRule `xml:"optional"`
 }
 
-// Grouped AVP rules
+// GroupedRule defines the usage rules of a Grouped AVP.
 type GroupedRule struct {
 	Rule []*Rule `xml:"avprule"`
 }
 
+// Rule defines the usage rules of an AVP.
 type Rule struct {
 	Name string `xml:"name,attr"`
 	Min  int    `xml:"minimum,attr"`
@@ -76,7 +80,7 @@ type Rule struct {
 
 // App defines a diameter application in XML and its multiple AVPs.
 type App struct {
-	Id   uint32 `xml:"id,attr"`
+	ID   uint32 `xml:"id,attr"`
 	Type string `xml:"type,attr"`
 	Name string `xml:"name,attr"`
 	URI  string `xml:"uri,attr"`
@@ -92,12 +96,14 @@ type Cmd struct {
 	Answer  CmdRule `xml:"answerrules"`
 }
 
+// CmdRule defines the rule for a Diameter command.
 type CmdRule struct {
 	Fixed    Rules `xml:"fixed"`
 	Required Rules `xml:"required"`
 	Optional Rules `xml:"optional"`
 }
 
+// Rules contains a list of AVP rules.
 type Rules struct {
 	Rule []*Rule `xml:"avprule"`
 }

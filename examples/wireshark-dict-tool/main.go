@@ -22,55 +22,55 @@ import (
 )
 
 func main() {
-	wsd, err := Load(os.Stdin)
+	wsd, err := load(os.Stdin)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var new_dict = &dict.File{}
+	var newDict = &dict.File{}
 	for _, app := range wsd.App {
-		new_app := &dict.App{
-			ID:   app.Id,
+		newApp := &dict.App{
+			ID:   app.ID,
 			Type: app.Type,
 			Name: app.Name,
 		}
-		copy_vendors(wsd.Vendor, new_app)
-		copy_commands(app.Cmd, new_app)
-		copy_avps(app.AVP, new_app)
-		new_dict.App = append(new_dict.App, new_app)
+		copyVendors(wsd.Vendor, newApp)
+		copyCommands(app.Cmd, newApp)
+		copyAvps(app.AVP, newApp)
+		newDict.App = append(newDict.App, newApp)
 	}
 	os.Stdout.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>` + "\n"))
 	enc := xml.NewEncoder(os.Stdout)
 	enc.Indent("", "\t")
-	enc.Encode(new_dict)
+	enc.Encode(newDict)
 }
 
-func copy_vendors(src []*Vendor, dst *dict.App) {
+func copyVendors(src []*Vendor, dst *dict.App) {
 	for _, vendor := range src {
 		dst.Vendor = append(dst.Vendor, &dict.Vendor{
-			ID:   vendor.Id,
+			ID:   vendor.ID,
 			Name: vendor.Name,
 		})
 	}
 }
 
-func copy_commands(src []*Cmd, dst *dict.App) {
+func copyCommands(src []*Cmd, dst *dict.App) {
 	for _, cmd := range src {
-		new_cmd := &dict.Command{
+		newCmd := &dict.Command{
 			Code:  cmd.Code,
 			Name:  cmd.Name,
 			Short: cmd.Name,
 		}
-		copy_cmd_rules(cmd.Request.Fixed.Rule, &new_cmd.Request, false)
-		copy_cmd_rules(cmd.Request.Required.Rule, &new_cmd.Request, true)
-		copy_cmd_rules(cmd.Request.Optional.Rule, &new_cmd.Request, false)
-		copy_cmd_rules(cmd.Answer.Fixed.Rule, &new_cmd.Answer, false)
-		copy_cmd_rules(cmd.Answer.Required.Rule, &new_cmd.Answer, true)
-		copy_cmd_rules(cmd.Answer.Optional.Rule, &new_cmd.Answer, false)
-		dst.Command = append(dst.Command, new_cmd)
+		copyCmdRules(cmd.Request.Fixed.Rule, &newCmd.Request, false)
+		copyCmdRules(cmd.Request.Required.Rule, &newCmd.Request, true)
+		copyCmdRules(cmd.Request.Optional.Rule, &newCmd.Request, false)
+		copyCmdRules(cmd.Answer.Fixed.Rule, &newCmd.Answer, false)
+		copyCmdRules(cmd.Answer.Required.Rule, &newCmd.Answer, true)
+		copyCmdRules(cmd.Answer.Optional.Rule, &newCmd.Answer, false)
+		dst.Command = append(dst.Command, newCmd)
 	}
 }
 
-func copy_cmd_rules(src []*Rule, dst *dict.CommandRule, required bool) {
+func copyCmdRules(src []*Rule, dst *dict.CommandRule, required bool) {
 	for _, req := range src {
 		dst.Rule = append(dst.Rule, &dict.Rule{
 			AVP:      req.Name,
@@ -81,43 +81,43 @@ func copy_cmd_rules(src []*Rule, dst *dict.CommandRule, required bool) {
 	}
 }
 
-func copy_avps(src []*AVP, dst *dict.App) {
+func copyAvps(src []*AVP, dst *dict.App) {
 	for _, avp := range src {
-		new_avp := &dict.AVP{
+		newAVP := &dict.AVP{
 			Name: avp.Name,
 			Code: avp.Code,
 		}
 		if avp.Type.Name == "" && avp.Grouped != nil {
-			new_avp.Data = dict.Data{TypeName: "Grouped"}
+			newAVP.Data = dict.Data{TypeName: "Grouped"}
 		} else {
-			new_avp.Data = dict.Data{TypeName: avp.Type.Name}
+			newAVP.Data = dict.Data{TypeName: avp.Type.Name}
 		}
 		switch avp.MayEncrypt {
 		case "yes":
-			new_avp.MayEncrypt = "Y"
+			newAVP.MayEncrypt = "Y"
 		case "no":
-			new_avp.MayEncrypt = "N"
+			newAVP.MayEncrypt = "N"
 		default:
-			new_avp.MayEncrypt = "-"
+			newAVP.MayEncrypt = "-"
 		}
 		switch avp.Mandatory {
 		case "must":
-			new_avp.Must = "M"
+			newAVP.Must = "M"
 		case "may":
-			new_avp.May = "P"
+			newAVP.May = "P"
 		default:
-			new_avp.Must = ""
+			newAVP.Must = ""
 		}
-		if new_avp.May != "" {
+		if newAVP.May != "" {
 			switch avp.Protected {
 			case "may":
-				new_avp.May = "P"
+				newAVP.May = "P"
 			default:
-				new_avp.May = ""
+				newAVP.May = ""
 			}
 		}
 		for _, p := range avp.Enum {
-			new_avp.Data.Enum = append(new_avp.Data.Enum,
+			newAVP.Data.Enum = append(newAVP.Data.Enum,
 				&dict.Enum{
 					Name: p.Name,
 					Code: p.Code,
@@ -125,7 +125,7 @@ func copy_avps(src []*AVP, dst *dict.App) {
 		}
 		for _, grp := range avp.Grouped {
 			for _, p := range grp.GAVP {
-				new_avp.Data.Rule = append(new_avp.Data.Rule,
+				newAVP.Data.Rule = append(newAVP.Data.Rule,
 					&dict.Rule{
 						AVP: p.Name,
 						Min: p.Min,
@@ -133,7 +133,7 @@ func copy_avps(src []*AVP, dst *dict.App) {
 					})
 			}
 			for _, p := range grp.Required.Rule {
-				new_avp.Data.Rule = append(new_avp.Data.Rule,
+				newAVP.Data.Rule = append(newAVP.Data.Rule,
 					&dict.Rule{
 						AVP:      p.Name,
 						Required: true,
@@ -142,7 +142,7 @@ func copy_avps(src []*AVP, dst *dict.App) {
 					})
 			}
 			for _, p := range grp.Optional.Rule {
-				new_avp.Data.Rule = append(new_avp.Data.Rule,
+				newAVP.Data.Rule = append(newAVP.Data.Rule,
 					&dict.Rule{
 						AVP:      p.Name,
 						Required: false,
@@ -151,6 +151,6 @@ func copy_avps(src []*AVP, dst *dict.App) {
 					})
 			}
 		}
-		dst.AVP = append(dst.AVP, new_avp)
+		dst.AVP = append(dst.AVP, newAVP)
 	}
 }

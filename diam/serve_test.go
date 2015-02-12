@@ -7,7 +7,6 @@ package diam_test
 import (
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"testing"
 	"time"
@@ -104,7 +103,7 @@ func handleCER(errc chan error) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
 		go func() {
 			<-c.(diam.CloseNotifier).CloseNotify()
-			log.Println("Client", c.RemoteAddr(), "disconnected")
+			//log.Println("Client", c.RemoteAddr(), "disconnected")
 		}()
 		var req CER
 		err := m.Unmarshal(&req)

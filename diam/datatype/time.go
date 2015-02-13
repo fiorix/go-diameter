@@ -13,15 +13,17 @@ import (
 // Time data type.
 type Time time.Time
 
+const rfc868offset = 2208988800 // Diff. between 1970 and 1900 in seconds.
+
 // DecodeTime decodes a Time data type from byte array.
 func DecodeTime(b []byte) (Type, error) {
-	return Time(time.Unix(int64(binary.BigEndian.Uint32(b)), 0)), nil
+	return Time(time.Unix(int64(binary.BigEndian.Uint32(b))-rfc868offset, 0)), nil
 }
 
 // Serialize implements the Type interface.
 func (t Time) Serialize() []byte {
 	b := make([]byte, 4)
-	binary.BigEndian.PutUint32(b, uint32(time.Time(t).Unix()))
+	binary.BigEndian.PutUint32(b, uint32(time.Time(t).Unix())+rfc868offset)
 	return b
 }
 

@@ -12,7 +12,7 @@ import (
 
 func TestTime(t *testing.T) {
 	n := Time(time.Unix(1377093974, 0))
-	b := []byte{0x52, 0x14, 0xc9, 0x56}
+	b := []byte{0xd5, 0xbf, 0x47, 0xd6}
 	if v := n.Serialize(); !bytes.Equal(v, b) {
 		t.Fatalf("Unexpected value. Want 0x%x, have 0x%x", b, v)
 	}
@@ -32,7 +32,7 @@ func TestTime(t *testing.T) {
 }
 
 func TestDecodeTime(t *testing.T) {
-	b := []byte{0x52, 0x14, 0xc9, 0x56}
+	b := []byte{0xd5, 0xbf, 0x47, 0xd6}
 	v, err := DecodeTime(b)
 	if err != nil {
 		t.Fatal(err)

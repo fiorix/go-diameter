@@ -45,6 +45,7 @@ func main() {
 	runtime.GOMAXPROCS(*t)
 	// Message handlers:
 	diam.HandleFunc("CER", OnCER)
+	diam.HandleFunc("DWR", OnDWR)
 	diam.HandleFunc("CCR", OnCCR)
 	diam.HandleFunc("ALL", OnMSG) // Catch-all
 	// Handle server errors.
@@ -84,11 +85,10 @@ func OnCER(c diam.Conn, m *diam.Message) {
 		c.Close()
 		return
 	}
-	// Reject client if there's no Origin-State-Id.
+	// Print warning if there's no Origin-State-Id.
 	stateID, err := m.FindAVP(avp.OriginStateID)
 	if err != nil {
-		c.Close()
-		return
+		log.Println("No Origin-State-ID detected")
 	}
 	if !quiet {
 		//log.Println("Receiving message from %s", c.RemoteAddr().String())
@@ -104,8 +104,10 @@ func OnCER(c diam.Conn, m *diam.Message) {
 	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(ip)))
 	a.NewAVP(avp.VendorID, avp.Mbit, 0, vendorID)
 	a.NewAVP(avp.ProductName, avp.Mbit, 0, productName)
-	// Copy origin Origin-State-Id.
-	a.AddAVP(stateID)
+	// Copy origin Origin-State-Id if present
+	if stateID != nil {
+                a.AddAVP(stateID)
+        }
 	if !quiet {
 		log.Printf("Sending message to %s", c.RemoteAddr().String())
 		log.Println(a)
@@ -133,6 +135,19 @@ func OnCCR(c diam.Conn, m *diam.Message) {
 	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
 	a.WriteTo(c)
 }
+
+// OnDWR handles Device-Watchdog-Exchanges
+func OnDWR(c diam.Conn, m *diam.Message) {
+        log.Println("Device-Watchdog-Request received, sending reply")
+        a := m.Answer(diam.Success)
+        a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
+        a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
+        if _, err := a.WriteTo(c); err != nil {
+                log.Println("Write failed:", err)
+                c.Close()
+        }
+}
+
 
 // OnMSG handles all other messages and replies to them
 // with a generic 2001 (OK) answer.

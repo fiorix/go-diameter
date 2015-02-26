@@ -31,6 +31,9 @@ const (
 
 var quiet bool
 
+// Create map to hold allowed hosts
+var allowedPeers map[string]bool
+
 func main() {
 	addr := flag.String("l", ":3868", "listen address and port")
 	cert := flag.String("cert", "", "SSL cert file (e.g. cert.pem)")
@@ -43,6 +46,8 @@ func main() {
 		*t = runtime.NumCPU()
 	}
 	runtime.GOMAXPROCS(*t)
+	// Initialize map for allowed hosts
+	allowedPeers = make(map[string]bool)
 	// Message handlers:
 	diam.HandleFunc("CER", OnCER)
 	diam.HandleFunc("DWR", OnDWR)
@@ -64,7 +69,10 @@ func main() {
 		log.Fatal(diam.ListenAndServe(*addr, nil, nil))
 	}
 }
-
+// Struct for parsing OriginHost AVP for further access verification
+type verifyCE struct {
+	OriginHost        string    `avp:"Origin-Host"`
+}
 // OnCER handles Capabilities-Exchange-Request messages.
 func OnCER(c diam.Conn, m *diam.Message) {
 	// Reject client if there's no Origin-Host.
@@ -85,11 +93,29 @@ func OnCER(c diam.Conn, m *diam.Message) {
 		c.Close()
 		return
 	}
-	// Print warning if there's no Origin-State-Id.
-	stateID, err := m.FindAVP(avp.OriginStateID)
+	// Reject client if there's no Vendor-Id
+	_, err = m.FindAVP(avp.VendorID)
 	if err != nil {
-		log.Println("No Origin-State-ID detected")
+		c.Close()
+		return
 	}
+	// Reject client if there's no Product-Name
+	_, err = m.FindAVP(avp.ProductName)
+	if err != nil {
+		c.Close()
+		return
+	}
+	
+	// Extract Origin-State-Id if present
+	stateID, _ := m.FindAVP(avp.OriginStateID)
+	var req verifyCE
+	err = m.Unmarshal(&req)
+	if err != nil {
+		c.Close()
+		return
+	}
+	//Adding OriginHost to the list of hosts allowed to send further messages
+	allowedPeers[req.OriginHost] = true
 	if !quiet {
 		//log.Println("Receiving message from %s", c.RemoteAddr().String())
 		log.Printf("Receiving message from %s.%s (%s)", host, crealm, ipaddr)
@@ -138,10 +164,39 @@ func OnCCR(c diam.Conn, m *diam.Message) {
 
 // OnDWR handles Device-Watchdog-Exchanges
 func OnDWR(c diam.Conn, m *diam.Message) {
+	// Reject client if there's no Origin-Host.
+	_, err := m.FindAVP(avp.OriginHost)
+	if err != nil {
+		c.Close()
+		return
+	}
+	// Reject client if there's no Origin-Realm.
+	_, err = m.FindAVP(avp.OriginRealm)
+	if err != nil {
+		c.Close()
+		return
+	}
+
+	stateID, _ := m.FindAVP(avp.OriginStateID)
+	//Verify whether Peer has completed Capabilities Exchange
+	var req verifyCE
+	err = m.Unmarshal(&req)
+	if err != nil {
+		c.Close()
+		return
+	}
+	
+	if !allowedPeers[req.OriginHost] {
+		c.Close()
+		return
+	}
         log.Println("Device-Watchdog-Request received, sending reply")
         a := m.Answer(diam.Success)
         a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
         a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
+        if stateID != nil {
+		a.AddAVP(stateID)
+	}
         if _, err := a.WriteTo(c); err != nil {
                 log.Println("Write failed:", err)
                 c.Close()
@@ -152,10 +207,31 @@ func OnDWR(c diam.Conn, m *diam.Message) {
 // OnMSG handles all other messages and replies to them
 // with a generic 2001 (OK) answer.
 func OnMSG(c diam.Conn, m *diam.Message) {
-	// Ignore message if there's no Origin-State-Id.
-	stateID, err := m.FindAVP(avp.OriginStateID)
+	// Reject client if there's no Origin-Host.
+	_, err := m.FindAVP(avp.OriginHost)
 	if err != nil {
-		log.Println("Invalid message: missing Origin-State-Id\n", m)
+		c.Close()
+		return
+	}
+	// Reject client if there's no Origin-Realm.
+	_, err = m.FindAVP(avp.OriginRealm)
+	if err != nil {
+		c.Close()
+		return
+	}
+	// Ignore message if there's no Origin-State-Id.
+	stateID, _ := m.FindAVP(avp.OriginStateID)
+	//Verify whether Peer has completed Capabilities Exchange
+	var req verifyCE
+	err = m.Unmarshal(&req)
+	if err != nil {
+		c.Close()
+		return
+	}
+	
+	if !allowedPeers[req.OriginHost] {
+		c.Close()
+		return
 	}
 	if !quiet {
 		log.Printf("Receiving message from %s", c.RemoteAddr().String())
@@ -165,7 +241,9 @@ func OnMSG(c diam.Conn, m *diam.Message) {
 	a := m.Answer(diam.Success)
 	a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
 	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
-	a.AddAVP(stateID)
+	if stateID != nil {
+		a.AddAVP(stateID)
+	}
 	if !quiet {
 		log.Printf("Sending message to %s", c.RemoteAddr().String())
 		log.Println(a)

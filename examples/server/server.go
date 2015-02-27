@@ -16,6 +16,7 @@ import (
 	"log"
 	"net"
 	"runtime"
+	"sync"
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
@@ -32,7 +33,14 @@ const (
 var quiet bool
 
 // Create map to hold allowed hosts
-var allowedPeers map[string]bool
+var allowedPeers map[string]struct{}
+
+// Create empty struct to hold allowedPeers map values
+type emptyStruct struct{}
+var emptyS emptyStruct
+
+//Create mutex to protext allowedPeers
+var mu = &sync.RWMutex{}
 
 func main() {
 	addr := flag.String("l", ":3868", "listen address and port")
@@ -47,7 +55,7 @@ func main() {
 	}
 	runtime.GOMAXPROCS(*t)
 	// Initialize map for allowed hosts
-	allowedPeers = make(map[string]bool)
+	allowedPeers = make(map[string]struct{})
 	// Message handlers:
 	diam.HandleFunc("CER", OnCER)
 	diam.HandleFunc("DWR", OnDWR)
@@ -115,7 +123,9 @@ func OnCER(c diam.Conn, m *diam.Message) {
 		return
 	}
 	//Adding OriginHost to the list of hosts allowed to send further messages
-	allowedPeers[req.OriginHost] = true
+	mu.Lock()
+	allowedPeers[req.OriginHost] = emptyS
+	mu.Unlock()
 	if !quiet {
 		//log.Println("Receiving message from %s", c.RemoteAddr().String())
 		log.Printf("Receiving message from %s.%s (%s)", host, crealm, ipaddr)
@@ -145,6 +155,9 @@ func OnCER(c diam.Conn, m *diam.Message) {
 	}
 	go func() {
 		<-c.(diam.CloseNotifier).CloseNotify()
+		mu.Lock()
+		delete(allowedPeers, req.OriginHost)
+		mu.Unlock()
 		if !quiet {
 			log.Printf("Client %s disconnected",
 				c.RemoteAddr().String())
@@ -185,11 +198,12 @@ func OnDWR(c diam.Conn, m *diam.Message) {
 		c.Close()
 		return
 	}
-	
-	if !allowedPeers[req.OriginHost] {
+	mu.RLock()
+	if _, ok := allowedPeers[req.OriginHost]; !ok {
 		c.Close()
 		return
 	}
+	mu.RUnlock()
         log.Println("Device-Watchdog-Request received, sending reply")
         a := m.Answer(diam.Success)
         a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
@@ -228,11 +242,12 @@ func OnMSG(c diam.Conn, m *diam.Message) {
 		c.Close()
 		return
 	}
-	
-	if !allowedPeers[req.OriginHost] {
+	mu.RLock()
+	if _, ok := allowedPeers[req.OriginHost]; !ok {
 		c.Close()
 		return
 	}
+	mu.RUnlock()
 	if !quiet {
 		log.Printf("Receiving message from %s", c.RemoteAddr().String())
 		log.Println(m)

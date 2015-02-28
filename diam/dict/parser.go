@@ -28,6 +28,7 @@ import (
 // The Parser element has an index to make pre-loaded AVPs searcheable per App.
 type Parser struct {
 	file    []*File              // Dict supports multiple XML dictionaries
+	appcode map[uint32]*App      // Application index by code
 	avpname map[nameIdx]*AVP     // AVP index by name
 	avpcode map[codeIdx]*AVP     // AVP index by code
 	command map[codeIdx]*Command // Command index
@@ -72,6 +73,7 @@ func (p *Parser) Load(r io.Reader) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.once.Do(func() {
+		p.appcode = make(map[uint32]*App)
 		p.avpname = make(map[nameIdx]*AVP)
 		p.avpcode = make(map[codeIdx]*AVP)
 		p.command = make(map[codeIdx]*Command)
@@ -83,6 +85,8 @@ func (p *Parser) Load(r io.Reader) error {
 	}
 	p.file = append(p.file, f)
 	for _, app := range f.App {
+		// Cache supported applications by ID.
+		p.appcode[app.ID] = app
 		// Cache commands.
 		for _, cmd := range app.Command {
 			p.command[codeIdx{app.ID, cmd.Code}] = cmd

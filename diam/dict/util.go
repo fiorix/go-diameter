@@ -7,12 +7,13 @@
 package dict
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
-// Apps return a list of all applications loaded in the Parser instance.
+// Apps return a list of all applications loaded in the Parser object.
 // Apps must never be called concurrently with LoadFile or Load.
 func (p *Parser) Apps() []*App {
 	//p.mu.Lock()
@@ -25,6 +26,20 @@ func (p *Parser) Apps() []*App {
 	}
 	return apps
 }
+
+// App returns a dictionary application for the given application code
+// if exists. App must never be called concurrently with LoadFile or Load.
+func (p *Parser) App(code uint32) (*App, error) {
+	app := p.appcode[code]
+	if app == nil {
+		return nil, ErrApplicationUnsupported
+	}
+	return app, nil
+}
+
+// ErrApplicationUnsupported indicates that the application requested
+// does not exist in the dictionary Parser object.
+var ErrApplicationUnsupported = errors.New("application unsupported")
 
 // FindAVP is a helper function that returns a pre-loaded AVP from the Parser.
 // If the AVP code is not found for the given appid it tries with appid=0

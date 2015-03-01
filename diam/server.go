@@ -201,7 +201,7 @@ func (c *conn) serve() {
 					h = DefaultServeMux
 				}
 				if er, ok := h.(ErrorReporter); ok {
-					er.Error(ErrorReport{m, err})
+					er.Error(ErrorReport{c.rwc, m, err})
 				}
 			}
 			break
@@ -241,8 +241,9 @@ type ErrorReporter interface {
 // ErrorReport is sent out of the server in case it fails to
 // read messages due to a bad dictionary or network errors.
 type ErrorReport struct {
-	Message *Message
-	Error   error
+	Conn    net.Conn // Peer that caused the error
+	Message *Message // Message that caused the error
+	Error   error    // Error message
 }
 
 // ServeMux is a diameter message multiplexer. It matches the

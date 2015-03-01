@@ -78,3 +78,8 @@ func (g *GroupedAVP) String() string {
 	}
 	return b.String()
 }
+
+// AddAVP adds the AVP to the GroupedAVP. It is not safe for concurrent calls.
+func (g *GroupedAVP) AddAVP(a *AVP) {
+	g.AVP = append(g.AVP, a)
+}

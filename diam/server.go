@@ -201,7 +201,7 @@ func (c *conn) serve() {
 					h = DefaultServeMux
 				}
 				if er, ok := h.(ErrorReporter); ok {
-					er.Error(ErrorReport{c.rwc, m, err})
+					er.Error(ErrorReport{w, m, err})
 				}
 			}
 			break
@@ -241,7 +241,7 @@ type ErrorReporter interface {
 // ErrorReport is sent out of the server in case it fails to
 // read messages due to a bad dictionary or network errors.
 type ErrorReport struct {
-	Conn    net.Conn // Peer that caused the error
+	Conn    Conn     // Peer that caused the error
 	Message *Message // Message that caused the error
 	Error   error    // Error message
 }

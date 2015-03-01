@@ -51,7 +51,7 @@ func main() {
 	go func() {
 		for {
 			report := <-diam.ErrorReports()
-			log.Println("Error:", report.Error)
+			log.Printf("Error from %s: %s", report.Conn.RemoteAddr(), report.Error)
 		}
 	}()
 	// Start server.

@@ -9,6 +9,7 @@ package diam
 import (
 	"bufio"
 	"crypto/tls"
+	"errors"
 	"io"
 	"log"
 	"net"
@@ -314,35 +315,41 @@ func (mux *ServeMux) ErrorReports() <-chan ErrorReport {
 	return mux.e
 }
 
-// ServeDIAM dispatches the request to the handler whose code match
-// the incoming message, or close the connection if no handler is found.
+// ServeDIAM dispatches the request to the handler that match the code
+// in the incoming message. If the special "ALL" handler is registered
+// it is used as a catch-all. Otherwise an ErrorReport is sent out.
 func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 	mux.mu.RLock()
 	defer mux.mu.RUnlock()
-	var cmd string
-	if dcmd, err := m.Dictionary().FindCommand(
+	dcmd, err := m.Dictionary().FindCommand(
 		m.Header.ApplicationID,
 		m.Header.CommandCode,
-	); err != nil {
-		cmd = "ALL"
-	} else {
-		cmd = dcmd.Short
-		if m.Header.CommandFlags&RequestFlag > 0 {
-			cmd += "R"
-		} else {
-			cmd += "A"
-		}
+	)
+	if err != nil {
+		// Try the catch-all.
+		mux.serve("ALL", c, m)
+		return
 	}
-	if me, ok := mux.m[cmd]; ok {
-		me.h.ServeDIAM(c, m)
-	} else if me, ok = mux.m["ALL"]; ok {
-		me.h.ServeDIAM(c, m)
+	var cmd string
+	if m.Header.CommandFlags&RequestFlag == RequestFlag {
+		cmd = dcmd.Short + "R"
 	} else {
-		// Commands not handled by mux go to a blackhole.
-		// If they're not in mux there's no dictionary therefore
-		// the message can't be parsed.
-		//c.Close()
+		cmd = dcmd.Short + "A"
 	}
+	mux.serve(cmd, c, m)
+}
+
+func (mux *ServeMux) serve(cmd string, c Conn, m *Message) {
+	entry, ok := mux.m[cmd]
+	if ok {
+		entry.h.ServeDIAM(c, m)
+		return
+	}
+	mux.Error(ErrorReport{
+		Conn:    c,
+		Message: m,
+		Error:   errors.New("unhandled message"),
+	})
 }
 
 // Handle registers the handler for the given code.

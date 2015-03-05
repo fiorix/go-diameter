@@ -68,7 +68,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	var hdrLength int
 	var payload []byte
 	// Read VendorId when required.
-	if a.Flags&avp.Vbit > 0 {
+	if a.Flags&avp.Vbit == avp.Vbit {
 		a.VendorID = binary.BigEndian.Uint32(data[8:12])
 		payload = data[12:]
 		hdrLength = 12
@@ -144,7 +144,7 @@ func (a *AVP) Len() int {
 }
 
 func (a *AVP) headerLen() int {
-	if a.Flags&avp.Vbit > 0 {
+	if a.Flags&avp.Vbit == avp.Vbit {
 		return 12 + a.Data.Len()
 	}
 	return 8 + a.Data.Len()

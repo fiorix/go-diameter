@@ -115,7 +115,7 @@ func readAndParseBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, m *Mess
 }
 
 func maxAVPs(m *Message, cmd *dict.Command) int {
-	if m.Header.CommandFlags&RequestFlag > 0 {
+	if m.Header.CommandFlags&RequestFlag == RequestFlag {
 		return len(cmd.Request.Rule)
 	}
 	return len(cmd.Answer.Rule)
@@ -306,7 +306,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 func (m *Message) String() string {
 	var b bytes.Buffer
 	var typ string
-	if m.Header.CommandFlags&RequestFlag > 0 {
+	if m.Header.CommandFlags&RequestFlag == RequestFlag {
 		typ = "Request"
 	} else {
 		typ = "Answer"

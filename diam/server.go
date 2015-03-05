@@ -16,6 +16,8 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/net/context"
+
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
@@ -29,6 +31,17 @@ type Handler interface {
 	ServeDIAM(Conn, *Message)
 }
 
+// Conn interface is used by a handler to send diameter messages.
+type Conn interface {
+	Write(b []byte) (int, error)    // Writes a msg to the connection
+	Close()                         // Close the connection
+	LocalAddr() net.Addr            // Returns the local IP
+	RemoteAddr() net.Addr           // Returns the remote IP
+	TLS() *tls.ConnectionState      // TLS or nil when not using TLS
+	Context() context.Context       // Returns the internal context
+	SetContext(ctx context.Context) // Stores a new context
+}
+
 // The CloseNotifier interface is implemented by Conns which
 // allow detecting when the underlying connection has gone away.
 //
@@ -37,15 +50,6 @@ type CloseNotifier interface {
 	// CloseNotify returns a channel that is closed
 	// when the client connection has gone away.
 	CloseNotify() <-chan struct{}
-}
-
-// Conn interface is used by a handler to send diameter messages.
-type Conn interface {
-	Write(b []byte) (int, error) // Writes a msg to the connection
-	Close()                      // Close the connection
-	LocalAddr() net.Addr         // Local IP
-	RemoteAddr() net.Addr        // Remote IP
-	TLS() *tls.ConnectionState   // or nil when not using TLS
 }
 
 // A liveSwitchReader is a switchReader that's safe for concurrent
@@ -69,6 +73,7 @@ type conn struct {
 	sr       liveSwitchReader     // reads from rwc
 	buf      *bufio.ReadWriter    // buffered(sr, rwc)
 	tlsState *tls.ConnectionState // or nil when not using TLS
+	writer   *response            // the diam.Conn exposed to handlers
 
 	mu           sync.Mutex // guards the following
 	closeNotifyc chan struct{}
@@ -106,24 +111,20 @@ func (c *conn) notifyClientGone() {
 	}
 }
 
-// A response represents the server side of a diameter response.
-type response struct {
-	conn *conn      // socket, reader and writer
-	mu   sync.Mutex // guards Write
-}
-
 // Create new connection from rwc.
 func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
-	c = &conn{}
-	c.server = srv
-	c.rwc = rwc
-	c.sr = liveSwitchReader{r: rwc}
+	c = &conn{
+		server: srv,
+		rwc:    rwc,
+		sr:     liveSwitchReader{r: rwc},
+	}
 	c.buf = bufio.NewReadWriter(bufio.NewReader(&c.sr), bufio.NewWriter(rwc))
+	c.writer = &response{conn: c}
 	return c, nil
 }
 
 // Read next message from connection.
-func (c *conn) readMessage() (*Message, *response, error) {
+func (c *conn) readMessage() (*Message, error) {
 	dp := c.server.Dict
 	if dp == nil {
 		dp = dict.Default
@@ -133,9 +134,56 @@ func (c *conn) readMessage() (*Message, *response, error) {
 	}
 	m, err := ReadMessage(c.buf.Reader, dp)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return m, &response{conn: c}, nil
+	return m, nil
+}
+
+// Serve a new connection.
+func (c *conn) serve() {
+	defer func() {
+		if err := recover(); err != nil {
+			buf := make([]byte, 4096)
+			buf = buf[:runtime.Stack(buf, false)]
+			log.Printf("DIAM: panic serving %v: %v\n%s",
+				c.rwc.RemoteAddr().String(), err, buf)
+		}
+		c.rwc.Close()
+	}()
+	if tlsConn, ok := c.rwc.(*tls.Conn); ok {
+		if err := tlsConn.Handshake(); err != nil {
+			return
+		}
+		c.tlsState = &tls.ConnectionState{}
+		*c.tlsState = tlsConn.ConnectionState()
+	}
+	for {
+		m, err := c.readMessage()
+		if err != nil {
+			c.rwc.Close()
+			// Report errors to the channel, except EOF.
+			if err != io.EOF && err != io.ErrUnexpectedEOF {
+				h := c.server.Handler
+				if h == nil {
+					h = DefaultServeMux
+				}
+				if er, ok := h.(ErrorReporter); ok {
+					er.Error(ErrorReport{c.writer, m, err})
+				}
+			}
+			break
+		}
+		// Handle messages in this goroutine.
+		serverHandler{c.server}.ServeDIAM(c.writer, m)
+	}
+}
+
+// A response represents the server side of a diameter response.
+// It implements the Conn, CloseNotifier and Contexter interfaces.
+type response struct {
+	conn *conn           // socket, reader and writer
+	mu   sync.Mutex      // guards ctx and Write
+	ctx  context.Context // context for this Conn
 }
 
 // Write writes the message m to the connection.
@@ -149,7 +197,10 @@ func (w *response) Write(b []byte) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return n, w.conn.buf.Writer.Flush()
+	if err = w.conn.buf.Writer.Flush(); err != nil {
+		return 0, err
+	}
+	return n, nil
 }
 
 // Close closes the connection.
@@ -172,47 +223,26 @@ func (w *response) TLS() *tls.ConnectionState {
 	return w.conn.tlsState
 }
 
-// Serve a new connection.
-func (c *conn) serve() {
-	defer func() {
-		if err := recover(); err != nil {
-			buf := make([]byte, 4096)
-			buf = buf[:runtime.Stack(buf, false)]
-			log.Printf("DIAM: panic serving %v: %v\n%s",
-				c.rwc.RemoteAddr().String(), err, buf)
-		}
-		c.rwc.Close()
-	}()
-	if tlsConn, ok := c.rwc.(*tls.Conn); ok {
-		if err := tlsConn.Handshake(); err != nil {
-			return
-		}
-		c.tlsState = &tls.ConnectionState{}
-		*c.tlsState = tlsConn.ConnectionState()
-	}
-	for {
-		m, w, err := c.readMessage()
-		if err != nil {
-			c.rwc.Close()
-			// Report errors to the channel, except EOF.
-			if err != io.EOF && err != io.ErrUnexpectedEOF {
-				h := c.server.Handler
-				if h == nil {
-					h = DefaultServeMux
-				}
-				if er, ok := h.(ErrorReporter); ok {
-					er.Error(ErrorReport{w, m, err})
-				}
-			}
-			break
-		}
-		// Handle messages in this goroutine.
-		serverHandler{c.server}.ServeDIAM(w, m)
-	}
-}
-
+// CloseNotify implements the CloseNotifier interface.
 func (w *response) CloseNotify() <-chan struct{} {
 	return w.conn.closeNotify()
+}
+
+// Context returns the internal context or a new context.Background.
+func (w *response) Context() context.Context {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.ctx == nil {
+		w.ctx = context.Background()
+	}
+	return w.ctx
+}
+
+// SetContext replaces the internal context with the given one.
+func (w *response) SetContext(ctx context.Context) {
+	w.mu.Lock()
+	w.ctx = ctx
+	w.mu.Unlock()
 }
 
 // The HandlerFunc type is an adapter to allow the use of
@@ -263,7 +293,7 @@ type muxEntry struct {
 // NewServeMux allocates and returns a new ServeMux.
 func NewServeMux() *ServeMux {
 	return &ServeMux{
-		e: make(chan ErrorReport),
+		e: make(chan ErrorReport, 1),
 		m: make(map[string]muxEntry),
 	}
 }

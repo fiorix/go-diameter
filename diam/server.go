@@ -169,7 +169,7 @@ func (c *conn) serve() {
 					h = DefaultServeMux
 				}
 				if er, ok := h.(ErrorReporter); ok {
-					er.Error(ErrorReport{c.writer, m, err})
+					er.Error(&ErrorReport{c.writer, m, err})
 				}
 			}
 			break
@@ -262,11 +262,11 @@ func (f HandlerFunc) ServeDIAM(c Conn, m *Message) {
 // parsing diameter messages or connection errors.
 type ErrorReporter interface {
 	// Error writes an error to the reporter.
-	Error(err ErrorReport)
+	Error(err *ErrorReport)
 
 	// ErrorReports returns a channel that receives
 	// errors from the connection.
-	ErrorReports() <-chan ErrorReport
+	ErrorReports() <-chan *ErrorReport
 }
 
 // ErrorReport is sent out of the server in case it fails to
@@ -281,7 +281,7 @@ type ErrorReport struct {
 // command from the incoming message against a list of
 // registered commands and calls the handler.
 type ServeMux struct {
-	e  chan ErrorReport
+	e  chan *ErrorReport
 	mu sync.RWMutex // Guards m.
 	m  map[string]muxEntry
 }
@@ -294,7 +294,7 @@ type muxEntry struct {
 // NewServeMux allocates and returns a new ServeMux.
 func NewServeMux() *ServeMux {
 	return &ServeMux{
-		e: make(chan ErrorReport, 1),
+		e: make(chan *ErrorReport, 1),
 		m: make(map[string]muxEntry),
 	}
 }
@@ -303,7 +303,7 @@ func NewServeMux() *ServeMux {
 var DefaultServeMux = NewServeMux()
 
 // Error implements the ErrorReporter interface.
-func (mux *ServeMux) Error(err ErrorReport) {
+func (mux *ServeMux) Error(err *ErrorReport) {
 	select {
 	case mux.e <- err:
 	default:
@@ -311,7 +311,7 @@ func (mux *ServeMux) Error(err ErrorReport) {
 }
 
 // ErrorReports implement the ErrorReporter interface.
-func (mux *ServeMux) ErrorReports() <-chan ErrorReport {
+func (mux *ServeMux) ErrorReports() <-chan *ErrorReport {
 	return mux.e
 }
 
@@ -345,7 +345,7 @@ func (mux *ServeMux) serve(cmd string, c Conn, m *Message) {
 		entry.h.ServeDIAM(c, m)
 		return
 	}
-	mux.Error(ErrorReport{
+	mux.Error(&ErrorReport{
 		Conn:    c,
 		Message: m,
 		Error:   errors.New("unhandled message"),
@@ -382,7 +382,7 @@ func HandleFunc(cmd string, handler func(Conn, *Message)) {
 }
 
 // ErrorReports returns the ErrorReport channel of the DefaultServeMux.
-func ErrorReports() <-chan ErrorReport {
+func ErrorReports() <-chan *ErrorReport {
 	return DefaultServeMux.ErrorReports()
 }
 

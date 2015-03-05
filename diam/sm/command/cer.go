@@ -124,7 +124,7 @@ func (cer *CER) validateApp(d *dict.Parser, appType string, appAVP *diam.AVP) (f
 	return nil, nil
 }
 
-// Appliations return a list of supported application IDs from this CER.
+// Applications return a list of supported application IDs from this CER.
 // Must be called after Parse, otherwise it returns an empty array.
 func (cer *CER) Applications() []uint32 {
 	return cer.appID

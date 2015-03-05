@@ -86,7 +86,7 @@ func init() {
 	Default, _ = NewParser()
 	Default.Load(bytes.NewReader([]byte(baseXML)))
 	Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
-	Default.Load(bytes.NewReader([]byte(tgppspecificXML)))
+	Default.Load(bytes.NewReader([]byte(tgpprorfXML)))
 }
 
 EOF

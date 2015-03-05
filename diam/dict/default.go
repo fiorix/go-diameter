@@ -16,7 +16,7 @@ func init() {
 	Default, _ = NewParser()
 	Default.Load(bytes.NewReader([]byte(baseXML)))
 	Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
-	Default.Load(bytes.NewReader([]byte(tgppspecificXML)))
+	Default.Load(bytes.NewReader([]byte(tgpprorfXML)))
 }
 
 var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -939,7 +939,7 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
   </application>
 </diameter>`
 
-var tgppspecificXML = `<?xml version="1.0" encoding="UTF-8"?>
+var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
   <application id="4"> 

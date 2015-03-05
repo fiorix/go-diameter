@@ -1,16 +1,17 @@
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 package command
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
 // CER is a Capabilities-Exchange-Request message.
-// For details see section 5.3.1 of RFC 6733.
+// See RFC 6733 section 5.3.1 for details.
 type CER struct {
 	OriginHost          datatype.DiameterIdentity `avp:"Origin-Host"`
 	OriginRealm         datatype.DiameterIdentity `avp:"Origin-Realm"`
@@ -127,40 +128,4 @@ func (cer *CER) validateApp(d *dict.Parser, appType string, appAVP *diam.AVP) (f
 // Must be called after Parse, otherwise it returns an empty array.
 func (cer *CER) Applications() []uint32 {
 	return cer.appID
-}
-
-var (
-	// ErrMissingOriginHost is returned by CER.OK when the CER
-	// does not contain an Origin-Host AVP.
-	ErrMissingOriginHost = errors.New("missing Origin-Host")
-
-	// ErrMissingOriginRealm is returned by CER.OK when the CER
-	// does not contain an Origin-Realm AVP.
-	ErrMissingOriginRealm = errors.New("missing Origin-Realm")
-
-	// ErrMissingOriginStateID is returned by CER.OK when the CER
-	// does not contain an Origin-State-Id AVP.
-	ErrMissingOriginStateID = errors.New("missing Origin-State-Id")
-
-	// ErrMissingApplication is returned by CER.OK when the CER
-	// does not contain any Acct-Application-Id or Auth-Application-Id,
-	// or their embedded versions in Vendor-Specific-Application-Id.
-	ErrMissingApplication = errors.New("missing application")
-
-	// ErrNoCommonSecurity is returned by CER.OK when the CER
-	// contains the Inband-Security-Id. We don't support that.
-	ErrNoCommonSecurity = errors.New("no common security")
-)
-
-// ErrNoCommonApplication is returned by CER.OK when the
-// application IDs in the CER don't match the applications
-// defined in our dictionary.
-type ErrNoCommonApplication struct {
-	ID   uint32
-	Type string
-}
-
-// Error implements the error interface.
-func (e *ErrNoCommonApplication) Error() string {
-	return fmt.Sprintf("%s application %d is not supported", e.Type, e.ID)
 }

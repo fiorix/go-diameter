@@ -21,7 +21,7 @@ func TestCapabilitiesExchange(t *testing.T) {
 	errc := make(chan error, 1)
 
 	smux := diam.NewServeMux()
-	smux.Handle("CER", handleCER(errc))
+	smux.Handle("CER", handleCER(errc, false))
 
 	srv := diamtest.NewServer(smux, nil)
 	defer srv.Close()
@@ -41,6 +41,8 @@ func TestCapabilitiesExchange(t *testing.T) {
 	case <-wait:
 	case err := <-errc:
 		t.Fatal(err)
+	case err := <-smux.ErrorReports():
+		t.Fatal(err)
 	case <-time.After(time.Second):
 		t.Fatal("Timed out: no CER or CEA received")
 	}
@@ -50,7 +52,7 @@ func TestCapabilitiesExchangeTLS(t *testing.T) {
 	errc := make(chan error, 1)
 
 	smux := diam.NewServeMux()
-	smux.Handle("CER", handleCER(errc))
+	smux.Handle("CER", handleCER(errc, true))
 
 	srv := diamtest.NewUnstartedServer(smux, nil)
 	tm := 100 * time.Millisecond
@@ -91,7 +93,7 @@ func sendCER(w io.Writer) (n int64, err error) {
 	return m.WriteTo(w)
 }
 
-func handleCER(errc chan error) diam.HandlerFunc {
+func handleCER(errc chan error, useTLS bool) diam.HandlerFunc {
 	type CER struct {
 		OriginHost        string    `avp:"Origin-Host"`
 		OriginRealm       string    `avp:"Origin-Realm"`
@@ -101,10 +103,18 @@ func handleCER(errc chan error) diam.HandlerFunc {
 		AcctApplicationID *diam.AVP `avp:"Acct-Application-Id"`
 	}
 	return func(c diam.Conn, m *diam.Message) {
-		go func() {
-			<-c.(diam.CloseNotifier).CloseNotify()
-			//log.Println("Client", c.RemoteAddr(), "disconnected")
-		}()
+		if c.LocalAddr() == nil {
+			errc <- fmt.Errorf("LocalAddr is nil")
+		}
+		if c.RemoteAddr() == nil {
+			errc <- fmt.Errorf("LocalAddr is nil")
+		}
+		if useTLS && c.TLS() == nil {
+			errc <- fmt.Errorf("TLS is nil")
+		}
+		if !useTLS && c.TLS() != nil {
+			errc <- fmt.Errorf("TLS is supposed to be nil")
+		}
 		var req CER
 		err := m.Unmarshal(&req)
 		if err != nil {
@@ -132,6 +142,8 @@ func handleCER(errc chan error) diam.HandlerFunc {
 		if err != nil {
 			errc <- err
 		}
+		<-c.(diam.CloseNotifier).CloseNotify()
+		//log.Println("Client", c.RemoteAddr(), "disconnected")
 	}
 }
 
@@ -187,5 +199,7 @@ func handleCEA(errc chan error, wait chan struct{}) diam.HandlerFunc {
 			errc <- fmt.Errorf("Unexpected AcctApplicationID. Want 1, have %d", resp.AcctApplicationID)
 			return
 		}
+		c.Close()
+		<-c.(diam.CloseNotifier).CloseNotify()
 	}
 }

@@ -171,6 +171,7 @@ func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
 func (m *Message) Dictionary() *dict.Parser { return m.dictionary }
 
 // NewAVP creates and initializes a new AVP and adds it to the Message.
+// It is not safe for concurrent calls.
 func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data datatype.Type) (*AVP, error) {
 	var a *AVP
 	switch code.(type) {
@@ -193,7 +194,7 @@ func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data data
 	return a, nil
 }
 
-// AddAVP adds the AVP to the Message.
+// AddAVP adds the AVP to the Message. It is not safe for concurrent calls.
 func (m *Message) AddAVP(a *AVP) {
 	m.AVP = append(m.AVP, a)
 	m.Header.MessageLength += uint32(a.Len())

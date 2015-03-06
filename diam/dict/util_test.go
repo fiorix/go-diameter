@@ -6,6 +6,32 @@ package dict
 
 import "testing"
 
+func TestApps(t *testing.T) {
+	apps := Default.Apps()
+	if len(apps) != 2 {
+		t.Fatalf("Unexpected # of apps. Want 2, have %d", len(apps))
+	}
+	// Base protocol.
+	if apps[0].ID != 0 {
+		t.Fatalf("Unexpected app.ID. Want 0, have %d", apps[0].ID)
+	}
+	// Credit-Control applications.
+	if apps[1].ID != 4 {
+		t.Fatalf("Unexpected app.ID. Want 4, have %d", apps[1].ID)
+	}
+}
+
+func TestApp(t *testing.T) {
+	// Base protocol.
+	if _, err := Default.App(0); err != nil {
+		t.Fatal(err)
+	}
+	// Credit-Control applications.
+	if _, err := Default.App(4); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestFindAVP(t *testing.T) {
 	if _, err := Default.FindAVP(999, 263); err != nil {
 		t.Fatal(err)

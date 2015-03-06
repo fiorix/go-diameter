@@ -23,17 +23,16 @@ import (
 // registered to serve particular messages like CER, DWR.
 //
 // ServeDIAM should write messages to the Conn and then return.
-// Returning signals that the request is finished and that the server
-// can move on to the next request on the connection.
+// Returning signals that the request is finished and that the
+// server can move on to the next request on the connection.
 type Handler interface {
 	ServeDIAM(Conn, *Message)
-	ErrorReports() chan ErrorReport
 }
 
 // The CloseNotifier interface is implemented by Conns which
 // allow detecting when the underlying connection has gone away.
 //
-// This mechanism can be used to detect if the client has disconnected.
+// This mechanism can be used to detect if a peer has disconnected.
 type CloseNotifier interface {
 	// CloseNotify returns a channel that is closed
 	// when the client connection has gone away.
@@ -201,9 +200,8 @@ func (c *conn) serve() {
 				if h == nil {
 					h = DefaultServeMux
 				}
-				select {
-				case h.ErrorReports() <- ErrorReport{m, err}:
-				default:
+				if er, ok := h.(ErrorReporter); ok {
+					er.Error(ErrorReport{w, m, err})
 				}
 			}
 			break
@@ -228,23 +226,33 @@ func (f HandlerFunc) ServeDIAM(c Conn, m *Message) {
 	f(c, m)
 }
 
-// ErrorReports is defined to satisfy the Handler interface.
-func (f HandlerFunc) ErrorReports() chan ErrorReport { return nil }
+// The ErrorReporter interface is implemented by Handlers that
+// allow reading errors from the underlying connection, like
+// parsing diameter messages or connection errors.
+type ErrorReporter interface {
+	// Error writes an error to the reporter.
+	Error(err ErrorReport)
 
-// ServeMux is a diameter message multiplexer.
-// It matches the command from the incoming message against a list
-// of registered commands and calls the handler.
-type ServeMux struct {
-	mu sync.RWMutex
-	m  map[string]muxEntry
-	e  chan ErrorReport
+	// ErrorReports returns a channel that receives
+	// errors from the connection.
+	ErrorReports() <-chan ErrorReport
 }
 
-// ErrorReport is sent out of the server in case it fails to read messages
-// because of a bad dictionary, or due to network errors.
+// ErrorReport is sent out of the server in case it fails to
+// read messages due to a bad dictionary or network errors.
 type ErrorReport struct {
-	Message *Message
-	Error   error
+	Conn    Conn     // Peer that caused the error
+	Message *Message // Message that caused the error
+	Error   error    // Error message
+}
+
+// ServeMux is a diameter message multiplexer. It matches the
+// command from the incoming message against a list of
+// registered commands and calls the handler.
+type ServeMux struct {
+	e  chan ErrorReport
+	mu sync.RWMutex // Guards m.
+	m  map[string]muxEntry
 }
 
 type muxEntry struct {
@@ -255,13 +263,26 @@ type muxEntry struct {
 // NewServeMux allocates and returns a new ServeMux.
 func NewServeMux() *ServeMux {
 	return &ServeMux{
-		m: make(map[string]muxEntry),
 		e: make(chan ErrorReport),
+		m: make(map[string]muxEntry),
 	}
 }
 
 // DefaultServeMux is the default ServeMux used by Serve.
 var DefaultServeMux = NewServeMux()
+
+// Error implements the ErrorReporter interface.
+func (mux *ServeMux) Error(err ErrorReport) {
+	select {
+	case mux.e <- err:
+	default:
+	}
+}
+
+// ErrorReports implement the ErrorReporter interface.
+func (mux *ServeMux) ErrorReports() <-chan ErrorReport {
+	return mux.e
+}
 
 // ServeDIAM dispatches the request to the handler whose code match
 // the incoming message, or close the connection if no handler is found.
@@ -311,10 +332,7 @@ func (mux *ServeMux) HandleFunc(cmd string, handler func(Conn, *Message)) {
 	mux.Handle(cmd, HandlerFunc(handler))
 }
 
-// ErrorReports returns the ErrorReport channel of the handler.
-func (mux *ServeMux) ErrorReports() chan ErrorReport { return mux.e }
-
-// Handle registers the handler for the given pattern
+// Handle registers the handler object for the given command
 // in the DefaultServeMux.
 func Handle(cmd string, handler Handler) {
 	DefaultServeMux.Handle(cmd, handler)
@@ -327,7 +345,7 @@ func HandleFunc(cmd string, handler func(Conn, *Message)) {
 }
 
 // ErrorReports returns the ErrorReport channel of the DefaultServeMux.
-func ErrorReports() chan ErrorReport {
+func ErrorReports() <-chan ErrorReport {
 	return DefaultServeMux.ErrorReports()
 }
 

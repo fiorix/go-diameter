@@ -8,8 +8,8 @@ import "testing"
 
 func TestApps(t *testing.T) {
 	apps := Default.Apps()
-	if len(apps) != 2 {
-		t.Fatalf("Unexpected # of apps. Want 2, have %d", len(apps))
+	if len(apps) != 3 {
+		t.Fatalf("Unexpected # of apps. Want 3, have %d", len(apps))
 	}
 	// Base protocol.
 	if apps[0].ID != 0 {

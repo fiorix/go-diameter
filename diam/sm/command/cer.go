@@ -40,7 +40,9 @@ func (cer *CER) Parse(m *diam.Message) (failedAVP *diam.AVP, err error) {
 		return nil, err
 	}
 	if cer.InbandSecurityID != nil {
-		return cer.InbandSecurityID, ErrNoCommonSecurity
+		if v := cer.InbandSecurityID.Data.(datatype.Unsigned32); v != 0 {
+			return cer.InbandSecurityID, ErrNoCommonSecurity
+		}
 	}
 	if err = cer.sanityCheck(); err != nil {
 		return nil, err

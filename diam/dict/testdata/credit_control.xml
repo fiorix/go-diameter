@@ -5,8 +5,6 @@
     <!-- Diameter Credit Control Application -->
     <!-- http://tools.ietf.org/html/rfc4006 -->
 
-    <vendor id="10415" name="3GPP"/>
-
     <command code="272" short="CC" name="Credit-Control">
       <request>
         <!-- http://tools.ietf.org/html/rfc4006#section-3.1 -->

@@ -3,8 +3,6 @@
 
   <application id="0"> <!-- Diameter Common Messages -->
 
-    <vendor id="10415" name="3GPP"/>
-
     <command code="257" short="CE" name="Capabilities-Exchange">
       <request>
         <rule avp="Origin-Host" required="true" max="1"/>

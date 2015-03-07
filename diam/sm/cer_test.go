@@ -28,10 +28,13 @@ func TestHandleCER_HandshakeMetadata(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer cli.Close()
+	ready := make(chan struct{})
 	go func() {
+		close(ready)
 		c := <-sm.HandshakeNotify()
 		hsc <- c
 	}()
+	<-ready
 	m := diam.NewRequest(diam.CapabilitiesExchange, 1001, dict.Default)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
@@ -60,8 +63,6 @@ func TestHandleCER_HandshakeMetadata(t *testing.T) {
 			t.Fatalf("Unexpected OriginRealm. Want %q, have %q",
 				clientSettings.OriginRealm, meta.OriginRealm)
 		}
-	case <-time.After(time.Second):
-		t.Fatal("Handshake event never happened")
 	}
 }
 

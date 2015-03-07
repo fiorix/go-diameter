@@ -54,7 +54,7 @@ const (
 EOF
 
 cat $dict | sed \
-	-e 's/-Id/-ID/g' \
+	-e 's/-Id\([-"s]\)/-ID\1/g' \
 	-e 's/-//g' \
 	-ne 's/.*avp name="\(.*\)" code="\([0-9]*\)".*/\1 = \2/p' \
 	| sort -u >> $src

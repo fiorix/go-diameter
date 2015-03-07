@@ -247,7 +247,7 @@
 			<data type="UTF8String"/>
 		</avp>
 
-		<avp name="Application-Server-ID" code="2101" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="Application-Server-Id" code="2101" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
@@ -263,11 +263,11 @@
 			</data>
 		</avp>
 
-		<avp name="Application-Session-ID" code="2103" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="Application-Session-Id" code="2103" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="Unsigned32"/>
 		</avp>
 
-		<avp name="Applic-ID" code="1218" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="Applic-Id" code="1218" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
@@ -415,11 +415,11 @@
 			<data type="UTF8String"/>
 		</avp>
 
-		<avp name="Content-ID" code="2116" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="Content-Id" code="2116" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
-		<avp name="Content-Provider-ID" code="2117" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="Content-Provider-Id" code="2117" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
@@ -594,8 +594,8 @@
 			<data type="Grouped">
 				<rule avp="SSID" required="false" max="1"/>
 				<rule avp="BSSID" required="false" max="1"/>
-				<rule avp="Logical-Access-ID" required="true" max="1"/>
-				<rule avp="Physical-Access-ID" required="true" max="1"/>
+				<rule avp="Logical-Access-Id" required="true" max="1"/>
+				<rule avp="Physical-Access-Id" required="true" max="1"/>
 			</data>
 		</avp>
 
@@ -669,7 +669,7 @@
 				<rule avp="SDP-Media-Component" required="false"/>
 				<rule avp="Served-Party-IP-Address" required="false" max="1"/>
 				<rule avp="Server-Capabilities" required="false" max="1"/>
-				<rule avp="Trunk-Group-ID" required="false" max="1"/>
+				<rule avp="Trunk-Group-Id" required="false" max="1"/>
 				<rule avp="Bearer-Service" required="false" max="1"/>
 				<rule avp="Service-Id" required="false" max="1"/>
 				<rule avp="Service-Specific-Info" required="false"/>
@@ -796,18 +796,18 @@
 			<data type="UTF8String"/>
 		</avp>
 
-		<avp name="LCS-Client-External-ID" code="1234" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="LCS-Client-External-Id" code="1234" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
 		<avp name="LCS-Client-Id" code="1232" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="Grouped">
 				<rule avp="LCS-Client-Type" required="false" max="1"/>
-				<rule avp="LCS-Client-External-ID" required="false" max="1"/>
+				<rule avp="LCS-Client-External-Id" required="false" max="1"/>
 				<rule avp="LCS-Client-Dialed-By-MS" required="false" max="1"/>
 				<rule avp="LCS-Client-Name" required="false" max="1"/>
 				<rule avp="LCS-APN" required="false" max="1"/>
-				<rule avp="LCS-Requestor-ID" required="false" max="1"/>
+				<rule avp="LCS-Requestor-Id" required="false" max="1"/>
 			</data>
 		</avp>
 
@@ -844,7 +844,7 @@
 
 		<avp name="LCS-Information" code="878" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="Grouped">
-				<rule avp="LCS-Client-ID" required="false" max="1"/>
+				<rule avp="LCS-Client-Id" required="false" max="1"/>
 				<rule avp="Location-Type" required="false" max="1"/>
 				<rule avp="Location-Estimate" required="false" max="1"/>
 				<rule avp="Positioning-Data" required="false" max="1"/>
@@ -857,14 +857,14 @@
 			<data type="UTF8String"/>
 		</avp>
 
-		<avp name="LCS-Requestor-ID" code="1239" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="LCS-Requestor-Id" code="1239" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="Grouped">
 				<rule avp="LCS-Data-Coding-Scheme" required="false" max="1"/>
-				<rule avp="LCS-Requestor-ID-String" required="false" max="1"/>
+				<rule avp="LCS-Requestor-Id-String" required="false" max="1"/>
 			</data>
 		</avp>
 
-		<avp name="LCS-Requestor-ID-String" code="1240" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="LCS-Requestor-Id-String" code="1240" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
@@ -1013,7 +1013,7 @@
 			</data>
 		</avp>
 
-		<avp name="Message-ID" code="1210" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="Message-Id" code="1210" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
@@ -1076,15 +1076,15 @@
 				<rule avp="Submission-Time" required="false" max="1"/>
 				<rule avp="MM-Content-Type" required="false" max="1"/>
 				<rule avp="Priority" required="false" max="1"/>
-				<rule avp="Message-ID" required="false" max="1"/>
+				<rule avp="Message-Id" required="false" max="1"/>
 				<rule avp="Message-Type" required="false" max="1"/>
 				<rule avp="Message-Size" required="false" max="1"/>
 				<rule avp="Message-Class" required="false" max="1"/>
 				<rule avp="Delivery-Report-Requested" required="false" max="1"/>
 				<rule avp="Read-Reply-Report-Requested" required="false" max="1"/>
 				<rule avp="MMBox-Storage-Requested" required="false" max="1"/>
-				<rule avp="Applic-ID" required="false" max="1"/>
-				<rule avp="Reply-Applic-ID" required="false" max="1"/>
+				<rule avp="Applic-Id" required="false" max="1"/>
+				<rule avp="Reply-Applic-Id" required="false" max="1"/>
 				<rule avp="Aux-Applic-Info" required="false" max="1"/>
 				<rule avp="Content-Class" required="false" max="1"/>
 				<rule avp="DRM-Content" required="false" max="1"/>
@@ -1307,7 +1307,7 @@
 			<data type="UTF8String"/>
 		</avp>
 
-		<avp name="PDN-Connection-Charging-ID" code="2050" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="PDN-Connection-Charging-Id" code="2050" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="Unsigned32"/>
 		</avp>
 
@@ -1411,7 +1411,7 @@
 			</data>
 		</avp>
 
-		<avp name="PoC-User-Role-IDs" code="1253" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="PoC-User-Role-Ids" code="1253" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
@@ -1490,7 +1490,7 @@
 		<avp name="PS-Information" code="874" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="Grouped">
 				<rule avp="TGPP-Charging-Id" required="false" max="1"/>
-				<rule avp="PDN-Connection-Charging-ID" required="false" max="1"/>
+				<rule avp="PDN-Connection-Charging-Id" required="false" max="1"/>
 				<rule avp="Node-Id" required="false" max="1"/>
 				<rule avp="TGPP-PDP-Type" required="false" max="1"/>
 				<rule avp="PDP-Address" required="false"/>
@@ -1541,8 +1541,8 @@
 				<rule avp="MME-Number-for-MT-SMS" required="false" max="1"/>
 				<rule avp="MME-Name" required="false" max="1"/>
 				<rule avp="MME-Realm" required="false" max="1"/>
-				<rule avp="Logical-Access-ID" required="false" max="1"/>
-				<rule avp="Physical-Access-ID" required="false" max="1"/>
+				<rule avp="Logical-Access-Id" required="false" max="1"/>
+				<rule avp="Physical-Access-Id" required="false" max="1"/>
 				<rule avp="Fixed-User-Location-Info" required="false" max="1"/>
 				<rule avp="CN-Operator-Selection-Entity" required="false" max="1"/>
 			</data>
@@ -1661,7 +1661,7 @@
 				<rule avp="Recipient-Address" required="false"/>
 				<rule avp="Recipient-Received-Address" required="false"/>
 				<rule avp="Recipient-SCCP-Address" required="false" max="1"/>
-				<rule avp="SM-Protocol-ID" required="false" max="1"/>
+				<rule avp="SM-Protocol-Id" required="false" max="1"/>
 			</data>
 		</avp>
 
@@ -1707,7 +1707,7 @@
 			</data>
 		</avp>
 
-		<avp name="Reply-Applic-ID" code="1223" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="Reply-Applic-Id" code="1223" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="UTF8String"/>
 		</avp>
 
@@ -2007,7 +2007,7 @@
 			</data>
 		</avp>
 
-		<avp name="SM-Protocol-ID" code="2013" must="V,M" may="P" must-not="-" may-encrypt="N">
+		<avp name="SM-Protocol-Id" code="2013" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="OctetString"/>
 		</avp>
 
@@ -2029,7 +2029,7 @@
 				<rule avp="SM-Discharge-Time" required="false" max="1"/>
 				<rule avp="SM-Message-Type" required="false" max="1"/>
 				<rule avp="Originator-Interface" required="false" max="1"/>
-				<rule avp="SM-Protocol-ID" required="false" max="1"/>
+				<rule avp="SM-Protocol-Id" required="false" max="1"/>
 				<rule avp="Reply-Path-Requested" required="false" max="1"/>
 				<rule avp="SM-Status" required="false" max="1"/>
 				<rule avp="SM-User-Data-Header" required="false" max="1"/>
@@ -2126,7 +2126,7 @@
 				<rule avp="Service-Mode" required="false" max="1"/>
 				<rule avp="Number-Of-Diversions" required="false" max="1"/>
 				<rule avp="Associated-Party-Address" required="false" max="1"/>
-				<rule avp="Service-ID" required="false" max="1"/>
+				<rule avp="Service-Id" required="false" max="1"/>
 				<rule avp="Change-Time" required="false" max="1"/>
 				<rule avp="Number-Of-Participants" required="false" max="1"/>
 				<rule avp="Participant-Action-Type" required="false" max="1"/>
@@ -2327,8 +2327,8 @@
 
 		<avp name="Trunk-Group-Id" code="851" must="V,M" may="P" must-not="-" may-encrypt="N">
 			<data type="Grouped">
-				<rule avp="Incoming-Trunk-Group-ID" required="false" max="1"/>
-				<rule avp="Outgoing-Trunk-Group-ID" required="false" max="1"/>
+				<rule avp="Incoming-Trunk-Group-Id" required="false" max="1"/>
+				<rule avp="Outgoing-Trunk-Group-Id" required="false" max="1"/>
 			</data>
 		</avp>
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
-  <application id="4"> 
+  <application id="4">
 
   <vendor id="10415" name="TGPP"/>
 
@@ -973,7 +973,7 @@
     <avp name="MBMS-Service-Type" code="906" must="V,M"	may="P" must-not="-" may-encrypt="Y">
       <data type="Enumerated">
 	<item code="0" name="MULTICAST"/>
-        <item code="1" name="BROADCAST"/>	  
+        <item code="1" name="BROADCAST"/>
       </data>
     </avp>
 
@@ -1131,7 +1131,7 @@
       <data type="Grouped">
 	<rule avp="Currency-Code" required="false" max="1"/>
 	<rule avp="Scale-Factor" required="false" max="1"/>
-	<rule avp="Rate-Element" required="false"/>	  
+	<rule avp="Rate-Element" required="false"/>
       </data>
     </avp>
 

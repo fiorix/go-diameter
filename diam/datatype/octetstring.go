@@ -37,5 +37,5 @@ func (s OctetString) Type() TypeID {
 
 // String implements the Type interface.
 func (s OctetString) String() string {
-	return fmt.Sprintf("OctetString{%s},Padding:%d", string(s), s.Padding())
+	return fmt.Sprintf("OctetString{%#x},Padding:%d", string(s), s.Padding())
 }

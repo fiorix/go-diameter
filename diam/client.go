@@ -18,11 +18,11 @@ import (
 // by the handler, which is tipically nil and DefaultServeMux is used.
 // If dict is nil, dict.Default is used.
 func Dial(addr string, handler Handler, dp *dict.Parser) (Conn, error) {
-	server := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return server.dial()
+	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
+	return dial(srv)
 }
 
-func (srv *Server) dial() (Conn, error) {
+func dial(srv *Server) (Conn, error) {
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"
@@ -41,11 +41,11 @@ func (srv *Server) dial() (Conn, error) {
 
 // DialTLS is the same as Dial, but for TLS.
 func DialTLS(addr, certFile, keyFile string, handler Handler, dp *dict.Parser) (Conn, error) {
-	server := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return server.dialTLS(certFile, keyFile)
+	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
+	return dialTLS(srv, certFile, keyFile)
 }
 
-func (srv *Server) dialTLS(certFile, keyFile string) (Conn, error) {
+func dialTLS(srv *Server, certFile, keyFile string) (Conn, error) {
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"

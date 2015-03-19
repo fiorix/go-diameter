@@ -39,6 +39,7 @@ type Conn interface {
 	LocalAddr() net.Addr            // Returns the local IP
 	RemoteAddr() net.Addr           // Returns the remote IP
 	TLS() *tls.ConnectionState      // TLS or nil when not using TLS
+	Dictionary() *dict.Parser       // Dictionary parser of the connection
 	Context() context.Context       // Returns the internal context
 	SetContext(ctx context.Context) // Stores a new context
 }
@@ -126,14 +127,10 @@ func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
 
 // Read next message from connection.
 func (c *conn) readMessage() (*Message, error) {
-	dp := c.server.Dict
-	if dp == nil {
-		dp = dict.Default
-	}
 	if c.server.ReadTimeout > 0 {
 		c.rwc.SetReadDeadline(time.Now().Add(c.server.ReadTimeout))
 	}
-	m, err := ReadMessage(c.buf.Reader, dp)
+	m, err := ReadMessage(c.buf.Reader, c.dictionary())
 	if err != nil {
 		return nil, err
 	}
@@ -179,6 +176,15 @@ func (c *conn) serve() {
 	}
 }
 
+// dictionary returns the dictionary parser associated to the Server instance
+// or dict.Default.
+func (c *conn) dictionary() *dict.Parser {
+	if c.server.Dict == nil {
+		return dict.Default
+	}
+	return c.server.Dict
+}
+
 // A response represents the server side of a diameter response.
 // It implements the Conn, CloseNotifier and Contexter interfaces.
 type response struct {
@@ -222,6 +228,12 @@ func (w *response) RemoteAddr() net.Addr {
 // TLS returns the TLS connection state, or nil.
 func (w *response) TLS() *tls.ConnectionState {
 	return w.conn.tlsState
+}
+
+// Dictionary returns the dictionary parser associated to this connection.
+// If none was provided then it returns the default dictionary.
+func (w *response) Dictionary() *dict.Parser {
+	return w.conn.dictionary()
 }
 
 // CloseNotify implements the CloseNotifier interface.

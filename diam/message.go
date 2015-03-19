@@ -83,7 +83,7 @@ func readAndParseHeader(r io.Reader, buf *bytes.Buffer, m *Message) (cmd *dict.C
 	if err != nil {
 		return nil, err
 	}
-	cmd, err = m.dictionary.FindCommand(
+	cmd, err = m.Dictionary().FindCommand(
 		m.Header.ApplicationID,
 		m.Header.CommandCode,
 	)
@@ -126,7 +126,7 @@ func decodeAVPs(m *Message, pbytes []byte) error {
 	var err error
 	for n := 0; n < len(pbytes); {
 		a, err = DecodeAVP(pbytes[n:],
-			m.Header.ApplicationID, m.dictionary)
+			m.Header.ApplicationID, m.Dictionary())
 		if err != nil {
 			return fmt.Errorf("Failed to decode AVP: %s", err)
 		}
@@ -138,9 +138,6 @@ func decodeAVPs(m *Message, pbytes []byte) error {
 
 // NewMessage creates and initializes a Message.
 func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dictionary *dict.Parser) *Message {
-	if dictionary == nil {
-		dictionary = dict.Default // for safety.
-	}
 	if hopbyhop == 0 {
 		hopbyhop = rand.Uint32()
 	}
@@ -166,9 +163,15 @@ func NewRequest(cmd uint32, appid uint32, dictionary *dict.Parser) *Message {
 	return NewMessage(cmd, RequestFlag, appid, 0, 0, dictionary)
 }
 
-// Dictionary returns the dictionary parser object associated with this message.
-// This dictionary is used to encode and decode the message.
-func (m *Message) Dictionary() *dict.Parser { return m.dictionary }
+// Dictionary returns the dictionary parser object associated with this
+// message. This dictionary is used to encode and decode the message.
+// If no dictionary is associated then it returns the default dictionary.
+func (m *Message) Dictionary() *dict.Parser {
+	if m.dictionary == nil {
+		return dict.Default
+	}
+	return m.dictionary
+}
 
 // NewAVP creates and initializes a new AVP and adds it to the Message.
 // It is not safe for concurrent calls.
@@ -180,7 +183,7 @@ func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data data
 	case uint32:
 		a = NewAVP(code.(uint32), flags, vendor, data)
 	case string:
-		dictAVP, err := m.dictionary.FindAVP(
+		dictAVP, err := m.Dictionary().FindAVP(
 			m.Header.ApplicationID,
 			code.(string),
 		)
@@ -276,7 +279,7 @@ func (m *Message) Len() int {
 //	avp, err := m.FindAVP("Origin-Host")
 //
 func (m *Message) FindAVP(code interface{}) (*AVP, error) {
-	dictAVP, err := m.dictionary.FindAVP(m.Header.ApplicationID, code)
+	dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, code)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +300,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.ApplicationID,
 		m.Header.HopByHopID,
 		m.Header.EndToEndID,
-		m.dictionary,
+		m.Dictionary(),
 	)
 	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
 	return nm
@@ -311,7 +314,7 @@ func (m *Message) String() string {
 	} else {
 		typ = "Answer"
 	}
-	if dictCMD, err := m.dictionary.FindCommand(
+	if dictCMD, err := m.Dictionary().FindCommand(
 		m.Header.ApplicationID,
 		m.Header.CommandCode,
 	); err != nil {
@@ -326,7 +329,7 @@ func (m *Message) String() string {
 		)
 	}
 	for _, a := range m.AVP {
-		if dictAVP, err := m.dictionary.FindAVP(
+		if dictAVP, err := m.Dictionary().FindAVP(
 			m.Header.ApplicationID,
 			a.Code,
 		); err != nil {
@@ -349,7 +352,7 @@ func printGrouped(prefix string, m *Message, a *AVP, indent int) string {
 		a.VendorID,
 	)
 	for _, ga := range a.Data.(*GroupedAVP).AVP {
-		if dictAVP, err := m.dictionary.FindAVP(
+		if dictAVP, err := m.Dictionary().FindAVP(
 			m.Header.ApplicationID,
 			ga.Code,
 		); err != nil {

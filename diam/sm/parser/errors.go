@@ -2,14 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package command
+package parser
 
 import (
 	"errors"
 	"fmt"
+
+	"github.com/fiorix/go-diameter/diam"
 )
 
 var (
+	// ErrMissingResultCode is returned by Parse when
+	// the message does nt contain a Result-Code AVP.
+	ErrMissingResultCode = errors.New("missing Result-Code")
+
 	// ErrMissingOriginHost is returned by Parse when
 	// the message does not contain an Origin-Host AVP.
 	ErrMissingOriginHost = errors.New("missing Origin-Host")
@@ -45,4 +51,16 @@ type ErrNoCommonApplication struct {
 // Error implements the error interface.
 func (e *ErrNoCommonApplication) Error() string {
 	return fmt.Sprintf("%s application %d is not supported", e.Type, e.ID)
+}
+
+// ErrUnexpectedAVP is returned by Parse when the code of the AVP passed
+// as AcctApplicationID, AuthApplicationID or VendorSpecificApplicationID
+// and its embedded AVPs do not match their names.
+type ErrUnexpectedAVP struct {
+	AVP *diam.AVP
+}
+
+// Error implements the error interface.
+func (e *ErrUnexpectedAVP) Error() string {
+	return fmt.Sprintf("unexpected AVP: %s", e.AVP)
 }

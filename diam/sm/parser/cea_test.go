@@ -15,7 +15,7 @@ import (
 func TestCEA_MissingResultCode(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)
 	cea := new(CEA)
-	_, err := cea.Parse(m)
+	err := cea.Parse(m)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -28,7 +28,7 @@ func TestCEA_MissingOriginHost(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)
 	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
 	cea := new(CEA)
-	_, err := cea.Parse(m)
+	err := cea.Parse(m)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -42,7 +42,7 @@ func TestCEA_MissingOriginRealm(t *testing.T) {
 	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	cea := new(CEA)
-	_, err := cea.Parse(m)
+	err := cea.Parse(m)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -57,7 +57,7 @@ func TestCEA_MissingOriginStateID(t *testing.T) {
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	cea := new(CEA)
-	_, err := cea.Parse(m)
+	err := cea.Parse(m)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -73,7 +73,7 @@ func TestCEA(t *testing.T) {
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	cea := new(CEA)
-	if _, err := cea.Parse(m); err != nil {
+	if err := cea.Parse(m); err != nil {
 		t.Fatal(err)
 	}
 	if cea.ResultCode != diam.Success {

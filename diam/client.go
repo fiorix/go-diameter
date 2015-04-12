@@ -36,7 +36,7 @@ func dial(srv *Server) (Conn, error) {
 		return nil, err
 	}
 	go c.serve()
-	return &response{conn: c}, nil
+	return c.writer, nil
 }
 
 // DialTLS is the same as Dial, but for TLS.
@@ -71,5 +71,5 @@ func dialTLS(srv *Server, certFile, keyFile string) (Conn, error) {
 		return nil, err
 	}
 	go c.serve()
-	return &response{conn: c}, nil
+	return c.writer, nil
 }

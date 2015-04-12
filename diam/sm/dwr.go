@@ -7,7 +7,7 @@ package sm
 import (
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/sm/command"
+	"github.com/fiorix/go-diameter/diam/sm/parser"
 )
 
 // handleDWR handles Device-Watchdog-Request messages.
@@ -18,7 +18,7 @@ import (
 // See RFC 6733 section 5.5 for details.
 func handleDWR(sm *StateMachine) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
-		dwr := new(command.DWR)
+		dwr := new(parser.DWR)
 		err := dwr.Parse(m)
 		if err != nil {
 			sm.Error(&diam.ErrorReport{

@@ -22,7 +22,7 @@ type Settings struct {
 }
 
 // StateMachine is a specialized type of diam.ServeMux that handles
-// the CER/CEA handshake and DWR/DWA messages for servers.
+// the CER/CEA handshake and DWR/DWA messages for clients or servers.
 //
 // Other handlers registered in the state machine are only executed
 // after the peer has passed the initial CER/CEA handshake.
@@ -32,8 +32,8 @@ type StateMachine struct {
 	hsNotifyc chan diam.Conn // handshake notifier
 }
 
-// NewServer creates and initializes a new StateMachine for servers.
-func NewServer(settings *Settings) *StateMachine {
+// New creates and initializes a new StateMachine for clients or servers.
+func New(settings *Settings) *StateMachine {
 	sm := &StateMachine{
 		cfg:       settings,
 		mux:       diam.NewServeMux(),
@@ -57,7 +57,7 @@ func (sm *StateMachine) Handle(cmd string, handler diam.Handler) {
 // HandleFunc implements the diam.Handler interface.
 func (sm *StateMachine) HandleFunc(cmd string, handler diam.HandlerFunc) {
 	switch cmd {
-	case "CER", "DWR":
+	case "CER", "CEA", "DWR", "DWA":
 		sm.Error(&diam.ErrorReport{
 			Error: fmt.Errorf("cannot overwrite %s command in the state machine", cmd),
 		})

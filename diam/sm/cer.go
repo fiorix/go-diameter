@@ -11,7 +11,7 @@ import (
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
-	"github.com/fiorix/go-diameter/diam/sm/command"
+	"github.com/fiorix/go-diameter/diam/sm/parser"
 	"github.com/fiorix/go-diameter/diam/sm/peer"
 )
 
@@ -28,7 +28,7 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			// Ignore retransmission.
 			return
 		}
-		cer := new(command.CER)
+		cer := new(parser.CER)
 		failedAVP, err := cer.Parse(m)
 		if err != nil {
 			if failedAVP != nil {
@@ -66,10 +66,10 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 // errorCEA sends an error answer indicating that the CER failed due to
 // an unsupported (acct/auth) application, and includes the AVP that
 // caused the failure in the message.
-func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *command.CER, failedAVP *diam.AVP) error {
+func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *parser.CER, failedAVP *diam.AVP) error {
 	hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 	if err != nil {
-		return fmt.Errorf("failed to parse own ip %s: %s", c.LocalAddr(), err)
+		return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
 	}
 	var a *diam.Message
 	if failedAVP == cer.InbandSecurityID {
@@ -94,10 +94,10 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *command.CER, 
 
 // successCEA sends a success answer indicating that the CER was successfuly
 // parsed and accepted by the server.
-func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *command.CER) error {
+func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *parser.CER) error {
 	hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 	if err != nil {
-		return fmt.Errorf("failed to parse own ip %s: %s", c.LocalAddr(), err)
+		return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
 	}
 	a := m.Answer(diam.Success)
 	a.NewAVP(avp.OriginHost, avp.Mbit, 0, sm.cfg.OriginHost)
@@ -106,27 +106,19 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *command.CER
 	a.NewAVP(avp.VendorID, avp.Mbit, 0, sm.cfg.VendorID)
 	a.NewAVP(avp.ProductName, 0, 0, sm.cfg.ProductName)
 	a.AddAVP(cer.OriginStateID)
-	if cer.AcctAppID != nil {
-		for _, acct := range cer.AcctAppID {
+	if cer.AcctApplicationID != nil {
+		for _, acct := range cer.AcctApplicationID {
 			a.AddAVP(acct)
 		}
 	}
-	if cer.AuthAppID != nil {
-		for _, auth := range cer.AuthAppID {
+	if cer.AuthApplicationID != nil {
+		for _, auth := range cer.AuthApplicationID {
 			a.AddAVP(auth)
 		}
 	}
-	if cer.VendorSpecificAppID != nil {
-		for _, vs := range cer.VendorSpecificAppID {
-			group := new(diam.GroupedAVP)
-			if vs.AcctAppID != nil {
-				group.AddAVP(vs.AcctAppID)
-			}
-			if vs.AuthAppID != nil {
-				group.AddAVP(vs.AuthAppID)
-			}
-			a.NewAVP(avp.VendorSpecificApplicationID,
-				avp.Mbit, 0, group)
+	if cer.VendorSpecificApplicationID != nil {
+		for _, vs := range cer.VendorSpecificApplicationID {
+			a.AddAVP(vs)
 		}
 	}
 	a.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, sm.cfg.FirmwareRevision)

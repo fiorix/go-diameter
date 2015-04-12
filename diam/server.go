@@ -186,7 +186,7 @@ func (c *conn) dictionary() *dict.Parser {
 }
 
 // A response represents the server side of a diameter response.
-// It implements the Conn, CloseNotifier and Contexter interfaces.
+// It implements the Conn and CloseNotifier interfaces.
 type response struct {
 	conn *conn           // socket, reader and writer
 	mu   sync.Mutex      // guards ctx and Write

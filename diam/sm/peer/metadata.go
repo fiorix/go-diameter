@@ -5,9 +5,10 @@
 package peer
 
 import (
-	"github.com/fiorix/go-diameter/diam/datatype"
-	"github.com/fiorix/go-diameter/diam/sm/command"
 	"golang.org/x/net/context"
+
+	"github.com/fiorix/go-diameter/diam/datatype"
+	"github.com/fiorix/go-diameter/diam/sm/parser"
 )
 
 type key int
@@ -23,11 +24,20 @@ type Metadata struct {
 }
 
 // FromCER creates a Metadata object from data in the CER.
-func FromCER(cer *command.CER) *Metadata {
+func FromCER(cer *parser.CER) *Metadata {
 	return &Metadata{
 		OriginHost:   cer.OriginHost,
 		OriginRealm:  cer.OriginRealm,
 		Applications: cer.Applications(),
+	}
+}
+
+// From CEA creates a Metadata object from data in the CEA.
+func FromCEA(cea *parser.CEA) *Metadata {
+	return &Metadata{
+		OriginHost:   cea.OriginHost,
+		OriginRealm:  cea.OriginRealm,
+		Applications: cea.Applications(),
 	}
 }
 

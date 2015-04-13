@@ -16,7 +16,10 @@ import (
 	"encoding/xml"
 	"flag"
 	"log"
+	"net/http"
 	"runtime"
+
+	_ "net/http/pprof"
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
@@ -27,6 +30,7 @@ import (
 
 func main() {
 	addr := flag.String("addr", ":3868", "address in the form of ip:port to listen on")
+	ppaddr := flag.String("pprof_addr", ":9000", "address in form of ip:port for the pprof server")
 	host := flag.String("diam_host", "server", "diameter identity host")
 	realm := flag.String("diam_realm", "go-diameter", "diameter identity realm")
 	certFile := flag.String("cert_file", "", "tls certificate file (optional)")
@@ -60,6 +64,10 @@ func main() {
 	go printErrors(mux.ErrorReports())
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	if len(*ppaddr) > 0 {
+		go func() { log.Fatal(http.ListenAndServe(*ppaddr, nil)) }()
+	}
 
 	err = listen(*addr, *certFile, *keyFile, mux)
 	if err != nil {

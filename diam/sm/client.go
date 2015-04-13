@@ -139,6 +139,7 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 		case <-time.After(cli.RetransmitInterval):
 		}
 	}
+	c.Close()
 	return nil, ErrHandshakeTimeout
 }
 

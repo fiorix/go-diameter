@@ -189,8 +189,9 @@ func (c *conn) dictionary() *dict.Parser {
 // A response represents the server side of a diameter response.
 // It implements the Conn and CloseNotifier interfaces.
 type response struct {
+	mu   sync.Mutex      // guards conn and Write
 	conn *conn           // socket, reader and writer
-	mu   sync.Mutex      // guards ctx and Write
+	xmu  sync.Mutex      // guards ctx
 	ctx  context.Context // context for this Conn
 }
 
@@ -244,8 +245,8 @@ func (w *response) CloseNotify() <-chan struct{} {
 
 // Context returns the internal context or a new context.Background.
 func (w *response) Context() context.Context {
-	w.mu.Lock()
-	defer w.mu.Unlock()
+	w.xmu.Lock()
+	defer w.xmu.Unlock()
 	if w.ctx == nil {
 		w.ctx = context.Background()
 	}
@@ -254,9 +255,9 @@ func (w *response) Context() context.Context {
 
 // SetContext replaces the internal context with the given one.
 func (w *response) SetContext(ctx context.Context) {
-	w.mu.Lock()
+	w.xmu.Lock()
 	w.ctx = ctx
-	w.mu.Unlock()
+	w.xmu.Unlock()
 }
 
 // The HandlerFunc type is an adapter to allow the use of

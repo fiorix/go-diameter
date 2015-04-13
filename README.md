@@ -25,7 +25,7 @@ See the API documentation at http://godoc.org/github.com/fiorix/go-diameter
 - TLS support for both clients and servers
 - Stack based on [net/http](http://golang.org/pkg/net/http/) for simplicity
 - Ships with sample client, server, snoop agent and benchmark tool
-- [State machines](http://tools.ietf.org/html/rfc6733#section-4) for CER/CEA and DWR/DWA for clients and servers
+- [State machines](http://tools.ietf.org/html/rfc6733#section-5.6) for CER/CEA and DWR/DWA for clients and servers
 
 ## Install
 

@@ -366,6 +366,12 @@ func (mux *ServeMux) serve(cmd string, c Conn, m *Message) {
 		entry.h.ServeDIAM(c, m)
 		return
 	}
+	// Try catch-all.
+	entry, ok = mux.m["ALL"]
+	if ok {
+		entry.h.ServeDIAM(c, m)
+		return
+	}
 	mux.Error(&ErrorReport{
 		Conn:    c,
 		Message: m,

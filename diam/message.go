@@ -203,6 +203,13 @@ func (m *Message) AddAVP(a *AVP) {
 	m.Header.MessageLength += uint32(a.Len())
 }
 
+// InsertAVP inserts the AVP to the Message as the first AVP. It is not
+// safe for concurrent calls.
+func (m *Message) InsertAVP(a *AVP) {
+	m.AVP = append([]*AVP{a}, m.AVP...)
+	m.Header.MessageLength += uint32(a.Len())
+}
+
 // WriteTo serializes the Message and writes into the writer.
 func (m *Message) WriteTo(writer io.Writer) (int64, error) {
 	l := m.Len()

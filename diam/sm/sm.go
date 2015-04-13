@@ -44,6 +44,11 @@ func New(settings *Settings) *StateMachine {
 	return sm
 }
 
+// Settings return the Settings object used by this StateMachine.
+func (sm *StateMachine) Settings() *Settings {
+	return sm.cfg
+}
+
 // ServeDIAM implements the diam.Handler interface.
 func (sm *StateMachine) ServeDIAM(c diam.Conn, m *diam.Message) {
 	sm.mux.ServeDIAM(c, m)

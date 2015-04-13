@@ -31,6 +31,9 @@ func testResultCode(m *diam.Message, want uint32) bool {
 // completed and that the RAR handler has context from the peer.
 func TestStateMachine(t *testing.T) {
 	sm := New(serverSettings)
+	if sm.Settings() != serverSettings {
+		t.Fatal("Invalid settings")
+	}
 	srv := diamtest.NewServer(sm, dict.Default)
 	defer srv.Close()
 	// CER handlers are ignored by the state machine.

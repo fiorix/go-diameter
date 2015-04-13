@@ -3,141 +3,303 @@
 // found in the LICENSE file.
 
 // Diameter client example. This is by no means a complete client.
-// The commands in here are not fully implemented. For that you have
-// to read the RFCs (base and credit control) and follow the spec.
+//
+// If you like to test diameter over SSL, make sure the server supports
+// it and add -ssl to the command line. To use client certificates,
+// run the client with -ssl -cert_file cert.pem -key_file key.pem.
+//
+// When the client connects, the underlying state machine (diam/sm package)
+// performs the handshake (CER/CEA) and returns a connection. If the
+// client is configured with watchdog, it automatically sends DWR and
+// handles DWA in background.
+//
+// The -hello command line flag makes the client connect, handshake,
+// send a hello message, and disconnect. This is to demonstrate how to
+// use custom dictionaries.
+//
+// The -bench option turns the client into a benchmark tool to test
+// the server. It uses ACR/ACA messages for this.
 
 package main
 
 import (
+	"bytes"
+	"encoding/xml"
+	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"math/rand"
-	"net"
-	"os"
+	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
+	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diam/sm"
+	"github.com/fiorix/go-diameter/diam/sm/peer"
 )
 
-const (
-	identity    = datatype.DiameterIdentity("client")
-	realm       = datatype.DiameterIdentity("localhost")
-	vendorID    = datatype.Unsigned32(13)
-	productName = datatype.UTF8String("go-diameter")
-)
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func main() {
-	ssl := flag.Bool("ssl", false, "connect using SSL/TLS")
+	addr := flag.String("addr", "localhost:3868", "address in form of ip:port to connect to")
+	ssl := flag.Bool("ssl", false, "connect to server using tls")
+	host := flag.String("diam_host", "client", "diameter identity host")
+	realm := flag.String("diam_realm", "go-diameter", "diameter identity realm")
+	certFile := flag.String("cert_file", "", "tls client certificate file (optional)")
+	keyFile := flag.String("key_file", "", "tls client key file (optional)")
+	hello := flag.Bool("hello", false, "send a hello message, wait for the response and disconnect")
+	bench := flag.Bool("bench", false, "benchmark the server by sending ACR messages")
+	bench_cli := flag.Int("bench_clients", 1, "number of client connections")
+	bench_msgs := flag.Int("bench_msgs", 1000, "number of ACR messages to send")
+	bench_cpus := flag.Int("bench_cpus", 0, "number of CPUs to use (0 means all")
+
 	flag.Parse()
-	if len(os.Args) < 2 {
-		fmt.Println("Use: client [-ssl] host:port")
-		return
+	if len(*addr) == 0 {
+		flag.Usage()
 	}
-	// ALL incoming messages are handled here.
-	sessionID := "fake_session_id"
-	msisdn := "85589481811"
-	diam.Handle("CEA", OnCEA(sessionID, msisdn))
-	diam.HandleFunc("CCA", OnCCA)
-	diam.HandleFunc("ALL", OnMSG) // Catch-all.
-	// Connect using the default handler and base.Dict.
-	addr := os.Args[len(os.Args)-1]
-	log.Println("Connecting to", addr)
-	var (
-		c   diam.Conn
-		err error
-	)
-	if *ssl {
-		c, err = diam.DialTLS(addr, "", "", nil, nil)
-	} else {
-		c, err = diam.Dial(addr, nil, nil)
-	}
+
+	// Load our custom dictionary on top of the default one.
+	err := dict.Default.Load(bytes.NewReader([]byte(helloDictionary)))
 	if err != nil {
 		log.Fatal(err)
 	}
-	go NewClient(c)
-	// Wait until the server kick us out.
-	<-c.(diam.CloseNotifier).CloseNotify()
-	log.Println("Server disconnected.")
-}
 
-// NewClient sends a CER to the server and then a DWR every 10 seconds.
-func NewClient(c diam.Conn) {
-	// Build CER
-	m := diam.NewRequest(diam.CapabilitiesExchange, 0, nil)
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
-	laddr := c.LocalAddr()
-	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(ip)))
-	m.NewAVP(avp.VendorID, avp.Mbit, 0, vendorID)
-	m.NewAVP(avp.ProductName, 0, 0, productName)
-	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(rand.Uint32()))
-	m.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
-		AVP: []*diam.AVP{
-			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
-			diam.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(10415)),
+	cfg := &sm.Settings{
+		OriginHost:       datatype.DiameterIdentity(*host),
+		OriginRealm:      datatype.DiameterIdentity(*realm),
+		VendorID:         datatype.Unsigned32(13),
+		ProductName:      datatype.OctetString("go-diameter"),
+		FirmwareRevision: datatype.Unsigned32(1),
+	}
+
+	// Create the state machine (it's a diam.ServeMux) and client.
+	mux := sm.New(cfg)
+
+	cli := &sm.Client{
+		Dict:               dict.Default,
+		Handler:            mux,
+		MaxRetransmits:     3,
+		RetransmitInterval: time.Second,
+		EnableWatchdog:     true,
+		WatchdogInterval:   5 * time.Second,
+		AcctApplicationID: []*diam.AVP{
+			// Advertise that we want support for both
+			// Accounting applications 4 and 999.
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)), // RFC 4006
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(helloApplication)),
 		},
-	})
-	log.Printf("Sending message to %s", c.RemoteAddr().String())
-	log.Println(m)
-	// Send message to the connection
-	if _, err := m.WriteTo(c); err != nil {
-		log.Fatal("Write failed:", err)
 	}
-	// Send watchdog messages every 5 seconds
-	for {
-		time.Sleep(5 * time.Second)
-		m = diam.NewRequest(diam.DeviceWatchdog, 0, nil)
-		m.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
-		m.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
-		m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(rand.Uint32()))
-		log.Printf("Sending message to %s", c.RemoteAddr().String())
-		log.Println(m)
-		if _, err := m.WriteTo(c); err != nil {
-			log.Fatal("Write failed:", err)
-		}
-	}
-}
 
-// OnCEA handles Capabilities-Exchange-Answer messages.
-func OnCEA(sessionID string, msisdn string) diam.HandlerFunc {
-	return func(c diam.Conn, m *diam.Message) {
-		rc, err := m.FindAVP(avp.ResultCode)
+	// Set message handlers.
+	done := make(chan struct{})
+	mux.Handle("HMA", handleHMA(done))
+	mux.Handle("ACA", handleACA(done))
+
+	// Print error reports.
+	go printErrors(mux.ErrorReports())
+
+	connect := func() (diam.Conn, error) {
+		return dial(cli, *addr, *certFile, *keyFile, *ssl)
+	}
+
+	if *bench {
+		cli.EnableWatchdog = false
+		benchmark(connect, cfg, *bench_cli, *bench_msgs, *bench_cpus, done)
+		return
+	}
+
+	if *hello {
+		c, err := connect()
 		if err != nil {
 			log.Fatal(err)
 		}
-		if v, _ := rc.Data.(datatype.Unsigned32); v != diam.Success {
-			log.Fatal("Unexpected response:", rc)
+		err = sendHMR(c, cfg)
+		if err != nil {
+			log.Fatal(err)
 		}
-		// Craft a CCR message.
-		r := diam.NewRequest(diam.CreditControl, 4, nil)
-		r.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sessionID))
-		r.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
-		r.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
-		peerRealm, _ := m.FindAVP(avp.OriginRealm) // You should handle errors.
-		r.NewAVP(avp.DestinationRealm, avp.Mbit, 0, peerRealm.Data)
-		r.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4))
-		r.NewAVP(avp.SubscriptionID, avp.Mbit, 0, &diam.GroupedAVP{
-			AVP: []*diam.AVP{
-				diam.NewAVP(avp.SubscriptionIDType, avp.Mbit, 0, datatype.Enumerated(0x00)),
-				diam.NewAVP(avp.SubscriptionIDData, avp.Mbit, 0, datatype.UTF8String(msisdn)),
-			},
-		})
-		// Add Service-Context-Id and all other AVPs...
-		r.WriteTo(c)
+		select {
+		case <-done:
+		case <-time.After(time.Second):
+			log.Fatal("timeout: no hello answer received")
+		}
+		return
+	}
+
+	// Makes a persisent connection with back-off.
+	log.Println("Use wireshark to see the messages, or try -hello")
+	backoff := 1
+	for {
+		c, err := connect()
+		if err != nil {
+			log.Println(err)
+			backoff *= 2
+			if backoff > 20 {
+				backoff = 20
+			}
+			time.Sleep(time.Duration(backoff) * time.Second)
+			continue
+		}
+		log.Println("Client connected, handshake ok")
+		backoff = 1
+		<-c.(diam.CloseNotifier).CloseNotify()
+		log.Println("Client disconnected")
 	}
 }
 
-// OnCCA handles Credit-Control-Answer messages.
-func OnCCA(c diam.Conn, m *diam.Message) {
-	log.Println(m)
+func printErrors(ec <-chan *diam.ErrorReport) {
+	for err := range ec {
+		log.Println(err)
+	}
 }
 
-// OnMSG handles all other messages and just print them.
-func OnMSG(c diam.Conn, m *diam.Message) {
-	log.Printf("Receiving message from %s", c.RemoteAddr().String())
-	log.Println(m)
+func dial(cli *sm.Client, addr, cert, key string, ssl bool) (diam.Conn, error) {
+	if ssl {
+		return cli.DialTLS(addr, cert, key)
+	}
+	return cli.Dial(addr)
 }
+
+func sendHMR(c diam.Conn, cfg *sm.Settings) error {
+	// Get this client's metadata from the connection object,
+	// which is set by the state machine after the handshake.
+	// It contains the peer's Origin-Host and Realm from the
+	// CER/CEA handshake. We use it to populate the AVPs below.
+	meta, ok := peer.FromContext(c.Context())
+	if !ok {
+		return errors.New("peer metadata unavailable")
+	}
+	sid := "session;" + strconv.Itoa(int(rand.Uint32()))
+	m := diam.NewRequest(helloMessage, helloApplication, nil)
+	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
+	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
+	m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
+	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String("foobar"))
+	log.Printf("Sending HMR to %s\n%s", c.RemoteAddr(), m)
+	_, err := m.WriteTo(c)
+	return err
+}
+
+func handleHMA(done chan struct{}) diam.HandlerFunc {
+	return func(c diam.Conn, m *diam.Message) {
+		log.Printf("Received HMA from %s\n%s", c.RemoteAddr(), m)
+		close(done)
+	}
+}
+
+func handleACA(done chan struct{}) diam.HandlerFunc {
+	ok := struct{}{}
+	return func(c diam.Conn, m *diam.Message) {
+		done <- ok
+	}
+}
+
+type dialFunc func() (diam.Conn, error)
+
+func benchmark(df dialFunc, cfg *sm.Settings, ncli, msgs, cpus int, done chan struct{}) {
+	if cpus > 0 {
+		runtime.GOMAXPROCS(cpus)
+	} else {
+		runtime.GOMAXPROCS(runtime.NumCPU())
+	}
+	var err error
+	c := make([]diam.Conn, ncli)
+	log.Println("Connecting", ncli, "clients...")
+	for i := 0; i < ncli; i++ {
+		c[i], err = df() // Dial and do CER/CEA handshake.
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer c[i].Close()
+	}
+	log.Println("Done. Sending messages...")
+	start := time.Now()
+	for _, cli := range c {
+		go sendACR(cli, cfg, msgs)
+	}
+	count := 0
+	total := ncli * msgs
+wait:
+	for {
+		select {
+		case <-done:
+			count++
+			if count == total {
+				break wait
+			}
+		case <-time.After(time.Second):
+			log.Fatal("Timeout waiting for messages.")
+		}
+	}
+	elapsed := time.Since(start)
+	log.Printf("%d messages in %s: %d/s", total, elapsed,
+		int(float64(total)/elapsed.Seconds()))
+}
+
+var eventRecord = datatype.Unsigned32(1) // RFC 6733: EVENT_RECORD 1
+
+func sendACR(c diam.Conn, cfg *sm.Settings, n int) {
+	// Get this client's metadata from the connection object,
+	// which is set by the state machine after the handshake.
+	// It contains the peer's Origin-Host and Realm from the
+	// CER/CEA handshake. We use it to populate the AVPs below.
+	meta, ok := peer.FromContext(c.Context())
+	if !ok {
+		log.Fatal("Client connection does not contain metadata")
+	}
+	var err error
+	var m *diam.Message
+	for i := 0; i < n; i++ {
+		m = diam.NewRequest(diam.Accounting, 0, c.Dictionary())
+		m.NewAVP(avp.SessionID, avp.Mbit, 0,
+			datatype.UTF8String(strconv.Itoa(i)))
+		m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
+		m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
+		m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
+		m.NewAVP(avp.AccountingRecordType, avp.Mbit, 0, eventRecord)
+		m.NewAVP(avp.AccountingRecordNumber, avp.Mbit, 0,
+			datatype.Unsigned32(i))
+		m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
+		if _, err = m.WriteTo(c); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+// Example dictionary.
+
+const (
+	helloApplication = 999 // Our custom app from the dictionary below.
+	helloMessage     = 111
+)
+
+// helloDictionary is our custom, example dictionary.
+var helloDictionary = xml.Header + `
+<diameter>
+	<application id="999">
+		<command code="111" short="HM" name="Hello-Message">
+			<request>
+				<rule avp="Session-Id" required="true" max="1"/>
+				<rule avp="Origin-Host" required="true" max="1"/>
+				<rule avp="Origin-Realm" required="true" max="1"/>
+				<rule avp="Destination-Realm" required="true" max="1"/>
+				<rule avp="Destination-Host" required="true" max="1"/>
+				<rule avp="User-Name" required="false" max="1"/>
+			</request>
+			<answer>
+				<rule avp="Session-Id" required="true" max="1"/>
+				<rule avp="Result-Code" required="true" max="1"/>
+				<rule avp="Origin-Host" required="true" max="1"/>
+				<rule avp="Origin-Realm" required="true" max="1"/>
+				<rule avp="Error-Message" required="false" max="1"/>
+			</answer>
+		</command>
+	</application>
+</diameter>
+`

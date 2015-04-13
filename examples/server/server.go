@@ -3,161 +3,185 @@
 // found in the LICENSE file.
 
 // Diameter server example. This is by no means a complete server.
-// The commands in here are not fully implemented. For that you have
-// to read the RFCs (base and credit control) and follow the spec.
-
-// Generate SSL certificates:
-// go run $GOROOT/src/pkg/crypto/tls/generate_cert.go --host localhost
+//
+// If you like to test diameter over SSL, generate SSL certificates:
+//   go run $GOROOT/src/crypto/tls/generate_cert.go --host localhost
+//
+// And start the server with `-cert_file cert.pem -key_file key.pem`.
 
 package main
 
 import (
+	"bytes"
+	"encoding/xml"
 	"flag"
 	"log"
-	"net"
 	"runtime"
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
+	"github.com/fiorix/go-diameter/diam/dict"
+	"github.com/fiorix/go-diameter/diam/sm"
 )
-
-const (
-	identity    = datatype.DiameterIdentity("server")
-	realm       = datatype.DiameterIdentity("localhost")
-	vendorID    = datatype.Unsigned32(13)
-	productName = datatype.UTF8String("go-diameter")
-)
-
-var quiet bool
 
 func main() {
-	addr := flag.String("l", ":3868", "listen address and port")
-	cert := flag.String("cert", "", "SSL cert file (e.g. cert.pem)")
-	key := flag.String("key", "", "SSL key file (e.g. key.pem)")
-	q := flag.Bool("q", false, "quiet, do not print messages")
-	t := flag.Int("t", 0, "threads (0 means one per core)")
+	addr := flag.String("addr", ":3868", "address in the form of ip:port to listen on")
+	host := flag.String("diam_host", "server", "diameter identity host")
+	realm := flag.String("diam_realm", "go-diameter", "diameter identity realm")
+	certFile := flag.String("cert_file", "", "tls certificate file (optional)")
+	keyFile := flag.String("key_file", "", "tls key file (optional)")
+	silent := flag.Bool("s", false, "silent mode, useful for benchmarks")
 	flag.Parse()
-	quiet = *q
-	if *t == 0 {
-		*t = runtime.NumCPU()
+
+	// Load our custom dictionary on top of the default one, which
+	// always have the Base Protocol (RFC6733) and Credit Control
+	// Application (RFC4006).
+	err := dict.Default.Load(bytes.NewReader([]byte(helloDictionary)))
+	if err != nil {
+		log.Fatal(err)
 	}
-	runtime.GOMAXPROCS(*t)
-	// Message handlers:
-	diam.HandleFunc("CER", OnCER)
-	diam.HandleFunc("CCR", OnCCR)
-	diam.HandleFunc("ALL", OnMSG) // Catch-all
-	// Handle server errors.
-	go func() {
-		for {
-			report := <-diam.ErrorReports()
-			log.Printf("Error from %s: %s", report.Conn.RemoteAddr(), report.Error)
-		}
-	}()
-	// Start server.
-	if *cert != "" && *key != "" {
-		log.Println("Starting secure server on", *addr)
-		log.Fatal(diam.ListenAndServeTLS(*addr, *cert, *key, nil, nil))
+
+	settings := &sm.Settings{
+		OriginHost:       datatype.DiameterIdentity(*host),
+		OriginRealm:      datatype.DiameterIdentity(*realm),
+		VendorID:         datatype.Unsigned32(13),
+		ProductName:      datatype.OctetString("go-diameter"),
+		FirmwareRevision: datatype.Unsigned32(1),
+	}
+
+	// Create the state machine (mux) and set its message handlers.
+	mux := sm.New(settings)
+	mux.Handle("HMR", handleHMR(*silent))
+	mux.Handle("ACR", handleACR(*silent))
+	mux.HandleFunc("ALL", handleALL) // Catch all.
+
+	// Print error reports.
+	go printErrors(mux.ErrorReports())
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	err = listen(*addr, *certFile, *keyFile, mux)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func printErrors(ec <-chan *diam.ErrorReport) {
+	for err := range ec {
+		log.Println(err)
+	}
+}
+
+func listen(addr, cert, key string, handler diam.Handler) error {
+	// Start listening for connections.
+	if len(cert) > 0 && len(key) > 0 {
+		log.Println("Starting secure diameter server on", addr)
+		return diam.ListenAndServeTLS(addr, cert, key, handler, nil)
 	} else {
-		log.Println("Starting server on", *addr)
-		log.Fatal(diam.ListenAndServe(*addr, nil, nil))
+		log.Println("Starting diameter server on", addr)
+		return diam.ListenAndServe(addr, handler, nil)
 	}
 }
 
-// OnCER handles Capabilities-Exchange-Request messages.
-func OnCER(c diam.Conn, m *diam.Message) {
-	// Reject client if there's no Origin-Host.
-	host, err := m.FindAVP(avp.OriginHost)
-	if err != nil {
-		c.Close()
-		return
+func handleHMR(silent bool) diam.HandlerFunc {
+	type HelloRequest struct {
+		SessionID        datatype.UTF8String       `avp:"Session-Id"`
+		OriginHost       datatype.DiameterIdentity `avp:"Origin-Host"`
+		OriginRealm      datatype.DiameterIdentity `avp:"Origin-Realm"`
+		DestinationRealm datatype.DiameterIdentity `avp:"Destination-Realm"`
+		DestinationHost  datatype.DiameterIdentity `avp:"Destination-Host"`
+		UserName         string                    `avp:"User-Name"`
 	}
-	// Reject client if there's no Origin-Realm.
-	crealm, err := m.FindAVP(avp.OriginRealm)
-	if err != nil {
-		c.Close()
-		return
-	}
-	// Reject client if there's no Host-IP-Address.
-	ipaddr, err := m.FindAVP(avp.HostIPAddress)
-	if err != nil {
-		c.Close()
-		return
-	}
-	// Reject client if there's no Origin-State-Id.
-	stateID, err := m.FindAVP(avp.OriginStateID)
-	if err != nil {
-		c.Close()
-		return
-	}
-	if !quiet {
-		//log.Println("Receiving message from %s", c.RemoteAddr().String())
-		log.Printf("Receiving message from %s.%s (%s)", host, crealm, ipaddr)
-		log.Println(m)
-	}
-	// Craft CEA with result code 2001 (OK).
-	a := m.Answer(diam.Success)
-	a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
-	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
-	laddr := c.LocalAddr()
-	ip, _, _ := net.SplitHostPort(laddr.String())
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(ip)))
-	a.NewAVP(avp.VendorID, avp.Mbit, 0, vendorID)
-	a.NewAVP(avp.ProductName, avp.Mbit, 0, productName)
-	// Copy origin Origin-State-Id.
-	a.AddAVP(stateID)
-	if !quiet {
-		log.Printf("Sending message to %s", c.RemoteAddr().String())
-		log.Println(a)
-	}
-	// Send message to the connection
-	if _, err := a.WriteTo(c); err != nil {
-		log.Println("Write failed:", err)
-		c.Close()
-	}
-	go func() {
-		<-c.(diam.CloseNotifier).CloseNotify()
-		if !quiet {
-			log.Printf("Client %s disconnected",
-				c.RemoteAddr().String())
+	return func(c diam.Conn, m *diam.Message) {
+		if !silent {
+			log.Printf("Received HMR from %s:\n%s", c.RemoteAddr(), m)
 		}
-	}()
+		var hmr HelloRequest
+		if err := m.Unmarshal(&hmr); err != nil {
+			log.Printf("Failed to parse message from %s: %s\n%s",
+				c.RemoteAddr(), err, m)
+			return
+		}
+		a := m.Answer(diam.Success)
+		a.NewAVP(avp.SessionID, avp.Mbit, 0, hmr.SessionID)
+		a.NewAVP(avp.OriginHost, avp.Mbit, 0, hmr.DestinationHost)
+		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, hmr.DestinationRealm)
+		a.NewAVP(avp.DestinationRealm, avp.Mbit, 0, hmr.OriginRealm)
+		a.NewAVP(avp.DestinationHost, avp.Mbit, 0, hmr.OriginHost)
+		_, err := a.WriteTo(c)
+		if err != nil {
+			log.Printf("Failed to write message to %s: %s\n%s\n",
+				c.RemoteAddr(), err, a)
+			return
+		}
+		if !silent {
+			log.Printf("Sent HMA to %s:\n%s", c.RemoteAddr(), a)
+		}
+	}
 }
 
-// OnCCR handles Credit-Control-Request messages.
-func OnCCR(c diam.Conn, m *diam.Message) {
-	log.Println(m)
-	// Craft a CCA with result code 3001.
-	a := m.Answer(diam.CommandUnsupported)
-	a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
-	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
-	a.WriteTo(c)
+func handleACR(silent bool) diam.HandlerFunc {
+	type AccountingRequest struct {
+		SessionID              *diam.AVP                 `avp:"Session-Id"`
+		OriginHost             *diam.AVP                 `avp:"Origin-Host"`
+		OriginRealm            *diam.AVP                 `avp:"Origin-Realm"`
+		DestinationRealm       datatype.DiameterIdentity `avp:"Destination-Realm"`
+		AccountingRecordType   *diam.AVP                 `avp:"Accounting-Record-Type"`
+		AccountingRecordNumber *diam.AVP                 `avp:"Accounting-Record-Number"`
+		DestinationHost        datatype.DiameterIdentity `avp:"Destination-Host"`
+	}
+	return func(c diam.Conn, m *diam.Message) {
+		if !silent {
+			log.Printf("Received ACR from %s\n%s", c.RemoteAddr(), m)
+		}
+		var acr AccountingRequest
+		if err := m.Unmarshal(&acr); err != nil {
+			log.Printf("Failed to parse message from %s: %s\n%s",
+				c.RemoteAddr(), err, m)
+			return
+		}
+		a := m.Answer(diam.Success)
+		a.InsertAVP(acr.SessionID)
+		a.NewAVP(avp.OriginHost, avp.Mbit, 0, acr.DestinationHost)
+		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, acr.DestinationRealm)
+		a.AddAVP(acr.AccountingRecordType)
+		a.AddAVP(acr.AccountingRecordNumber)
+		_, err := a.WriteTo(c)
+		if err != nil {
+			log.Printf("Failed to write message to %s: %s\n%s\n",
+				c.RemoteAddr(), err, a)
+			return
+		}
+		if !silent {
+			log.Printf("Sent ACA to %s:\n%s", c.RemoteAddr(), a)
+		}
+	}
 }
 
-// OnMSG handles all other messages and replies to them
-// with a generic 2001 (OK) answer.
-func OnMSG(c diam.Conn, m *diam.Message) {
-	// Ignore message if there's no Origin-State-Id.
-	stateID, err := m.FindAVP(avp.OriginStateID)
-	if err != nil {
-		log.Println("Invalid message: missing Origin-State-Id\n", m)
-	}
-	if !quiet {
-		log.Printf("Receiving message from %s", c.RemoteAddr().String())
-		log.Println(m)
-	}
-	// Craft answer with result code 2001 (OK).
-	a := m.Answer(diam.Success)
-	a.NewAVP(avp.OriginHost, avp.Mbit, 0, identity)
-	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, realm)
-	a.AddAVP(stateID)
-	if !quiet {
-		log.Printf("Sending message to %s", c.RemoteAddr().String())
-		log.Println(a)
-	}
-	// Send message to the connection.
-	if _, err := a.WriteTo(c); err != nil {
-		log.Println("Write failed:", err)
-		c.Close()
-	}
+func handleALL(c diam.Conn, m *diam.Message) {
+	log.Printf("Received unexpected message from %s:\n%s", c.RemoteAddr(), m)
 }
+
+// helloDictionary is our custom, example dictionary.
+var helloDictionary = xml.Header + `
+<diameter>
+	<application id="999">
+		<command code="111" short="HM" name="Hello-Message">
+			<request>
+				<rule avp="Session-Id" required="true" max="1"/>
+				<rule avp="Origin-Host" required="true" max="1"/>
+				<rule avp="Origin-Realm" required="true" max="1"/>
+				<rule avp="User-Name" required="false" max="1"/>
+			</request>
+			<answer>
+				<rule avp="Session-Id" required="true" max="1"/>
+				<rule avp="Result-Code" required="true" max="1"/>
+				<rule avp="Origin-Host" required="true" max="1"/>
+				<rule avp="Origin-Realm" required="true" max="1"/>
+				<rule avp="Error-Message" required="false" max="1"/>
+			</answer>
+		</command>
+	</application>
+</diameter>
+`

@@ -50,19 +50,14 @@ Clients and servers written with the go-diameter package can be quite
 performant if done well. Besides Go benchmarks, the package ships with
 a simple benchmark tool to help testing servers and identifying bottlenecks.
 
-The results below are from two Intel i5 quad-core with 4GB ram on a 1Gbps
-network, with 4 concurrent clients hammering the example server:
+In the examples directory, the server has a pprof (http server) that
+allows the `go pprof` tool to profile the server in real time. The client
+can perform benchmarks using the `-bench` command line flag.
 
-	2014/10/14 17:19:35 200000 messages (request+answer) in 1.044636932s seconds, 191454 msg/s
-	2014/10/14 17:19:35 200000 messages (request+answer) in 1.051021203s seconds, 190291 msg/s
-	2014/10/14 17:19:35 200000 messages (request+answer) in 1.050285029s seconds, 190424 msg/s
-	2014/10/14 17:19:35 200000 messages (request+answer) in 1.070140824s seconds, 186891 msg/s
-	2014/10/14 17:19:35 Total of 800000 messages in 1.076188492s: 743364 msg/s
-
-For better performance, avoid printing diameter messages to the log.
-Although they're very useful for debugging purposes, they kill performance
-due to a number of conversions to make them pretty. If you run benchmarks
-on the example server, make sure to use the `-q` (quiet) command line switch.
+For better performance, avoid logging diameter messages. Although logging
+is very useful for debugging purposes, it kills performance due to a number
+of conversions to make messages look pretty. If you run benchmarks on the
+example server, make sure to use the `-s` (silent) command line switch.
 
 TLS degrades performance a bit, as well as reflection (Unmarshal). Those are
 important trade offs you might have to consider.

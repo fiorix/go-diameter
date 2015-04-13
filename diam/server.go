@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -287,6 +288,14 @@ type ErrorReport struct {
 	Conn    Conn     // Peer that caused the error
 	Message *Message // Message that caused the error
 	Error   error    // Error message
+}
+
+// String returns an error message. It does not render the Message field.
+func (er *ErrorReport) String() string {
+	if er.Conn == nil {
+		return fmt.Sprintf("diameter error: %s", er.Error)
+	}
+	return fmt.Sprintf("diameter error on %s: %s", er.Conn.RemoteAddr(), er.Error)
 }
 
 // ServeMux is a diameter message multiplexer. It matches the

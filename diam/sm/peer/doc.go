@@ -3,5 +3,16 @@
 // found in the LICENSE file.
 
 // Package peer provides functions for extracting information from a
-// CER and associating with a Context.
+// CER or CEA, and associating with a Context.
+//
+// Example:
+//
+//	func handleXYZ(c diam.Conn, m *diam.Message) {
+//		meta, ok := peer.FromContext(c.Context())
+//		if ok {
+//			log.Println(meta)
+//		}
+//	}
+//
+// See the Metadata type for details.
 package peer

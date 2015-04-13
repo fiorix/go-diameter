@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Sn🔍 op agent can sit in between two diameter peers and snoop all messages
-// in real time, printing them to the console.
+// Snoop agent can sit in between two diameter peers and snoop all messages
+// in real time, printing them to the console. By default it only
+// supports the default dictionaries of go-diameter, so if you're testing
+// a custom application use the -dict command line flag to load your
+// dictionary from a file.
 //
-// It's a simple 1:1 proxy.
+// This agent is a simple 1:1 proxy.
 
 package main
 

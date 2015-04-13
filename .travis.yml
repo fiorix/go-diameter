@@ -5,4 +5,5 @@ script:
         - go test -v -cover -bench . ./diam/...
 
 install:
-        - go get golang.org/x/tools/cmd/cover
+        - go get -v
+        - go get -v golang.org/x/tools/cmd/cover

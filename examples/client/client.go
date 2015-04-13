@@ -96,7 +96,7 @@ func main() {
 	}
 
 	// Set message handlers.
-	done := make(chan struct{})
+	done := make(chan struct{}, 1000)
 	mux.Handle("HMA", handleHMA(done))
 	mux.Handle("ACA", handleACA(done))
 
@@ -124,7 +124,7 @@ func main() {
 		}
 		select {
 		case <-done:
-		case <-time.After(time.Second):
+		case <-time.After(5 * time.Second):
 			log.Fatal("timeout: no hello answer received")
 		}
 		return
@@ -238,6 +238,7 @@ wait:
 		}
 	}
 	elapsed := time.Since(start)
+	total = total * 2 // req+resp
 	log.Printf("%d messages in %s: %d/s", total, elapsed,
 		int(float64(total)/elapsed.Seconds()))
 }

@@ -78,10 +78,9 @@ func listen(addr, cert, key string, handler diam.Handler) error {
 	if len(cert) > 0 && len(key) > 0 {
 		log.Println("Starting secure diameter server on", addr)
 		return diam.ListenAndServeTLS(addr, cert, key, handler, nil)
-	} else {
-		log.Println("Starting diameter server on", addr)
-		return diam.ListenAndServe(addr, handler, nil)
 	}
+	log.Println("Starting diameter server on", addr)
+	return diam.ListenAndServe(addr, handler, nil)
 }
 
 func handleHMR(silent bool) diam.HandlerFunc {

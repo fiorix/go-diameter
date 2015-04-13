@@ -54,9 +54,9 @@ func main() {
 	keyFile := flag.String("key_file", "", "tls client key file (optional)")
 	hello := flag.Bool("hello", false, "send a hello message, wait for the response and disconnect")
 	bench := flag.Bool("bench", false, "benchmark the server by sending ACR messages")
-	bench_cli := flag.Int("bench_clients", 1, "number of client connections")
-	bench_msgs := flag.Int("bench_msgs", 1000, "number of ACR messages to send")
-	bench_cpus := flag.Int("bench_cpus", 0, "number of CPUs to use (0 means all")
+	benchCli := flag.Int("bench_clients", 1, "number of client connections")
+	benchMsgs := flag.Int("bench_msgs", 1000, "number of ACR messages to send")
+	benchCPUs := flag.Int("bench_cpus", 0, "number of CPUs to use (0 means all")
 
 	flag.Parse()
 	if len(*addr) == 0 {
@@ -109,7 +109,7 @@ func main() {
 
 	if *bench {
 		cli.EnableWatchdog = false
-		benchmark(connect, cfg, *bench_cli, *bench_msgs, *bench_cpus, done)
+		benchmark(connect, cfg, *benchCli, *benchMsgs, *benchCPUs, done)
 		return
 	}
 

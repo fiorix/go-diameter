@@ -92,7 +92,7 @@ func (cli *Client) validate() error {
 	}
 	if cli.WatchdogInterval == 0 {
 		// Set default WatchdogInterval
-		cli.WatchdogInterval = time.Second
+		cli.WatchdogInterval = 5 * time.Second
 	}
 	app := &parser.Application{
 		AcctApplicationID:           cli.AcctApplicationID,

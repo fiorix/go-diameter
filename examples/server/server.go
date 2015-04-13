@@ -4,7 +4,7 @@
 
 // Diameter server example. This is by no means a complete server.
 //
-// If you like to test diameter over SSL, generate SSL certificates:
+// If you'd like to test diameter over SSL, generate SSL certificates:
 //   go run $GOROOT/src/crypto/tls/generate_cert.go --host localhost
 //
 // And start the server with `-cert_file cert.pem -key_file key.pem`.

@@ -4,7 +4,7 @@
 
 // Diameter client example. This is by no means a complete client.
 //
-// If you like to test diameter over SSL, make sure the server supports
+// If you'd like to test diameter over SSL, make sure the server supports
 // it and add -ssl to the command line. To use client certificates,
 // run the client with -ssl -cert_file cert.pem -key_file key.pem.
 //

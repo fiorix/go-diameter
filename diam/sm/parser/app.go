@@ -19,7 +19,7 @@ type Application struct {
 	id                          []uint32 // List of supported application IDs.
 }
 
-// AppsOK ensures all acct or auth applications in the CE
+// Parse ensures all acct or auth applications in the CE
 // exist in this server's dictionary.
 func (app *Application) Parse(d *dict.Parser) (failedAVP *diam.AVP, err error) {
 	failedAVP, err = app.validateAll(d, avp.AcctApplicationID, app.AcctApplicationID)

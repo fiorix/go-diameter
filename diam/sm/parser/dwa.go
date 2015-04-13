@@ -13,6 +13,7 @@ type DWA struct {
 	OriginStateID uint32 `avp:"Origin-State-Id"`
 }
 
+// Parse parses the given message.
 func (dwa *DWA) Parse(m *diam.Message) error {
 	if err := m.Unmarshal(dwa); err != nil {
 		return err

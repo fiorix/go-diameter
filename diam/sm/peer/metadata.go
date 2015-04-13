@@ -32,7 +32,7 @@ func FromCER(cer *parser.CER) *Metadata {
 	}
 }
 
-// From CEA creates a Metadata object from data in the CEA.
+// FromCEA creates a Metadata object from data in the CEA.
 func FromCEA(cea *parser.CEA) *Metadata {
 	return &Metadata{
 		OriginHost:   cea.OriginHost,

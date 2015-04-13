@@ -77,7 +77,7 @@ func readerBufferSlice(b *bytes.Buffer, l int) []byte {
 func readAndParseHeader(r io.Reader, buf *bytes.Buffer, m *Message) (cmd *dict.Command, err error) {
 	b := buf.Bytes()[:HeaderLength]
 	if _, err = io.ReadFull(r, b); err != nil {
-		return nil, err
+		return nil, io.ErrUnexpectedEOF
 	}
 	m.Header, err = DecodeHeader(b)
 	if err != nil {

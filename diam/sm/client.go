@@ -38,13 +38,17 @@ var (
 // and expects a Capabilities-Exchange-Answer with a success (2001) result
 // code. If enabled, the client will send Device-Watchdog-Request messages
 // in background until the connection is terminated.
+//
+// By default, retransmission and watchdog are disabled. Retransmission is
+// enabled by setting MaxRetransmits to a number greater than zero, and
+// watchdog is enabled by setting EnableWatchdog to true.
 type Client struct {
-	Dict                        *dict.Parser  // Dictionary parser
+	Dict                        *dict.Parser  // Dictionary parser (uses dict.Default if unset)
 	Handler                     *StateMachine // Message handler
-	MaxRetransmits              int           // Max number of retransmissions before aborting
-	RetransmitInterval          time.Duration // Interval between retransmissions
+	MaxRetransmits              uint          // Max number of retransmissions before aborting
+	RetransmitInterval          time.Duration // Interval between retransmissions (default 1s)
 	EnableWatchdog              bool          // Enable automatic DWR
-	WatchdogInterval            time.Duration // Interval between DWRs
+	WatchdogInterval            time.Duration // Interval between DWRs (default 5s)
 	SupportedVendorID           []*diam.AVP   // Supported vendor ID
 	AcctApplicationID           []*diam.AVP   // Acct applications
 	AuthApplicationID           []*diam.AVP   // Auth applications
@@ -121,7 +125,7 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	osidc := make(chan uint32)
 	cli.Handler.mux.Handle("CEA", handleCEA(cli.Handler, osid, errc))
 	cli.Handler.mux.Handle("DWA", handshakeOK(handleDWA(cli.Handler, osidc)))
-	for i := 0; i < (cli.MaxRetransmits + 1); i++ {
+	for i := 0; i < (int(cli.MaxRetransmits) + 1); i++ {
 		_, err := m.WriteTo(c)
 		if err != nil {
 			return nil, err
@@ -193,7 +197,7 @@ func (cli *Client) watchdog(c diam.Conn, osidc chan uint32) {
 
 func (cli *Client) dwr(c diam.Conn, osid uint32, osidc chan uint32) {
 	m := cli.makeDWR(osid)
-	for i := 0; i < (cli.MaxRetransmits + 1); i++ {
+	for i := 0; i < (int(cli.MaxRetransmits) + 1); i++ {
 		_, err := m.WriteTo(c)
 		if err != nil {
 			return

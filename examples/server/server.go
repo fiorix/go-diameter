@@ -50,9 +50,9 @@ func main() {
 	settings := &sm.Settings{
 		OriginHost:       datatype.DiameterIdentity(*host),
 		OriginRealm:      datatype.DiameterIdentity(*realm),
-		VendorID:         datatype.Unsigned32(13),
-		ProductName:      datatype.OctetString("go-diameter"),
-		FirmwareRevision: datatype.Unsigned32(1),
+		VendorID:         13,
+		ProductName:      "go-diameter",
+		FirmwareRevision: 1,
 	}
 
 	// Create the state machine (mux) and set its message handlers.

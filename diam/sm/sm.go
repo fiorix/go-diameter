@@ -17,7 +17,7 @@ type Settings struct {
 	OriginHost       datatype.DiameterIdentity
 	OriginRealm      datatype.DiameterIdentity
 	VendorID         datatype.Unsigned32
-	ProductName      datatype.OctetString
+	ProductName      datatype.UTF8String
 	FirmwareRevision datatype.Unsigned32
 }
 

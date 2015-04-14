@@ -8,6 +8,10 @@
 //   go run $GOROOT/src/crypto/tls/generate_cert.go --host localhost
 //
 // And start the server with `-cert_file cert.pem -key_file key.pem`.
+//
+// By default this server runs in a single OS thread. If you want to
+// make it run on more, set the GOMAXPROCS=n environment variable.
+// See Go's FAQ for details: http://golang.org/doc/faq#Why_no_multi_CPU
 
 package main
 
@@ -17,7 +21,6 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"runtime"
 
 	_ "net/http/pprof"
 
@@ -35,7 +38,6 @@ func main() {
 	realm := flag.String("diam_realm", "go-diameter", "diameter identity realm")
 	certFile := flag.String("cert_file", "", "tls certificate file (optional)")
 	keyFile := flag.String("key_file", "", "tls key file (optional)")
-	cpus := flag.Int("cpus", 0, "number of CPUs to use (0 means all)")
 	silent := flag.Bool("s", false, "silent mode, useful for benchmarks")
 	flag.Parse()
 
@@ -63,12 +65,6 @@ func main() {
 
 	// Print error reports.
 	go printErrors(mux.ErrorReports())
-
-	if *cpus > 0 {
-		runtime.GOMAXPROCS(*cpus)
-	} else {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
 
 	if len(*ppaddr) > 0 {
 		go func() { log.Fatal(http.ListenAndServe(*ppaddr, nil)) }()

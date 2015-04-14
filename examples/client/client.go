@@ -19,6 +19,10 @@
 //
 // The -bench option turns the client into a benchmark tool to test
 // the server. It uses ACR/ACA messages for this.
+//
+// By default this client runs in a single OS thread. If you want to
+// make it run on more, set the GOMAXPROCS=n environment variable.
+// See Go's FAQ for details: http://golang.org/doc/faq#Why_no_multi_CPU
 
 package main
 
@@ -29,7 +33,6 @@ import (
 	"flag"
 	"log"
 	"math/rand"
-	"runtime"
 	"strconv"
 	"time"
 
@@ -56,7 +59,6 @@ func main() {
 	bench := flag.Bool("bench", false, "benchmark the server by sending ACR messages")
 	benchCli := flag.Int("bench_clients", 1, "number of client connections")
 	benchMsgs := flag.Int("bench_msgs", 1000, "number of ACR messages to send")
-	benchCPUs := flag.Int("bench_cpus", 0, "number of CPUs to use (0 means all")
 
 	flag.Parse()
 	if len(*addr) == 0 {
@@ -109,7 +111,7 @@ func main() {
 
 	if *bench {
 		cli.EnableWatchdog = false
-		benchmark(connect, cfg, *benchCli, *benchMsgs, *benchCPUs, done)
+		benchmark(connect, cfg, *benchCli, *benchMsgs, done)
 		return
 	}
 
@@ -202,12 +204,7 @@ func handleACA(done chan struct{}) diam.HandlerFunc {
 
 type dialFunc func() (diam.Conn, error)
 
-func benchmark(df dialFunc, cfg *sm.Settings, ncli, msgs, cpus int, done chan struct{}) {
-	if cpus > 0 {
-		runtime.GOMAXPROCS(cpus)
-	} else {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
+func benchmark(df dialFunc, cfg *sm.Settings, ncli, msgs int, done chan struct{}) {
 	var err error
 	c := make([]diam.Conn, ncli)
 	log.Println("Connecting", ncli, "clients...")

@@ -8,7 +8,7 @@
 // Example:
 //
 //	func handleXYZ(c diam.Conn, m *diam.Message) {
-//		meta, ok := peer.FromContext(c.Context())
+//		meta, ok := smpeer.FromContext(c.Context())
 //		if ok {
 //			log.Println(meta)
 //		}

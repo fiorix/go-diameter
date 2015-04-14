@@ -13,7 +13,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/diamtest"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diam/sm/parser"
+	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 // These tests use dictionary, settings and functions from sm_test.go.
@@ -129,7 +129,7 @@ func TestHandleDWR_Fail(t *testing.T) {
 	}
 	select {
 	case err := <-sm.ErrorReports():
-		if err.Error != parser.ErrMissingOriginHost {
+		if err.Error != smparser.ErrMissingOriginHost {
 			t.Fatalf("Unexpected error. Want ErrMissingOriginHost, have %#v", err.Error)
 		}
 	case err := <-mux.ErrorReports():

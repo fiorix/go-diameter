@@ -9,14 +9,14 @@ import (
 	"fmt"
 
 	"github.com/fiorix/go-diameter/diam"
-	"github.com/fiorix/go-diameter/diam/sm/parser"
 	"github.com/fiorix/go-diameter/diam/sm/peer"
+	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 // handleCEA handles Capabilities-Exchange-Answer messages.
 func handleCEA(sm *StateMachine, osid uint32, errc chan error) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
-		cea := new(parser.CEA)
+		cea := new(smparser.CEA)
 		if err := cea.Parse(m); err != nil {
 			errc <- err
 			return

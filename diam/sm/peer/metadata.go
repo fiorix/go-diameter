@@ -8,7 +8,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/fiorix/go-diameter/diam/datatype"
-	"github.com/fiorix/go-diameter/diam/sm/parser"
+	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 type key int
@@ -24,7 +24,7 @@ type Metadata struct {
 }
 
 // FromCER creates a Metadata object from data in the CER.
-func FromCER(cer *parser.CER) *Metadata {
+func FromCER(cer *smparser.CER) *Metadata {
 	return &Metadata{
 		OriginHost:   cer.OriginHost,
 		OriginRealm:  cer.OriginRealm,
@@ -33,7 +33,7 @@ func FromCER(cer *parser.CER) *Metadata {
 }
 
 // FromCEA creates a Metadata object from data in the CEA.
-func FromCEA(cea *parser.CEA) *Metadata {
+func FromCEA(cea *smparser.CEA) *Metadata {
 	return &Metadata{
 		OriginHost:   cea.OriginHost,
 		OriginRealm:  cea.OriginRealm,

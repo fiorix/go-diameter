@@ -10,11 +10,11 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/fiorix/go-diameter/diam/datatype"
-	"github.com/fiorix/go-diameter/diam/sm/parser"
+	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 func TestFromCER(t *testing.T) {
-	cer := &parser.CER{
+	cer := &smparser.CER{
 		OriginHost:  datatype.DiameterIdentity("foobar"),
 		OriginRealm: datatype.DiameterIdentity("test"),
 	}
@@ -38,7 +38,7 @@ func TestFromCER(t *testing.T) {
 }
 
 func TestFromCEA(t *testing.T) {
-	cer := &parser.CEA{
+	cer := &smparser.CEA{
 		OriginHost:  datatype.DiameterIdentity("foobar"),
 		OriginRealm: datatype.DiameterIdentity("test"),
 	}

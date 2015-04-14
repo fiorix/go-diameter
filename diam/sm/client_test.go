@@ -15,7 +15,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/diamtest"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diam/sm/parser"
+	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 func TestClient_Dial_MissingStateMachine(t *testing.T) {
@@ -29,7 +29,7 @@ func TestClient_Dial_MissingStateMachine(t *testing.T) {
 func TestClient_Dial_MissingApplication(t *testing.T) {
 	cli := &Client{Handler: New(&Settings{})}
 	_, err := cli.Dial("")
-	if err != parser.ErrMissingApplication {
+	if err != smparser.ErrMissingApplication {
 		t.Fatal(err)
 	}
 }
@@ -147,7 +147,7 @@ func TestClient_Handshake_FailParseCEA(t *testing.T) {
 		},
 	}
 	_, err := cli.Dial(srv.Address)
-	if err != parser.ErrMissingOriginHost {
+	if err != smparser.ErrMissingOriginHost {
 		t.Fatal(err)
 	}
 }
@@ -155,7 +155,7 @@ func TestClient_Handshake_FailParseCEA(t *testing.T) {
 func TestClient_Handshake_FailedResultCode(t *testing.T) {
 	mux := diam.NewServeMux()
 	mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {
-		cer := new(parser.CER)
+		cer := new(smparser.CER)
 		if _, err := cer.Parse(m); err != nil {
 			panic(err)
 		}
@@ -190,7 +190,7 @@ func TestClient_Handshake_FailedResultCode(t *testing.T) {
 func TestClient_Handshake_UnexpectedOriginStateID(t *testing.T) {
 	mux := diam.NewServeMux()
 	mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {
-		cer := new(parser.CER)
+		cer := new(smparser.CER)
 		if _, err := cer.Parse(m); err != nil {
 			panic(err)
 		}

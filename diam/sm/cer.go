@@ -11,8 +11,8 @@ import (
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
-	"github.com/fiorix/go-diameter/diam/sm/parser"
 	"github.com/fiorix/go-diameter/diam/sm/peer"
+	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 // handleCER handles Capabilities-Exchange-Request messages.
@@ -28,7 +28,7 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			// Ignore retransmission.
 			return
 		}
-		cer := new(parser.CER)
+		cer := new(smparser.CER)
 		failedAVP, err := cer.Parse(m)
 		if err != nil {
 			if failedAVP != nil {
@@ -66,7 +66,7 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 // errorCEA sends an error answer indicating that the CER failed due to
 // an unsupported (acct/auth) application, and includes the AVP that
 // caused the failure in the message.
-func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *parser.CER, failedAVP *diam.AVP) error {
+func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, failedAVP *diam.AVP) error {
 	hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 	if err != nil {
 		return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
@@ -94,7 +94,7 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *parser.CER, f
 
 // successCEA sends a success answer indicating that the CER was successfuly
 // parsed and accepted by the server.
-func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *parser.CER) error {
+func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER) error {
 	hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 	if err != nil {
 		return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)

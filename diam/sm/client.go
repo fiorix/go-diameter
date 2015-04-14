@@ -14,7 +14,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diam/sm/parser"
+	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 var (
@@ -98,7 +98,7 @@ func (cli *Client) validate() error {
 		// Set default WatchdogInterval
 		cli.WatchdogInterval = 5 * time.Second
 	}
-	app := &parser.Application{
+	app := &smparser.Application{
 		AcctApplicationID:           cli.AcctApplicationID,
 		AuthApplicationID:           cli.AuthApplicationID,
 		VendorSpecificApplicationID: cli.VendorSpecificApplicationID,

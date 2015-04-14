@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Package peer provides functions for extracting information from a
+// Package smpeer provides functions for extracting information from a
 // CER or CEA, and associating with a Context.
 //
 // Example:
@@ -15,4 +15,4 @@
 //	}
 //
 // See the Metadata type for details.
-package peer
+package smpeer

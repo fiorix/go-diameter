@@ -9,7 +9,7 @@ import (
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/datatype"
-	"github.com/fiorix/go-diameter/diam/sm/peer"
+	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 )
 
 // Settings used to configure the state machine.
@@ -102,7 +102,7 @@ type handshakeOK diam.HandlerFunc
 
 // ServeDIAM implements the diam.Handler interface.
 func (f handshakeOK) ServeDIAM(c diam.Conn, m *diam.Message) {
-	if _, ok := peer.FromContext(c.Context()); ok {
+	if _, ok := smpeer.FromContext(c.Context()); ok {
 		f(c, m)
 	}
 }

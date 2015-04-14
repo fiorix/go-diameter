@@ -13,7 +13,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/diamtest"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diam/sm/peer"
+	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 )
 
 // These tests use dictionary, settings and functions from sm_test.go.
@@ -51,7 +51,7 @@ func TestHandleCER_HandshakeMetadata(t *testing.T) {
 	select {
 	case c := <-hsc:
 		ctx := c.Context()
-		meta, ok := peer.FromContext(ctx)
+		meta, ok := smpeer.FromContext(ctx)
 		if !ok {
 			t.Fatal("Handshake ok but no context/metadata found")
 		}

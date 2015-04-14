@@ -11,8 +11,8 @@ import (
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
-	"github.com/fiorix/go-diameter/diam/sm/peer"
 	"github.com/fiorix/go-diameter/diam/sm/smparser"
+	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 )
 
 // handleCER handles Capabilities-Exchange-Request messages.
@@ -24,7 +24,7 @@ import (
 func handleCER(sm *StateMachine) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
 		ctx := c.Context()
-		if _, ok := peer.FromContext(ctx); ok {
+		if _, ok := smpeer.FromContext(ctx); ok {
 			// Ignore retransmission.
 			return
 		}
@@ -53,8 +53,8 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			})
 			return
 		}
-		meta := peer.FromCER(cer)
-		c.SetContext(peer.NewContext(ctx, meta))
+		meta := smpeer.FromCER(cer)
+		c.SetContext(smpeer.NewContext(ctx, meta))
 		// Notify about peer passing the handshake.
 		select {
 		case sm.hsNotifyc <- c:

@@ -9,8 +9,8 @@ import (
 	"fmt"
 
 	"github.com/fiorix/go-diameter/diam"
-	"github.com/fiorix/go-diameter/diam/sm/peer"
 	"github.com/fiorix/go-diameter/diam/sm/smparser"
+	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 )
 
 // handleCEA handles Capabilities-Exchange-Answer messages.
@@ -29,8 +29,8 @@ func handleCEA(sm *StateMachine, osid uint32, errc chan error) diam.HandlerFunc 
 			errc <- ErrUnexpectedOriginStateID
 			return
 		}
-		meta := peer.FromCEA(cea)
-		c.SetContext(peer.NewContext(c.Context(), meta))
+		meta := smpeer.FromCEA(cea)
+		c.SetContext(smpeer.NewContext(c.Context(), meta))
 		// Notify about peer passing the handshake.
 		select {
 		case sm.hsNotifyc <- c:

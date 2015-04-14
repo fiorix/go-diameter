@@ -41,7 +41,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
 	"github.com/fiorix/go-diameter/diam/sm"
-	"github.com/fiorix/go-diameter/diam/sm/peer"
+	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 )
 
 func init() {
@@ -171,7 +171,7 @@ func sendHMR(c diam.Conn, cfg *sm.Settings) error {
 	// which is set by the state machine after the handshake.
 	// It contains the peer's Origin-Host and Realm from the
 	// CER/CEA handshake. We use it to populate the AVPs below.
-	meta, ok := peer.FromContext(c.Context())
+	meta, ok := smpeer.FromContext(c.Context())
 	if !ok {
 		return errors.New("peer metadata unavailable")
 	}
@@ -247,7 +247,7 @@ func sendACR(c diam.Conn, cfg *sm.Settings, n int) {
 	// which is set by the state machine after the handshake.
 	// It contains the peer's Origin-Host and Realm from the
 	// CER/CEA handshake. We use it to populate the AVPs below.
-	meta, ok := peer.FromContext(c.Context())
+	meta, ok := smpeer.FromContext(c.Context())
 	if !ok {
 		log.Fatal("Client connection does not contain metadata")
 	}

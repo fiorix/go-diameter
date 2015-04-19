@@ -6,7 +6,6 @@ package sm
 
 import (
 	"errors"
-	"math/rand"
 	"net"
 	"time"
 
@@ -117,14 +116,14 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	osid, m := cli.makeCER(net.ParseIP(ip))
+	m := cli.makeCER(net.ParseIP(ip))
 	// Ignore CER, but not DWR.
 	cli.Handler.mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {})
 	// Handle CEA and DWA.
 	errc := make(chan error)
-	osidc := make(chan uint32)
-	cli.Handler.mux.Handle("CEA", handleCEA(cli.Handler, osid, errc))
-	cli.Handler.mux.Handle("DWA", handshakeOK(handleDWA(cli.Handler, osidc)))
+	dwac := make(chan struct{})
+	cli.Handler.mux.Handle("CEA", handleCEA(cli.Handler, errc))
+	cli.Handler.mux.Handle("DWA", handshakeOK(handleDWA(cli.Handler, dwac)))
 	for i := 0; i < (int(cli.MaxRetransmits) + 1); i++ {
 		_, err := m.WriteTo(c)
 		if err != nil {
@@ -137,7 +136,7 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 				return nil, err
 			}
 			if cli.EnableWatchdog {
-				go cli.watchdog(c, osidc)
+				go cli.watchdog(c, dwac)
 			}
 			return c, nil
 		case <-time.After(cli.RetransmitInterval):
@@ -147,15 +146,15 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	return nil, ErrHandshakeTimeout
 }
 
-func (cli *Client) makeCER(ip net.IP) (osid uint32, m *diam.Message) {
-	osid = rand.Uint32()
-	m = diam.NewRequest(diam.CapabilitiesExchange, 0, cli.Dict)
+func (cli *Client) makeCER(ip net.IP) *diam.Message {
+	m := diam.NewRequest(diam.CapabilitiesExchange, 0, cli.Dict)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cli.Handler.cfg.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cli.Handler.cfg.OriginRealm)
 	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(ip))
 	m.NewAVP(avp.VendorID, avp.Mbit, 0, cli.Handler.cfg.VendorID)
 	m.NewAVP(avp.ProductName, 0, 0, cli.Handler.cfg.ProductName)
-	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(osid))
+	stateid := datatype.Unsigned32(uint32(time.Now().Unix()))
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, stateid)
 	if cli.SupportedVendorID != nil {
 		for _, a := range cli.SupportedVendorID {
 			m.AddAVP(a)
@@ -178,10 +177,10 @@ func (cli *Client) makeCER(ip net.IP) (osid uint32, m *diam.Message) {
 		}
 	}
 	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, cli.Handler.cfg.FirmwareRevision)
-	return osid, m
+	return m
 }
 
-func (cli *Client) watchdog(c diam.Conn, osidc chan uint32) {
+func (cli *Client) watchdog(c diam.Conn, dwac chan struct{}) {
 	disconnect := c.(diam.CloseNotifier).CloseNotify()
 	var osid uint32
 	for {
@@ -190,12 +189,12 @@ func (cli *Client) watchdog(c diam.Conn, osidc chan uint32) {
 			return
 		case <-time.After(cli.WatchdogInterval):
 			osid++
-			cli.dwr(c, osid, osidc)
+			cli.dwr(c, osid, dwac)
 		}
 	}
 }
 
-func (cli *Client) dwr(c diam.Conn, osid uint32, osidc chan uint32) {
+func (cli *Client) dwr(c diam.Conn, osid uint32, dwac chan struct{}) {
 	m := cli.makeDWR(osid)
 	for i := 0; i < (int(cli.MaxRetransmits) + 1); i++ {
 		_, err := m.WriteTo(c)
@@ -203,10 +202,8 @@ func (cli *Client) dwr(c diam.Conn, osid uint32, osidc chan uint32) {
 			return
 		}
 		select {
-		case resp := <-osidc:
-			if resp == osid {
-				return
-			}
+		case <-dwac:
+			return
 		case <-time.After(cli.RetransmitInterval):
 		}
 	}

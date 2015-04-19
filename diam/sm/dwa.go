@@ -9,8 +9,10 @@ import (
 	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
+var dwaACK = struct{}{}
+
 // handleDWA handles Device-Watchdog-Answer messages.
-func handleDWA(sm *StateMachine, osidc chan uint32) diam.HandlerFunc {
+func handleDWA(sm *StateMachine, dwac chan struct{}) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
 		dwa := new(smparser.DWA)
 		if err := dwa.Parse(m); err != nil {
@@ -25,7 +27,7 @@ func handleDWA(sm *StateMachine, osidc chan uint32) diam.HandlerFunc {
 			return
 		}
 		select {
-		case osidc <- dwa.OriginStateID:
+		case dwac <- dwaACK:
 		default:
 		}
 	}

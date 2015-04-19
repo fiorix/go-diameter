@@ -187,38 +187,6 @@ func TestClient_Handshake_FailedResultCode(t *testing.T) {
 	}
 }
 
-func TestClient_Handshake_UnexpectedOriginStateID(t *testing.T) {
-	mux := diam.NewServeMux()
-	mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {
-		cer := new(smparser.CER)
-		if _, err := cer.Parse(m); err != nil {
-			panic(err)
-		}
-		a := m.Answer(diam.Success)
-		a.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
-		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
-		cer.OriginStateID.Data = datatype.Unsigned32(1) // Force fail.
-		a.AddAVP(cer.OriginStateID)
-		a.AddAVP(cer.AcctApplicationID[0]) // The one we send below.
-		a.WriteTo(c)
-	})
-	srv := diamtest.NewServer(mux, dict.Default)
-	defer srv.Close()
-	cli := &Client{
-		Handler: New(clientSettings),
-		AcctApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
-		},
-	}
-	_, err := cli.Dial(srv.Address)
-	if err == nil {
-		t.Fatal("Unexpected CER worked")
-	}
-	if err != ErrUnexpectedOriginStateID {
-		t.Fatal(err)
-	}
-}
-
 func TestClient_Handshake_RetransmitTimeout(t *testing.T) {
 	mux := diam.NewServeMux()
 	retransmits := 0
@@ -264,16 +232,13 @@ func TestClient_Watchdog(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer c.Close()
-	resp := make(chan uint32, 1)
+	resp := make(chan struct{}, 1)
 	dwa := handleDWA(cli.Handler, resp)
 	cli.Handler.mux.HandleFunc("DWA", func(c diam.Conn, m *diam.Message) {
 		dwa(c, m)
 	})
 	select {
-	case osid := <-resp:
-		if osid != 1 {
-			t.Fatalf("Unexpected Origin-State-Id. Want 1, have %d", osid)
-		}
+	case <-resp:
 	case <-time.After(200 * time.Millisecond):
 		t.Fatal("Timeout waiting for DWA")
 	}

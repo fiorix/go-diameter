@@ -5,8 +5,11 @@
 package sm
 
 import (
+	"time"
+
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
+	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
@@ -31,7 +34,8 @@ func handleDWR(sm *StateMachine) diam.HandlerFunc {
 		a := m.Answer(diam.Success)
 		a.NewAVP(avp.OriginHost, avp.Mbit, 0, sm.cfg.OriginHost)
 		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, sm.cfg.OriginRealm)
-		a.AddAVP(dwr.OriginStateID)
+		stateid := datatype.Unsigned32(time.Now().Unix())
+		a.NewAVP(avp.OriginStateID, avp.Mbit, 0, stateid)
 		_, err = a.WriteTo(c)
 		if err != nil {
 			sm.Error(&diam.ErrorReport{

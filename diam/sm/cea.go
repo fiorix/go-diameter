@@ -14,7 +14,7 @@ import (
 )
 
 // handleCEA handles Capabilities-Exchange-Answer messages.
-func handleCEA(sm *StateMachine, osid uint32, errc chan error) diam.HandlerFunc {
+func handleCEA(sm *StateMachine, errc chan error) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
 		cea := new(smparser.CEA)
 		if err := cea.Parse(m); err != nil {
@@ -23,10 +23,6 @@ func handleCEA(sm *StateMachine, osid uint32, errc chan error) diam.HandlerFunc 
 		}
 		if cea.ResultCode != diam.Success {
 			errc <- &ErrFailedResultCode{Code: cea.ResultCode}
-			return
-		}
-		if cea.OriginStateID != osid {
-			errc <- ErrUnexpectedOriginStateID
 			return
 		}
 		meta := smpeer.FromCEA(cea)

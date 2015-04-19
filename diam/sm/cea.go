@@ -5,7 +5,6 @@
 package sm
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/fiorix/go-diameter/diam"
@@ -47,8 +46,3 @@ type ErrFailedResultCode struct {
 func (e *ErrFailedResultCode) Error() string {
 	return fmt.Sprintf("failed Result-Code AVP: %d", e.Code)
 }
-
-// ErrUnexpectedOriginStateID is returned by Dial or DialTLS when the
-// handshake answer (CEA) contains an unexpected value in the
-// Origin-State-Id AVP.
-var ErrUnexpectedOriginStateID = errors.New("unexpected Origin-State-Id AVP")

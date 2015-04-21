@@ -144,7 +144,7 @@ func (c *conn) serve() {
 		if err := recover(); err != nil {
 			buf := make([]byte, 4096)
 			buf = buf[:runtime.Stack(buf, false)]
-			log.Printf("DIAM: panic serving %v: %v\n%s",
+			log.Printf("diam: panic serving %v: %v\n%s",
 				c.rwc.RemoteAddr().String(), err, buf)
 		}
 		c.rwc.Close()
@@ -479,7 +479,7 @@ func (srv *Server) Serve(l net.Listener) error {
 				if max := 1 * time.Second; tempDelay > max {
 					tempDelay = max
 				}
-				log.Printf("DIAM: Accept error: %v; retrying in %v", e, tempDelay)
+				log.Printf("diam: accept error: %v; retrying in %v", e, tempDelay)
 				time.Sleep(tempDelay)
 				continue
 			}

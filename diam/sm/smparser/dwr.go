@@ -38,8 +38,5 @@ func (dwr *DWR) sanityCheck() error {
 	if len(dwr.OriginRealm) == 0 {
 		return ErrMissingOriginRealm
 	}
-	if dwr.OriginStateID == nil {
-		return ErrMissingOriginStateID
-	}
 	return nil
 }

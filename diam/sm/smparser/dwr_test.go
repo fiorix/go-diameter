@@ -32,17 +32,6 @@ func TestDWR_MissingOriginRealm(t *testing.T) {
 	}
 }
 
-func TestDWR_MissingOriginStateID(t *testing.T) {
-	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
-	dwr := new(DWR)
-	err := dwr.Parse(m)
-	if err != nil && err != ErrMissingOriginStateID {
-		t.Fatal("Unexpected error:", err)
-	}
-}
-
 func TestDWR_OK(t *testing.T) {
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))

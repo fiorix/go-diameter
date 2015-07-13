@@ -58,6 +58,9 @@ func TestStateMachine(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
+	mux.HandleFunc("DWA", func(c diam.Conn, m *diam.Message) {
+		mc <- m
+	})
 	cli, err := diam.Dial(srv.Address, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
@@ -118,5 +121,24 @@ func TestStateMachine(t *testing.T) {
 		t.Fatal(err)
 	case <-time.After(time.Second):
 		t.Fatal("No RAR message received")
+	}
+	// Send DWR.
+	m = diam.NewRequest(diam.DeviceWatchdog, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
+	_, err = m.WriteTo(cli)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Ensure the DWR was handled by the state machine.
+	select {
+	case <-mc:
+	// All good.
+	case err := <-sm.ErrorReports():
+		t.Fatal(err)
+	case err := <-mux.ErrorReports():
+		t.Fatal(err)
+	case <-time.After(time.Second):
+		t.Fatal("No DWR message received")
 	}
 }

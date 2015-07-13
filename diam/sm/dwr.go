@@ -15,8 +15,8 @@ import (
 
 // handleDWR handles Device-Watchdog-Request messages.
 //
-// If mandatory AVPs such as Origin-Host, Origin-Realm, or
-// Origin-State-Id are missing, we ignore the message.
+// If mandatory AVPs such as Origin-Host or Origin-Realm are missing,
+// we ignore the message.
 //
 // See RFC 6733 section 5.5 for details.
 func handleDWR(sm *StateMachine) diam.HandlerFunc {

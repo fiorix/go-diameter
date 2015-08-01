@@ -7,6 +7,7 @@ package sm
 import (
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -189,10 +190,10 @@ func TestClient_Handshake_FailedResultCode(t *testing.T) {
 
 func TestClient_Handshake_RetransmitTimeout(t *testing.T) {
 	mux := diam.NewServeMux()
-	retransmits := 0
+	var retransmits uint32
 	mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {
 		// Do nothing to force timeout.
-		retransmits++
+		atomic.AddUint32(&retransmits, 1)
 	})
 	srv := diamtest.NewServer(mux, dict.Default)
 	defer srv.Close()
@@ -211,8 +212,8 @@ func TestClient_Handshake_RetransmitTimeout(t *testing.T) {
 	if err != ErrHandshakeTimeout {
 		t.Fatal(err)
 	}
-	if retransmits != 4 {
-		t.Fatalf("Unexpected # of retransmits. Want 4, have %d", retransmits)
+	if n := atomic.LoadUint32(&retransmits); n != 4 {
+		t.Fatalf("Unexpected # of retransmits. Want 4, have %d", n)
 	}
 }
 

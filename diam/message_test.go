@@ -136,6 +136,7 @@ func TestNewMessage(t *testing.T) {
 }
 
 func TestMessageFindAVP(t *testing.T) {
+
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	a, err := m.FindAVP(avp.OriginStateID)
 	if err != nil {
@@ -146,6 +147,19 @@ func TestMessageFindAVP(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(a)
+
+	a, err = m.FindAVP("Vendor-Id")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(a)
+
+	avps := make([]*AVP, 0)
+	avps, err = m.FindAVPs("Supported-Vendor-Id")
+	if err != nil || len(avps) != 2 {
+		t.Fatal(err)
+	}
+	t.Log(avps)
 }
 
 func BenchmarkReadMessage(b *testing.B) {

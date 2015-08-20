@@ -276,6 +276,58 @@ func (m *Message) Len() int {
 	return l
 }
 
+func findFromAVP(avps []*AVP, code uint32, findMultiple bool) ([]*AVP, error) {
+
+	avpResult := make([]*AVP, 0)
+
+	for _, a := range avps {
+
+		if a.Code == code {
+			avpResult = append(avpResult, a)
+			if !findMultiple {
+				return avpResult, nil
+			}
+		}
+
+		if a.Data.Type() == GroupedAVPType {
+			groupedAVP := a.Data
+			result, err := findFromAVP(groupedAVP.(*GroupedAVP).AVP, code, findMultiple)
+			if err == nil {
+				avpResult = append(avpResult, result...)
+				if !findMultiple {
+					return avpResult, nil
+				}
+			}
+		}
+	}
+
+	if len(avpResult) == 0 {
+		return nil, errors.New("AVP not found")
+	}
+
+	return avpResult, nil
+}
+
+// FindAVP searches the Message for all avps that match the search criteria.
+// The code can be either the AVP code (int, uint32) or name (string).
+//
+// Example:
+//
+//	avps, err := m.FindAVPs(264)
+//	avps, err := m.FindAVPs(avp.OriginHost)
+//	avps, err := m.FindAVPs("Origin-Host")
+//
+func (m *Message) FindAVPs(code interface{}) ([]*AVP, error) {
+
+	dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return findFromAVP(m.AVP, dictAVP.Code, true)
+}
+
 // FindAVP searches the Message for a specific AVP.
 // The code can be either the AVP code (int, uint32) or name (string).
 //
@@ -286,16 +338,20 @@ func (m *Message) Len() int {
 //	avp, err := m.FindAVP("Origin-Host")
 //
 func (m *Message) FindAVP(code interface{}) (*AVP, error) {
+
 	dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, code)
+
 	if err != nil {
 		return nil, err
 	}
-	for _, a := range m.AVP {
-		if a.Code == dictAVP.Code {
-			return a, nil
-		}
+
+	result, err := findFromAVP(m.AVP, dictAVP.Code, false)
+
+	if err == nil {
+		return result[0], err
+	} else {
+		return nil, err
 	}
-	return nil, errors.New("Not found")
 }
 
 // Answer creates an answer for the current Message with an embedded
@@ -309,6 +365,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.EndToEndID,
 		m.Dictionary(),
 	)
+
 	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
 	return nm
 }

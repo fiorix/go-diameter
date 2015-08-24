@@ -18,12 +18,12 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
+// MessageBufferLength is the default buffer length for Diameter messages.
+var MessageBufferLength = 1 << 10
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
-
-// MessageBufferLength is the default buffer length for Diameter messages.
-var MessageBufferLength = 1 << 10
 
 // Message represents a Diameter message.
 type Message struct {
@@ -32,22 +32,6 @@ type Message struct {
 
 	// dictionary parser object used to encode and decode AVPs.
 	dictionary *dict.Parser
-}
-
-// ReadMessage returns a Message. It uses the dictionary to parse the
-// binary stream from the reader.
-func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
-	buf := newReaderBuffer()
-	defer putReaderBuffer(buf)
-	m := &Message{dictionary: dictionary}
-	cmd, err := readAndParseHeader(reader, buf, m)
-	if err != nil {
-		return nil, err
-	}
-	if err = readAndParseBody(reader, buf, cmd, m); err != nil {
-		return nil, err
-	}
-	return m, nil
 }
 
 var readerBufferPool sync.Pool
@@ -66,15 +50,31 @@ func putReaderBuffer(b *bytes.Buffer) {
 	}
 }
 
-func readerBufferSlice(b *bytes.Buffer, l int) []byte {
-	p := b.Bytes()
-	if l <= MessageBufferLength && cap(p) >= MessageBufferLength {
-		return p[0:l]
+func readerBufferSlice(buf *bytes.Buffer, l int) []byte {
+	b := buf.Bytes()
+	if l <= MessageBufferLength && cap(b) >= MessageBufferLength {
+		return b[:l]
 	}
 	return make([]byte, l)
 }
 
-func readAndParseHeader(r io.Reader, buf *bytes.Buffer, m *Message) (cmd *dict.Command, err error) {
+// ReadMessage reads a binary stream from the reader and uses the given
+// dictionary to parse it.
+func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
+	buf := newReaderBuffer()
+	defer putReaderBuffer(buf)
+	m := &Message{dictionary: dictionary}
+	cmd, err := m.readHeader(reader, buf)
+	if err != nil {
+		return nil, err
+	}
+	if err = m.readBody(reader, buf, cmd); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command, err error) {
 	b := buf.Bytes()[:HeaderLength]
 	if _, err = io.ReadFull(r, b); err != nil {
 		return nil, io.ErrUnexpectedEOF
@@ -93,13 +93,13 @@ func readAndParseHeader(r io.Reader, buf *bytes.Buffer, m *Message) (cmd *dict.C
 	return cmd, nil
 }
 
-func readAndParseBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, m *Message) error {
+func (m *Message) readBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command) error {
 	b := readerBufferSlice(buf, int(m.Header.MessageLength-HeaderLength))
 	_, err := io.ReadFull(r, b)
 	if err != nil {
 		return err
 	}
-	n := maxAVPs(m, cmd)
+	n := m.maxAVPsFor(cmd)
 	if n == 0 {
 		// TODO: fail to load the dictionary instead.
 		return fmt.Errorf(
@@ -108,25 +108,24 @@ func readAndParseBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, m *Mess
 	}
 	// Pre-allocate max # of AVPs for this message.
 	m.AVP = make([]*AVP, 0, n)
-	if err = decodeAVPs(m, b); err != nil {
+	if err = m.decodeAVPs(b); err != nil {
 		return err
 	}
 	return nil
 }
 
-func maxAVPs(m *Message, cmd *dict.Command) int {
+func (m *Message) maxAVPsFor(cmd *dict.Command) int {
 	if m.Header.CommandFlags&RequestFlag == RequestFlag {
 		return len(cmd.Request.Rule)
 	}
 	return len(cmd.Answer.Rule)
 }
 
-func decodeAVPs(m *Message, pbytes []byte) error {
+func (m *Message) decodeAVPs(b []byte) error {
 	var a *AVP
 	var err error
-	for n := 0; n < len(pbytes); {
-		a, err = DecodeAVP(pbytes[n:],
-			m.Header.ApplicationID, m.Dictionary())
+	for n := 0; n < len(b); {
+		a, err = DecodeAVP(b[n:], m.Header.ApplicationID, m.Dictionary())
 		if err != nil {
 			return fmt.Errorf("Failed to decode AVP: %s", err)
 		}
@@ -210,22 +209,6 @@ func (m *Message) InsertAVP(a *AVP) {
 	m.Header.MessageLength += uint32(a.Len())
 }
 
-// WriteTo serializes the Message and writes into the writer.
-func (m *Message) WriteTo(writer io.Writer) (int64, error) {
-	l := m.Len()
-	buf := newWriterBuffer(l)
-	defer putWriterBuffer(buf)
-	b := buf.Bytes()[0:l]
-	if err := m.SerializeTo(b); err != nil {
-		return 0, err
-	}
-	n, err := writer.Write(b)
-	if err != nil {
-		return 0, err
-	}
-	return int64(n), err
-}
-
 var writerBufferPool sync.Pool
 
 func newWriterBuffer(min int) *bytes.Buffer {
@@ -243,6 +226,22 @@ func putWriterBuffer(b *bytes.Buffer) {
 	if cap(b.Bytes()) == MessageBufferLength {
 		writerBufferPool.Put(b)
 	}
+}
+
+// WriteTo serializes the Message and writes into the writer.
+func (m *Message) WriteTo(writer io.Writer) (int64, error) {
+	l := m.Len()
+	buf := newWriterBuffer(l)
+	defer putWriterBuffer(buf)
+	b := buf.Bytes()[0:l]
+	if err := m.SerializeTo(b); err != nil {
+		return 0, err
+	}
+	n, err := writer.Write(b)
+	if err != nil {
+		return 0, err
+	}
+	return int64(n), err
 }
 
 // Serialize returns the serialized bytes of the Message.

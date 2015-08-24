@@ -318,7 +318,6 @@ func findFromAVP(avps []*AVP, code uint32, findMultiple bool) ([]*AVP, error) {
 //	avps, err := m.FindAVPs("Origin-Host")
 //
 func (m *Message) FindAVPs(code interface{}) ([]*AVP, error) {
-
 	dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, code)
 
 	if err != nil {
@@ -338,7 +337,6 @@ func (m *Message) FindAVPs(code interface{}) ([]*AVP, error) {
 //	avp, err := m.FindAVP("Origin-Host")
 //
 func (m *Message) FindAVP(code interface{}) (*AVP, error) {
-
 	dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, code)
 
 	if err != nil {
@@ -365,7 +363,6 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.EndToEndID,
 		m.Dictionary(),
 	)
-
 	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
 	return nm
 }

@@ -276,9 +276,7 @@ func (m *Message) Len() int {
 }
 
 func findFromAVP(avps []*AVP, code uint32, findMultiple bool) ([]*AVP, error) {
-
-	avpResult := make([]*AVP, 0)
-
+	var avpResult []*AVP
 	for _, a := range avps {
 
 		if a.Code == code {
@@ -307,7 +305,7 @@ func findFromAVP(avps []*AVP, code uint32, findMultiple bool) ([]*AVP, error) {
 	return avpResult, nil
 }
 
-// FindAVP searches the Message for all avps that match the search criteria.
+// FindAVPs searches the Message for all avps that match the search criteria.
 // The code can be either the AVP code (int, uint32) or name (string).
 //
 // Example:
@@ -346,9 +344,8 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 
 	if err == nil {
 		return result[0], err
-	} else {
-		return nil, err
 	}
+	return nil, err
 }
 
 // Answer creates an answer for the current Message with an embedded

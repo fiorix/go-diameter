@@ -153,8 +153,7 @@ func TestMessageFindAVP(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(a)
-
-	avps := make([]*AVP, 0)
+	var avps []*AVP
 	avps, err = m.FindAVPs("Supported-Vendor-Id")
 	if err != nil || len(avps) != 2 {
 		t.Fatal(err)

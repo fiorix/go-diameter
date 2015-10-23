@@ -31,6 +31,7 @@ const (
 	Integer32Type
 	Integer64Type
 	OctetStringType
+	QoSFilterRuleType
 	TimeType
 	UTF8StringType
 	Unsigned32Type
@@ -51,6 +52,7 @@ var Available = map[string]TypeID{
 	"Integer32":        Integer32Type,
 	"Integer64":        Integer64Type,
 	"OctetString":      OctetStringType,
+	"QoSFilterRule":    QoSFilterRuleType,
 	"Time":             TimeType,
 	"UTF8String":       UTF8StringType,
 	"Unsigned32":       Unsigned32Type,

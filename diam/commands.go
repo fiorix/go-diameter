@@ -8,6 +8,7 @@ package diam
 
 // Diameter command codes.
 const (
+	AA                   = 265
 	AbortSession         = 274
 	Accounting           = 271
 	CapabilitiesExchange = 257

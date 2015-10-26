@@ -14,6 +14,9 @@ type Integer64 int64
 
 // DecodeInteger64 decodes an Integer64 data type from byte array.
 func DecodeInteger64(b []byte) (Type, error) {
+	if len(b) != 8 {
+		return Integer64(0), nil
+	}
 	return Integer64(binary.BigEndian.Uint64(b)), nil
 }
 

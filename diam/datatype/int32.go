@@ -14,6 +14,9 @@ type Integer32 int32
 
 // DecodeInteger32 decodes an Integer32 data type from byte array.
 func DecodeInteger32(b []byte) (Type, error) {
+	if len(b) != 4 {
+		return Integer32(0), nil
+	}
 	return Integer32(binary.BigEndian.Uint32(b)), nil
 }
 

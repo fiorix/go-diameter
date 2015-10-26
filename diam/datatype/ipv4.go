@@ -14,6 +14,9 @@ type IPv4 net.IP
 
 // DecodeIPv4 decodes an IPv4 data type from byte array.
 func DecodeIPv4(b []byte) (Type, error) {
+	if len(b) != 4 {
+		return IPv4{0, 0, 0, 0}, nil
+	}
 	return IPv4(b), nil
 }
 

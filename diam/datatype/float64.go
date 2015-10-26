@@ -15,6 +15,9 @@ type Float64 float64
 
 // DecodeFloat64 decodes a Float64 data type from byte array.
 func DecodeFloat64(b []byte) (Type, error) {
+	if len(b) != 8 {
+		return Float64(0), nil
+	}
 	return Float64(math.Float64frombits(binary.BigEndian.Uint64(b))), nil
 }
 

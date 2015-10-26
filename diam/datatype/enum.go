@@ -12,7 +12,10 @@ type Enumerated Integer32
 // DecodeEnumerated decodes an Enumerated data type from byte array.
 func DecodeEnumerated(b []byte) (Type, error) {
 	v, err := DecodeInteger32(b)
-	return Enumerated(v.(Integer32)), err
+	if err != nil {
+		return nil, err
+	}
+	return Enumerated(v.(Integer32)), nil
 }
 
 // Serialize implements the Type interface.

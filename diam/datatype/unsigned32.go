@@ -14,6 +14,9 @@ type Unsigned32 uint32
 
 // DecodeUnsigned32 decodes an Unsigned32 data type from byte array.
 func DecodeUnsigned32(b []byte) (Type, error) {
+	if len(b) != 4 {
+		return Unsigned32(0), nil
+	}
 	return Unsigned32(binary.BigEndian.Uint32(b)), nil
 }
 

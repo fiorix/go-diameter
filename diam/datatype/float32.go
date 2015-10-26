@@ -15,6 +15,9 @@ type Float32 float32
 
 // DecodeFloat32 decodes a Float32 data type from a byte array.
 func DecodeFloat32(b []byte) (Type, error) {
+	if len(b) != 4 {
+		return Float32(0), nil
+	}
 	return Float32(math.Float32frombits(binary.BigEndian.Uint32(b))), nil
 }
 

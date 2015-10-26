@@ -14,6 +14,9 @@ type Unsigned64 uint64
 
 // DecodeUnsigned64 decodes an Unsigned64 data type from byte array.
 func DecodeUnsigned64(b []byte) (Type, error) {
+	if len(b) != 8 {
+		return Unsigned64(0), nil
+	}
 	return Unsigned64(binary.BigEndian.Uint64(b)), nil
 }
 

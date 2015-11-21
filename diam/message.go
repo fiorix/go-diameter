@@ -383,7 +383,7 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 //	avp, err := m.FindAVPsWithPath([]interface{}{264})
 //	avp, err := m.FindAVPsWithPath([]interface{}{avp.OriginHost})
 //	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
-//  avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
+// 	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
 //
 func (m *Message) FindAVPsWithPath(path []interface{}) ([]*AVP, error) {
 	pathCodes := make([]uint32, len(path))

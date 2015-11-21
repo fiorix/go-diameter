@@ -305,6 +305,32 @@ func findFromAVP(avps []*AVP, code uint32, findMultiple bool) ([]*AVP, error) {
 	return avpResult, nil
 }
 
+// Strict path search (eg: in case of groups)
+// Can be also used to search AVPs as findFromAVP
+func avpsWithPath(avps []*AVP, path []uint32) []*AVP {
+	if len(path) == 0 {
+		return avps
+	}
+	avsOnPath := make([]*AVP, 0)
+	for _, avp := range avps {
+		if avp.Code != path[0] {
+			continue
+		}
+		if len(path) == 1 { // Reached end
+			avsOnPath = append(avsOnPath, avp)
+			continue
+		}
+		if avp.Data.Type() != GroupedAVPType {
+			continue
+		}
+		avpsOnSubpath := avpsWithPath(avp.Data.(*GroupedAVP).AVP, path[1:])
+		if len(avpsOnSubpath) != 0 {
+			avsOnPath = append(avsOnPath, avpsOnSubpath...)
+		}
+	}
+	return avsOnPath
+}
+
 // FindAVPs searches the Message for all avps that match the search criteria.
 // The code can be either the AVP code (int, uint32) or name (string).
 //
@@ -346,6 +372,29 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 		return result[0], err
 	}
 	return nil, err
+}
+
+// FindAVPsWithPath searches the Message for AVPs on specific path.
+// Used for example on group hierarchies.
+// The path elements can be either AVP code (int, uint32), name (string) or combination of them.
+//
+// Example:
+//
+//	avp, err := m.FindAVPsWithPath([]interface{}{264})
+//	avp, err := m.FindAVPsWithPath([]interface{}{avp.OriginHost})
+//	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
+//  avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
+//
+func (m *Message) FindAVPsWithPath(path []interface{}) ([]*AVP, error) {
+	pathCodes := make([]uint32, len(path))
+	for i, pathCode := range path {
+		dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, pathCode)
+		if err != nil {
+			return nil, err
+		}
+		pathCodes[i] = dictAVP.Code
+	}
+	return avpsWithPath(m.AVP, pathCodes), nil
 }
 
 // Answer creates an answer for the current Message with an embedded

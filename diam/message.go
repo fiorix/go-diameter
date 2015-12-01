@@ -182,9 +182,10 @@ func (m *Message) NewAVP(code interface{}, flags uint8, vendor uint32, data data
 	case uint32:
 		a = NewAVP(code.(uint32), flags, vendor, data)
 	case string:
-		dictAVP, err := m.Dictionary().FindAVP(
+		dictAVP, err := m.Dictionary().FindAVPWithVendor(
 			m.Header.ApplicationID,
 			code.(string),
+			vendor,
 		)
 		if err != nil {
 			return nil, err
@@ -340,8 +341,8 @@ func avpsWithPath(avps []*AVP, path []uint32) []*AVP {
 //	avps, err := m.FindAVPs(avp.OriginHost)
 //	avps, err := m.FindAVPs("Origin-Host")
 //
-func (m *Message) FindAVPs(code interface{}) ([]*AVP, error) {
-	dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, code)
+func (m *Message) FindAVPs(code interface{}, vendorId uint32) ([]*AVP, error) {
+	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorId)
 
 	if err != nil {
 		return nil, err
@@ -359,8 +360,8 @@ func (m *Message) FindAVPs(code interface{}) ([]*AVP, error) {
 //	avp, err := m.FindAVP(avp.OriginHost)
 //	avp, err := m.FindAVP("Origin-Host")
 //
-func (m *Message) FindAVP(code interface{}) (*AVP, error) {
-	dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, code)
+func (m *Message) FindAVP(code interface{}, vendorId uint32) (*AVP, error) {
+	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorId)
 
 	if err != nil {
 		return nil, err
@@ -383,12 +384,11 @@ func (m *Message) FindAVP(code interface{}) (*AVP, error) {
 //	avp, err := m.FindAVPsWithPath([]interface{}{264})
 //	avp, err := m.FindAVPsWithPath([]interface{}{avp.OriginHost})
 //	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
-// 	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
 //
-func (m *Message) FindAVPsWithPath(path []interface{}) ([]*AVP, error) {
+func (m *Message) FindAVPsWithPath(path []interface{}, vendorId uint32) ([]*AVP, error) {
 	pathCodes := make([]uint32, len(path))
 	for i, pathCode := range path {
-		dictAVP, err := m.Dictionary().FindAVP(m.Header.ApplicationID, pathCode)
+		dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, pathCode, vendorId)
 		if err != nil {
 			return nil, err
 		}
@@ -435,9 +435,10 @@ func (m *Message) String() string {
 		)
 	}
 	for _, a := range m.AVP {
-		if dictAVP, err := m.Dictionary().FindAVP(
+		if dictAVP, err := m.Dictionary().FindAVPWithVendor(
 			m.Header.ApplicationID,
 			a.Code,
+			a.VendorID,
 		); err != nil {
 			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", a, err)
 		} else if a.Data.Type() == GroupedAVPType {
@@ -458,9 +459,10 @@ func printGrouped(prefix string, m *Message, a *AVP, indent int) string {
 		a.VendorID,
 	)
 	for _, ga := range a.Data.(*GroupedAVP).AVP {
-		if dictAVP, err := m.Dictionary().FindAVP(
+		if dictAVP, err := m.Dictionary().FindAVPWithVendor(
 			m.Header.ApplicationID,
 			ga.Code,
+			ga.VendorID,
 		); err != nil {
 			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, ga, err)
 		} else {

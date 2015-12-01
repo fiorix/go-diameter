@@ -4,7 +4,10 @@
 
 package dict
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+)
 
 func TestApps(t *testing.T) {
 	apps := Default.Apps()
@@ -29,6 +32,40 @@ func TestApp(t *testing.T) {
 	// Credit-Control applications.
 	if _, err := Default.App(4); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestFindAVPWithVendor(t *testing.T) {
+	var nokiaXML = `<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+  <application id="4">
+    <vendor id="94" name="Nokia" />
+    <avp name="Session-Start-Indicator" code="5105" must="V" may="P,M" must-not="-" may-encrypt="N" vendor-id="94">
+      <data type="UTF8String" />
+    </avp>
+  </application>
+</diameter>`
+	Default.Load(bytes.NewReader([]byte(nokiaXML)))
+	if _, err := Default.FindAVPWithVendor(4, 999, UNDEFINED_VENDORID); err == nil {
+		t.Error("Should get not found")
+	}
+	if avp, err := Default.FindAVPWithVendor(4, "Session-Id", UNDEFINED_VENDORID); err != nil {
+		t.Fatal(err)
+	} else if avp.Code != 263 {
+		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
+	}
+	if avp, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", 94); err != nil {
+		t.Fatal(err)
+	} else if avp.Code != 5105 {
+		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
+	}
+	if avp, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", UNDEFINED_VENDORID); err != nil {
+		t.Fatal(err)
+	} else if avp.Code != 5105 {
+		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
+	}
+	if _, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", 0); err == nil {
+		t.Error("Should get not found")
 	}
 }
 

@@ -16,7 +16,7 @@ import (
 // A Server is a Diameter server listening on a system-chosen port on the
 // local loopback interface, for use in end-to-end tests.
 type Server struct {
-	Address  string
+	Addr     string
 	Listener net.Listener
 	TLS      *tls.Config
 	Config   *diam.Server
@@ -58,16 +58,16 @@ func newLocalListener() net.Listener {
 
 // Start starts a server from NewUnstartedServer.
 func (s *Server) Start() {
-	if s.Address != "" {
+	if s.Addr != "" {
 		panic("Server already started")
 	}
-	s.Address = s.Listener.Addr().String()
+	s.Addr = s.Listener.Addr().String()
 	go s.Config.Serve(s.Listener)
 }
 
 // StartTLS starts TLS on a server from NewUnstartedServer.
 func (s *Server) StartTLS() {
-	if s.Address != "" {
+	if s.Addr != "" {
 		panic("Server already started")
 	}
 	cert, err := tls.X509KeyPair(localhostCert, localhostKey)
@@ -90,7 +90,7 @@ func (s *Server) StartTLS() {
 	}
 	tlsListener := tls.NewListener(s.Listener, s.TLS)
 	s.Listener = tlsListener
-	s.Address = s.Listener.Addr().String()
+	s.Addr = s.Listener.Addr().String()
 	go s.Config.Serve(s.Listener)
 }
 

@@ -95,6 +95,15 @@ func TestDecodeAVPMalformed(t *testing.T) {
 }
 
 func TestDecodeAVPWithVendorID(t *testing.T) {
+	var userNameVendorXML = `<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+  <application id="1">
+    <avp name="Session-Start-Indicator" code="1" vendor-id="999">
+      <data type="UTF8String" />
+    </avp>
+  </application>
+</diameter>`
+	dict.Default.Load(bytes.NewReader([]byte(userNameVendorXML)))
 	a := NewAVP(avp.UserName, avp.Mbit|avp.Vbit, 999, datatype.UTF8String("foobar"))
 	b, err := a.Serialize()
 	if err != nil {

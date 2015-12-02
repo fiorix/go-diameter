@@ -137,23 +137,23 @@ func TestNewMessage(t *testing.T) {
 
 func TestMessageFindAVP(t *testing.T) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
-	a, err := m.FindAVP(avp.OriginStateID)
+	a, err := m.FindAVP(avp.OriginStateID, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	a, err = m.FindAVP("Origin-State-Id")
+	a, err = m.FindAVP("Origin-State-Id", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(a)
 
-	a, err = m.FindAVP("Vendor-Id")
+	a, err = m.FindAVP("Vendor-Id", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(a)
 	var avps []*AVP
-	avps, err = m.FindAVPs("Supported-Vendor-Id")
+	avps, err = m.FindAVPs("Supported-Vendor-Id", 0)
 	if err != nil || len(avps) != 2 {
 		t.Fatal(err)
 	}
@@ -162,22 +162,22 @@ func TestMessageFindAVP(t *testing.T) {
 
 func TestMessageFindAVPsWithPath(t *testing.T) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
-	if avps, err := m.FindAVPsWithPath(nil); err != nil || len(avps) != len(m.AVP) {
+	if avps, err := m.FindAVPsWithPath(nil, 0); err != nil || len(avps) != len(m.AVP) {
 		t.Errorf("Received nr of AVPs: %d, error: %v", len(avps), err)
 	}
-	if avps, err := m.FindAVPsWithPath([]interface{}{avp.VendorID}); len(avps) != 1 {
+	if avps, err := m.FindAVPsWithPath([]interface{}{avp.VendorID}, 0); len(avps) != 1 {
 		t.Errorf("Received nr of AVPs: %d, error: %v", len(avps), err)
 	}
-	if avps, err := m.FindAVPsWithPath([]interface{}{avp.VendorSpecificApplicationID}); len(avps) != 1 {
+	if avps, err := m.FindAVPsWithPath([]interface{}{avp.VendorSpecificApplicationID}, 0); len(avps) != 1 {
 		t.Errorf("Received nr of AVPs: %d, error: %v", len(avps), err)
 	}
-	if avps, err := m.FindAVPsWithPath([]interface{}{"Vendor-Specific-Application-Id", avp.VendorID}); len(avps) != 1 {
+	if avps, err := m.FindAVPsWithPath([]interface{}{"Vendor-Specific-Application-Id", avp.VendorID}, 0); len(avps) != 1 {
 		t.Errorf("Received nr of AVPs: %d, error: %v", len(avps), err)
 	}
-	if avps, err := m.FindAVPsWithPath([]interface{}{avp.VendorID}); len(avps) != 1 {
+	if avps, err := m.FindAVPsWithPath([]interface{}{avp.VendorID}, 0); len(avps) != 1 {
 		t.Errorf("Received nr of AVPs: %d, error: %v", len(avps), err)
 	}
-	if avps, err := m.FindAVPsWithPath([]interface{}{avp.VendorSpecificApplicationID, avp.OriginStateID}); len(avps) != 0 {
+	if avps, err := m.FindAVPsWithPath([]interface{}{avp.VendorSpecificApplicationID, avp.OriginStateID}, 0); len(avps) != 0 {
 		t.Errorf("Received nr of AVPs: %d, error: %v", len(avps), err)
 	}
 }

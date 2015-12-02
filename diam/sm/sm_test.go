@@ -16,7 +16,7 @@ import (
 )
 
 func testResultCode(m *diam.Message, want uint32) bool {
-	rc, err := m.FindAVP("Result-Code")
+	rc, err := m.FindAVP("Result-Code", 0)
 	if err != nil {
 		return false
 	}

@@ -30,7 +30,7 @@ func TestHandleDWR(t *testing.T) {
 	mux.HandleFunc("DWA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestHandleDWR_Fail(t *testing.T) {
 	mux.HandleFunc("DWA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}

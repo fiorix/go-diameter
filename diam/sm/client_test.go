@@ -86,7 +86,7 @@ func TestClient_Handshake(t *testing.T) {
 			}),
 		},
 	}
-	c, err := cli.Dial(srv.Address)
+	c, err := cli.Dial(srv.Addr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +120,7 @@ func TestClient_Handshake_Notify(t *testing.T) {
 		<-cli.Handler.HandshakeNotify()
 		close(handshakeOK)
 	}()
-	c, err := cli.Dial(srv.Address)
+	c, err := cli.Dial(srv.Addr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -147,7 +147,7 @@ func TestClient_Handshake_FailParseCEA(t *testing.T) {
 			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
 		},
 	}
-	_, err := cli.Dial(srv.Address)
+	_, err := cli.Dial(srv.Addr)
 	if err != smparser.ErrMissingOriginHost {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestClient_Handshake_FailedResultCode(t *testing.T) {
 			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
 		},
 	}
-	_, err := cli.Dial(srv.Address)
+	_, err := cli.Dial(srv.Addr)
 	if err == nil {
 		t.Fatal("Unexpected CER worked")
 	}
@@ -205,7 +205,7 @@ func TestClient_Handshake_RetransmitTimeout(t *testing.T) {
 			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
 		},
 	}
-	_, err := cli.Dial(srv.Address)
+	_, err := cli.Dial(srv.Addr)
 	if err == nil {
 		t.Fatal("Unexpected CER worked")
 	}
@@ -228,7 +228,7 @@ func TestClient_Watchdog(t *testing.T) {
 			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
 		},
 	}
-	c, err := cli.Dial(srv.Address)
+	c, err := cli.Dial(srv.Addr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -263,7 +263,7 @@ func TestClient_Watchdog_Timeout(t *testing.T) {
 			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
 		},
 	}
-	c, err := cli.Dial(srv.Address)
+	c, err := cli.Dial(srv.Addr)
 	if err != nil {
 		t.Fatal(err)
 	}

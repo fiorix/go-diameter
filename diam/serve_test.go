@@ -30,7 +30,7 @@ func TestCapabilitiesExchange(t *testing.T) {
 	cmux := diam.NewServeMux()
 	cmux.Handle("CEA", handleCEA(errc, wait))
 
-	cli, err := diam.Dial(srv.Address, cmux, nil)
+	cli, err := diam.Dial(srv.Addr, cmux, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestCapabilitiesExchangeTLS(t *testing.T) {
 	cmux := diam.NewServeMux()
 	cmux.Handle("CEA", handleCEA(errc, wait))
 
-	cli, err := diam.DialTLS(srv.Address, "", "", cmux, nil)
+	cli, err := diam.DialTLS(srv.Addr, "", "", cmux, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

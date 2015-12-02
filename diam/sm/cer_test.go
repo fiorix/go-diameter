@@ -23,7 +23,7 @@ func TestHandleCER_HandshakeMetadata(t *testing.T) {
 	srv := diamtest.NewServer(sm, dict.Default)
 	defer srv.Close()
 	hsc := make(chan diam.Conn, 1)
-	cli, err := diam.Dial(srv.Address, nil, dict.Default)
+	cli, err := diam.Dial(srv.Addr, nil, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func TestHandleCER_Acct(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +114,7 @@ func TestHandleCER_Acct_Fail(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +153,7 @@ func TestHandleCER_VS_Acct(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,7 +196,7 @@ func TestHandleCER_VS_Acct_Fail(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -239,7 +239,7 @@ func TestHandleCER_Auth(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -278,7 +278,7 @@ func TestHandleCER_Auth_Fail(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -317,7 +317,7 @@ func TestHandleCER_VS_Auth(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -360,7 +360,7 @@ func TestHandleCER_VS_Auth_Fail(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -403,7 +403,7 @@ func TestHandleCER_InbandSecurity(t *testing.T) {
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Address, mux, dict.Default)
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -53,11 +53,6 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", dl)
 	}
 	a.Code = binary.BigEndian.Uint32(data[0:4])
-	// Find this code in the dictionary.
-	dictAVP, err := dictionary.FindAVP(application, a.Code)
-	if err != nil {
-		return err
-	}
 	a.Flags = data[4]
 	a.Length = int(uint24to32(data[5:8]))
 	if dl < int(a.Length) {
@@ -75,6 +70,11 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	} else {
 		payload = data[8:]
 		hdrLength = 8
+	}
+	// Find this code in the dictionary.
+	dictAVP, err := dictionary.FindAVPWithVendor(application, a.Code, a.VendorID)
+	if err != nil {
+		return err
 	}
 	bodyLen := a.Length - hdrLength
 	if n := len(payload); n < bodyLen {

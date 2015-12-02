@@ -57,6 +57,7 @@ type AVP struct {
 	May        string `xml:"may,attr"`
 	MustNot    string `xml:"must-not,attr"`
 	MayEncrypt string `xml:"may-encrypt,attr"`
+	VendorID   uint32 `xml:"vendor-id,attr"`
 	Data       Data   `xml:"data"`
 	App        *App   `xml:"none"` // Link back to diameter application
 }

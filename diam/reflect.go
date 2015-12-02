@@ -110,7 +110,7 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 		}
 		// Lookup the AVP name (tag) in the dictionary.
 		// The dictionary AVP has the code.
-		d, err := m.Dictionary().FindAVP(m.Header.ApplicationID, avpname)
+		d, err := m.Dictionary().FindAVP(m.Header.ApplicationID, avpname) // Relies on the fact that in the same app will not be AVPs with same code but different vendorId
 		if err != nil {
 			return err
 		}

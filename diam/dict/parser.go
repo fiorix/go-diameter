@@ -17,6 +17,11 @@ import (
 	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
+const (
+	// UndefinedVendorID specifies a non existing vendorID
+	UndefinedVendorID = 4294967295
+)
+
 // Parser is the root element for dictionaries and supports multiple XML
 // dictionary files loaded together. Diameter applications use dictionaries
 // to parse messages received from peers as well as to encode crafted
@@ -37,13 +42,15 @@ type Parser struct {
 }
 
 type codeIdx struct {
-	appID uint32
-	code  uint32
+	appID    uint32
+	code     uint32
+	vendorID uint32
 }
 
 type nameIdx struct {
-	appID uint32
-	name  string
+	appID    uint32
+	name     string
+	vendorID uint32
 }
 
 // NewParser allocates a new Parser optionally loading dictionary XML files.
@@ -89,14 +96,17 @@ func (p *Parser) Load(r io.Reader) error {
 		p.appcode[app.ID] = app
 		// Cache commands.
 		for _, cmd := range app.Command {
-			p.command[codeIdx{app.ID, cmd.Code}] = cmd
+			p.command[codeIdx{app.ID, cmd.Code, UndefinedVendorID}] = cmd
 		}
 		// Cache AVPs.
 		for _, avp := range app.AVP {
 			// Link AVP to its Application
 			avp.App = app
-			p.avpname[nameIdx{app.ID, avp.Name}] = avp
-			p.avpcode[codeIdx{app.ID, avp.Code}] = avp
+			p.avpname[nameIdx{app.ID, avp.Name, avp.VendorID}] = avp
+			p.avpcode[codeIdx{app.ID, avp.Code, avp.VendorID}] = avp
+			// Index without vendorId
+			p.avpname[nameIdx{app.ID, avp.Name, UndefinedVendorID}] = avp
+			p.avpcode[codeIdx{app.ID, avp.Code, UndefinedVendorID}] = avp
 			// Check the AVP type.
 			if err := updateType(avp); err != nil {
 				return err
@@ -160,6 +170,9 @@ func printCommand(w io.Writer, cmd *Command) {
 func printAVP(w io.Writer, avp *AVP) {
 	fmt.Fprintf(w, "\t%-4d %s: %s\n",
 		avp.Code, avp.Name, avp.Data.TypeName)
+	if avp.VendorID != 0 {
+		fmt.Fprintf(w, "\t\tVendorID: %d\n", avp.VendorID)
+	}
 	// Enumerated
 	if len(avp.Data.Enum) > 0 {
 		fmt.Fprintf(w, "\t\tItems:\n")

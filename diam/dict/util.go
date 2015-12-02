@@ -41,14 +41,14 @@ func (p *Parser) App(code uint32) (*App, error) {
 // does not exist in the dictionary Parser object.
 var ErrApplicationUnsupported = errors.New("application unsupported")
 
-// FindAVPWithVendor is a helper function that returns a pre-loaded AVP from the Parser, considering VendorId as filter.
-// For no VendorID filter, use UNDEFINED_VENDORID constant
+// FindAVPWithVendor is a helper function that returns a pre-loaded AVP from the Parser, considering vendorID as filter.
+// For no vendorID filter, use UndefinedVendorID constant
 // If the AVP code is not found for the given appid it tries with appid=0
 // before returning an error.
 // Code can be either the AVP code (int, uint32) or name (string).
 //
 // FindAVPWithVendor must never be called concurrently with LoadFile or Load.
-func (p *Parser) FindAVPWithVendor(appid uint32, code interface{}, vendorId uint32) (*AVP, error) {
+func (p *Parser) FindAVPWithVendor(appid uint32, code interface{}, vendorID uint32) (*AVP, error) {
 	//p.mu.Lock()
 	//defer p.mu.Unlock()
 	var (
@@ -59,17 +59,17 @@ func (p *Parser) FindAVPWithVendor(appid uint32, code interface{}, vendorId uint
 retry:
 	switch code.(type) {
 	case string:
-		avp, ok = p.avpname[nameIdx{appid, code.(string), vendorId}]
+		avp, ok = p.avpname[nameIdx{appid, code.(string), vendorID}]
 		if !ok && appid == 0 {
-			err = fmt.Errorf("Could not find AVP %s, vendorId: %d", code.(string))
+			err = fmt.Errorf("Could not find AVP %s", code.(string))
 		}
 	case uint32:
-		avp, ok = p.avpcode[codeIdx{appid, code.(uint32), vendorId}]
+		avp, ok = p.avpcode[codeIdx{appid, code.(uint32), vendorID}]
 		if !ok && appid == 0 {
 			err = fmt.Errorf("Could not find AVP %d", code.(uint32))
 		}
 	case int:
-		avp, ok = p.avpcode[codeIdx{appid, uint32(code.(int)), vendorId}]
+		avp, ok = p.avpcode[codeIdx{appid, uint32(code.(int)), vendorID}]
 		if !ok && appid == 0 {
 			err = fmt.Errorf("Could not find AVP %d", code.(int))
 		}
@@ -93,7 +93,7 @@ retry:
 //
 // FindAVP must never be called concurrently with LoadFile or Load.
 func (p *Parser) FindAVP(appid uint32, code interface{}) (*AVP, error) {
-	return p.FindAVPWithVendor(appid, code, UNDEFINED_VENDORID)
+	return p.FindAVPWithVendor(appid, code, UndefinedVendorID)
 }
 
 // ScanAVP is a helper function that returns a pre-loaded AVP from the Dict.
@@ -139,9 +139,9 @@ func (p *Parser) ScanAVP(code interface{}) (*AVP, error) {
 func (p *Parser) FindCommand(appid, code uint32) (*Command, error) {
 	//p.mu.Lock()
 	//defer p.mu.Unlock()
-	if cmd, ok := p.command[codeIdx{appid, code, UNDEFINED_VENDORID}]; ok {
+	if cmd, ok := p.command[codeIdx{appid, code, UndefinedVendorID}]; ok {
 		return cmd, nil
-	} else if cmd, ok = p.command[codeIdx{0, code, UNDEFINED_VENDORID}]; ok {
+	} else if cmd, ok = p.command[codeIdx{0, code, UndefinedVendorID}]; ok {
 		// Always fall back to base dict.
 		return cmd, nil
 	}

@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	UNDEFINED_VENDORID = 4294967295
+	// UndefinedVendorID specifies a non existing vendorID
+	UndefinedVendorID = 4294967295
 )
 
 // Parser is the root element for dictionaries and supports multiple XML
@@ -43,13 +44,13 @@ type Parser struct {
 type codeIdx struct {
 	appID    uint32
 	code     uint32
-	vendorId uint32
+	vendorID uint32
 }
 
 type nameIdx struct {
 	appID    uint32
 	name     string
-	vendorId uint32
+	vendorID uint32
 }
 
 // NewParser allocates a new Parser optionally loading dictionary XML files.
@@ -95,7 +96,7 @@ func (p *Parser) Load(r io.Reader) error {
 		p.appcode[app.ID] = app
 		// Cache commands.
 		for _, cmd := range app.Command {
-			p.command[codeIdx{app.ID, cmd.Code, UNDEFINED_VENDORID}] = cmd
+			p.command[codeIdx{app.ID, cmd.Code, UndefinedVendorID}] = cmd
 		}
 		// Cache AVPs.
 		for _, avp := range app.AVP {
@@ -104,15 +105,14 @@ func (p *Parser) Load(r io.Reader) error {
 			p.avpname[nameIdx{app.ID, avp.Name, avp.VendorID}] = avp
 			p.avpcode[codeIdx{app.ID, avp.Code, avp.VendorID}] = avp
 			// Index without vendorId
-			p.avpname[nameIdx{app.ID, avp.Name, UNDEFINED_VENDORID}] = avp
-			p.avpcode[codeIdx{app.ID, avp.Code, UNDEFINED_VENDORID}] = avp
+			p.avpname[nameIdx{app.ID, avp.Name, UndefinedVendorID}] = avp
+			p.avpcode[codeIdx{app.ID, avp.Code, UndefinedVendorID}] = avp
 			// Check the AVP type.
 			if err := updateType(avp); err != nil {
 				return err
 			}
 		}
 	}
-	fmt.Printf("### Parser.Load, have loaded AVPs: %+v\n\n\n", p.avpcode)
 	return nil
 }
 

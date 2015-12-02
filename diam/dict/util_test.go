@@ -46,10 +46,10 @@ func TestFindAVPWithVendor(t *testing.T) {
   </application>
 </diameter>`
 	Default.Load(bytes.NewReader([]byte(nokiaXML)))
-	if _, err := Default.FindAVPWithVendor(4, 999, UNDEFINED_VENDORID); err == nil {
+	if _, err := Default.FindAVPWithVendor(4, 999, UndefinedVendorID); err == nil {
 		t.Error("Should get not found")
 	}
-	if avp, err := Default.FindAVPWithVendor(4, "Session-Id", UNDEFINED_VENDORID); err != nil {
+	if avp, err := Default.FindAVPWithVendor(4, "Session-Id", UndefinedVendorID); err != nil {
 		t.Fatal(err)
 	} else if avp.Code != 263 {
 		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
@@ -59,7 +59,7 @@ func TestFindAVPWithVendor(t *testing.T) {
 	} else if avp.Code != 5105 {
 		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
 	}
-	if avp, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", UNDEFINED_VENDORID); err != nil {
+	if avp, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", UndefinedVendorID); err != nil {
 		t.Fatal(err)
 	} else if avp.Code != 5105 {
 		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)

@@ -312,7 +312,7 @@ func avpsWithPath(avps []*AVP, path []uint32) []*AVP {
 	if len(path) == 0 {
 		return avps
 	}
-	avsOnPath := make([]*AVP, 0)
+	var avsOnPath []*AVP
 	for _, avp := range avps {
 		if avp.Code != path[0] {
 			continue
@@ -341,8 +341,8 @@ func avpsWithPath(avps []*AVP, path []uint32) []*AVP {
 //	avps, err := m.FindAVPs(avp.OriginHost)
 //	avps, err := m.FindAVPs("Origin-Host")
 //
-func (m *Message) FindAVPs(code interface{}, vendorId uint32) ([]*AVP, error) {
-	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorId)
+func (m *Message) FindAVPs(code interface{}, vendorID uint32) ([]*AVP, error) {
+	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorID)
 
 	if err != nil {
 		return nil, err
@@ -360,8 +360,8 @@ func (m *Message) FindAVPs(code interface{}, vendorId uint32) ([]*AVP, error) {
 //	avp, err := m.FindAVP(avp.OriginHost)
 //	avp, err := m.FindAVP("Origin-Host")
 //
-func (m *Message) FindAVP(code interface{}, vendorId uint32) (*AVP, error) {
-	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorId)
+func (m *Message) FindAVP(code interface{}, vendorID uint32) (*AVP, error) {
+	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorID)
 
 	if err != nil {
 		return nil, err
@@ -385,10 +385,10 @@ func (m *Message) FindAVP(code interface{}, vendorId uint32) (*AVP, error) {
 //	avp, err := m.FindAVPsWithPath([]interface{}{avp.OriginHost})
 //	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
 //
-func (m *Message) FindAVPsWithPath(path []interface{}, vendorId uint32) ([]*AVP, error) {
+func (m *Message) FindAVPsWithPath(path []interface{}, vendorID uint32) ([]*AVP, error) {
 	pathCodes := make([]uint32, len(path))
 	for i, pathCode := range path {
-		dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, pathCode, vendorId)
+		dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, pathCode, vendorID)
 		if err != nil {
 			return nil, err
 		}

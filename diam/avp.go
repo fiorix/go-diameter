@@ -123,7 +123,7 @@ func (a *AVP) SerializeTo(b []byte) error {
 		return errors.New("Failed to serialize AVP: Data is nil")
 	}
 	payload := a.Data.Serialize()
-	if a.VendorID > 0 {
+	if a.Flags&avp.Vbit == avp.Vbit {
 		copy(b[5:8], uint32to24(uint32(12+a.Data.Len())))
 		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
 		copy(b[12:], payload)

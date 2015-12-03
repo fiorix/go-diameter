@@ -32,6 +32,9 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data datatype.Type) *AVP {
 		Data:     data,
 	}
 	a.Length = a.headerLen()
+	if vendor > 0 && flags&avp.Vbit != avp.Vbit {
+		a.Flags |= avp.Vbit
+	}
 	return a
 }
 
@@ -106,12 +109,7 @@ func (a *AVP) Serialize() ([]byte, error) {
 	if a.Data == nil {
 		return nil, errors.New("Failed to serialize AVP: Data is nil")
 	}
-	var b []byte
-	if a.VendorID > 0 {
-		b = make([]byte, 12+a.Data.Len()+a.Data.Padding())
-	} else {
-		b = make([]byte, 8+a.Data.Len()+a.Data.Padding())
-	}
+	b := make([]byte, a.Len())
 	err := a.SerializeTo(b)
 	if err != nil {
 		return nil, err

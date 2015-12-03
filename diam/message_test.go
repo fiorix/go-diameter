@@ -182,6 +182,46 @@ func TestMessageFindAVPsWithPath(t *testing.T) {
 	}
 }
 
+func TestMessageWriteTo(t *testing.T) {
+	var mydictXML = `<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+  <application id="4">
+    <avp name="Service-Information" code="873" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
+      <data type="Grouped">
+        <rule avp="IN-Information" required="false" max="1" />
+      </data>
+    </avp>
+    <avp name="IN-Information" code="20300" must="V" may="P,M" must-not="-" may-encrypt="N" vendor-id="20300">
+      <data type="Grouped">
+        <rule avp="Charge-Flow-Type" required="false" max="1" />
+        <rule avp="Calling-Vlr-Number" required="false" max="1" />
+      </data>
+    </avp>
+    <avp name="Charge-Flow-Type" code="20339" must="V" may="P,M" must-not="-" may-encrypt="N" vendor-id="20300">
+      <data type="Unsigned32" />
+    </avp>
+    <avp name="Calling-Vlr-Number" code="20302" must="V" may="P,M" must-not="-" may-encrypt="N" vendor-id="20300">
+      <data type="UTF8String" />
+    </avp>
+  </application>
+</diameter>`
+	dict.Default.Load(bytes.NewReader([]byte(mydictXML)))
+	m := NewRequest(CreditControl, 4, nil)
+	m.NewAVP("Session-Id", avp.Mbit, 0, datatype.UTF8String("890f81bee22a0dfddc8b9037eb367781cea1f328"))
+	m.NewAVP("Service-Information", avp.Mbit, 10415, &GroupedAVP{
+		AVP: []*AVP{
+			NewAVP(20300, avp.Mbit, 20300, &GroupedAVP{ // IN-Information
+				AVP: []*AVP{
+					NewAVP(20339, avp.Mbit, 20300, datatype.Unsigned32(0)),  // Charge-Flow-Type
+					NewAVP(20302, avp.Mbit, 20300, datatype.UTF8String("")), // Calling-Vlr-Number
+				},
+			}),
+		}})
+	if _, err := m.WriteTo(ioutil.Discard); err != nil {
+		t.Error(err)
+	}
+}
+
 func BenchmarkReadMessage(b *testing.B) {
 	reader := bytes.NewReader(testMessage)
 	for n := 0; n < b.N; n++ {

@@ -31,7 +31,7 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data datatype.Type) *AVP {
 		VendorID: vendor,
 		Data:     data,
 	}
-	a.Length = a.headerLen()
+	a.Length = a.headerLen() + a.Data.Len() // no padding length
 	if vendor > 0 && flags&avp.Vbit != avp.Vbit {
 		a.Flags |= avp.Vbit
 	}
@@ -138,14 +138,14 @@ func (a *AVP) SerializeTo(b []byte) error {
 
 // Len returns the length of this AVP in bytes with padding.
 func (a *AVP) Len() int {
-	return a.headerLen() + a.Data.Padding()
+	return a.headerLen() + a.Data.Len() + a.Data.Padding()
 }
 
 func (a *AVP) headerLen() int {
 	if a.Flags&avp.Vbit == avp.Vbit {
-		return 12 + a.Data.Len()
+		return 12
 	}
-	return 8 + a.Data.Len()
+	return 8
 }
 
 func (a *AVP) String() string {

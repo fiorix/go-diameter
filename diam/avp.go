@@ -124,12 +124,12 @@ func (a *AVP) SerializeTo(b []byte) error {
 	}
 	binary.BigEndian.PutUint32(b[0:4], a.Code)
 	b[4] = a.Flags
-	payload := a.Data.Serialize()
 	hl := a.headerLen()
 	copy(b[5:8], uint32to24(uint32(hl+a.Data.Len())))
 	if a.Flags&avp.Vbit == avp.Vbit {
 		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
 	}
+	payload := a.Data.Serialize()
 	copy(b[hl:], payload)
 	// reset padding bytes
 	b = b[hl+len(payload):]

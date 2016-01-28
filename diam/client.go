@@ -15,7 +15,7 @@ import (
 
 // Dial connects to the peer pointed to by addr and returns the Conn that
 // can be used to send diameter messages. Incoming messages are handled
-// by the handler, which is tipically nil and DefaultServeMux is used.
+// by the handler, which is typically nil and DefaultServeMux is used.
 // If dict is nil, dict.Default is used.
 func Dial(addr string, handler Handler, dp *dict.Parser) (Conn, error) {
 	srv := &Server{Addr: addr, Handler: handler, Dict: dp}

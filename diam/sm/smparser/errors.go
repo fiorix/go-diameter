@@ -24,10 +24,6 @@ var (
 	// the message does not contain an Origin-Realm AVP.
 	ErrMissingOriginRealm = errors.New("missing Origin-Realm")
 
-	// ErrMissingOriginStateID is returned by Parse when
-	// the message does not contain an Origin-State-Id AVP.
-	ErrMissingOriginStateID = errors.New("missing Origin-State-Id")
-
 	// ErrMissingApplication is returned by Parse when
 	// the CER does not contain any Acct-Application-Id or
 	// Auth-Application-Id, or their embedded versions in

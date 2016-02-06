@@ -153,8 +153,10 @@ func (cli *Client) makeCER(ip net.IP) *diam.Message {
 	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(ip))
 	m.NewAVP(avp.VendorID, avp.Mbit, 0, cli.Handler.cfg.VendorID)
 	m.NewAVP(avp.ProductName, 0, 0, cli.Handler.cfg.ProductName)
-	stateid := datatype.Unsigned32(uint32(time.Now().Unix()))
-	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, stateid)
+	if cli.Handler.cfg.OriginStateID != 0 {
+		stateid := datatype.Unsigned32(cli.Handler.cfg.OriginStateID)
+		m.NewAVP(avp.OriginStateID, avp.Mbit, 0, stateid)
+	}
 	if cli.SupportedVendorID != nil {
 		for _, a := range cli.SupportedVendorID {
 			m.AddAVP(a)
@@ -176,7 +178,9 @@ func (cli *Client) makeCER(ip net.IP) *diam.Message {
 			m.AddAVP(a)
 		}
 	}
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, cli.Handler.cfg.FirmwareRevision)
+	if cli.Handler.cfg.FirmwareRevision != 0 {
+		m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, cli.Handler.cfg.FirmwareRevision)
+	}
 	return m
 }
 

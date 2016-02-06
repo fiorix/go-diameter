@@ -163,7 +163,9 @@ func TestClient_Handshake_FailedResultCode(t *testing.T) {
 		a := m.Answer(diam.NoCommonApplication)
 		a.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
 		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
-		a.AddAVP(cer.OriginStateID)
+		if cer.OriginStateID != nil {
+			a.AddAVP(cer.OriginStateID)
+		}
 		a.AddAVP(cer.AcctApplicationID[0]) // The one we send below.
 		a.WriteTo(c)
 	})

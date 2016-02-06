@@ -62,9 +62,6 @@ func (cer *CER) sanityCheck() error {
 	if len(cer.OriginRealm) == 0 {
 		return ErrMissingOriginRealm
 	}
-	if cer.OriginStateID == nil {
-		return ErrMissingOriginStateID
-	}
 	return nil
 }
 

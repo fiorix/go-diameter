@@ -17,8 +17,8 @@ import (
 
 // handleCER handles Capabilities-Exchange-Request messages.
 //
-// If mandatory AVPs such as Origin-Host, Origin-Realm, or
-// Origin-State-Id are missing, we close the connection.
+// If mandatory AVPs such as Origin-Host or Origin-Realm
+// are missing, we close the connection.
 //
 // See RFC 6733 section 5.3 for details.
 func handleCER(sm *StateMachine) diam.HandlerFunc {
@@ -83,11 +83,15 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	a.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(hostIP)))
 	a.NewAVP(avp.VendorID, avp.Mbit, 0, sm.cfg.VendorID)
 	a.NewAVP(avp.ProductName, 0, 0, sm.cfg.ProductName)
-	a.AddAVP(cer.OriginStateID)
+	if cer.OriginStateID != nil {
+		a.AddAVP(cer.OriginStateID)
+	}
 	a.NewAVP(avp.FailedAVP, avp.Mbit, 0, &diam.GroupedAVP{
 		AVP: []*diam.AVP{failedAVP},
 	})
-	a.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, sm.cfg.FirmwareRevision)
+	if sm.cfg.FirmwareRevision != 0 {
+		a.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, sm.cfg.FirmwareRevision)
+	}
 	_, err = a.WriteTo(c)
 	return err
 }
@@ -105,7 +109,9 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	a.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP(hostIP)))
 	a.NewAVP(avp.VendorID, avp.Mbit, 0, sm.cfg.VendorID)
 	a.NewAVP(avp.ProductName, 0, 0, sm.cfg.ProductName)
-	a.AddAVP(cer.OriginStateID)
+	if cer.OriginStateID != nil {
+		a.AddAVP(cer.OriginStateID)
+	}
 	if cer.AcctApplicationID != nil {
 		for _, acct := range cer.AcctApplicationID {
 			a.AddAVP(acct)
@@ -121,7 +127,9 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 			a.AddAVP(vs)
 		}
 	}
-	a.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, sm.cfg.FirmwareRevision)
+	if sm.cfg.FirmwareRevision != 0 {
+		a.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, sm.cfg.FirmwareRevision)
+	}
 	_, err = a.WriteTo(c)
 	return err
 }

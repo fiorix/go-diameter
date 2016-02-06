@@ -41,20 +41,6 @@ func TestCER_MissingOriginRealm(t *testing.T) {
 	}
 }
 
-func TestCER_MissingOriginStateID(t *testing.T) {
-	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
-	cer := new(CER)
-	_, err := cer.Parse(m)
-	if err == nil {
-		t.Fatal("Broken CER was parsed with no errors")
-	}
-	if err != ErrMissingOriginStateID {
-		t.Fatal("Unexpected error:", err)
-	}
-}
-
 func TestCER_MissingApplication(t *testing.T) {
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))

@@ -53,9 +53,6 @@ func (cea *CEA) sanityCheck() error {
 	if len(cea.OriginRealm) == 0 {
 		return ErrMissingOriginRealm
 	}
-	if cea.OriginStateID == 0 {
-		return ErrMissingOriginStateID
-	}
 	return nil
 }
 

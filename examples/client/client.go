@@ -76,6 +76,7 @@ func main() {
 		OriginRealm:      datatype.DiameterIdentity(*realm),
 		VendorID:         13,
 		ProductName:      "go-diameter",
+		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
 	}
 

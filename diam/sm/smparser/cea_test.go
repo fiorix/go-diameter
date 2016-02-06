@@ -53,21 +53,6 @@ func TestCEA_MissingOriginRealm(t *testing.T) {
 	}
 }
 
-func TestCEA_MissingOriginStateID(t *testing.T) {
-	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)
-	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
-	cea := new(CEA)
-	err := cea.Parse(m)
-	if err == nil {
-		t.Fatal("Broken CEA was parsed with no errors")
-	}
-	if err != nil && err != ErrMissingOriginStateID {
-		t.Fatal("Unexpected error:", err)
-	}
-}
-
 func TestCEA_MissingApplication(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, dict.Default)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))

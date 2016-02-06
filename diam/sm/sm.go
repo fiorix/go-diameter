@@ -12,12 +12,23 @@ import (
 	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 )
 
-// Settings used to configure the state machine.
+// Settings used to configure the state machine with AVPs to be added
+// to CER on clients or CEA on servers.
 type Settings struct {
-	OriginHost       datatype.DiameterIdentity
-	OriginRealm      datatype.DiameterIdentity
-	VendorID         datatype.Unsigned32
-	ProductName      datatype.UTF8String
+	OriginHost  datatype.DiameterIdentity
+	OriginRealm datatype.DiameterIdentity
+	VendorID    datatype.Unsigned32
+	ProductName datatype.UTF8String
+
+	// OriginStateID is optional for clients, and not added if unset.
+	//
+	// On servers it has no effect because CEA will contain the
+	// same value from CER, if present.
+	//
+	// May be set to datatype.Unsigned32(time.Now().Unix()).
+	OriginStateID datatype.Unsigned32
+
+	// FirmwareRevision is optional, and not added if unset.
 	FirmwareRevision datatype.Unsigned32
 }
 

@@ -7,6 +7,7 @@ package sm
 import (
 	"bytes"
 	"net"
+	"time"
 
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
@@ -39,6 +40,7 @@ var (
 		OriginRealm:      "test",
 		VendorID:         13,
 		ProductName:      "go-diameter",
+		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
 	}
 
@@ -47,6 +49,7 @@ var (
 		OriginRealm:      "test",
 		VendorID:         13,
 		ProductName:      "go-diameter",
+		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
 	}
 )

@@ -7,14 +7,16 @@
 #
 # Please keep the list sorted.
 #
-# Use the following command to generate the list:
+# Use the following command to generate the list
 #
 #	git shortlog -se | awk '{print $2 " " $3 " " $4}'
 #
-# The email address is not required for organizations.
+# and do appropriate cleanups.
 
 DanB <danb@cgrates.org>
 David Wilkie <dwilkie@gmail.com>
+Seyi Ogunyemi <micrypt@users.noreply.github.com>
 Tapio <fitase@emblacom.com>
 jaroszan <jaroslaw.szangin@gmail.com>
 mspronk <martijn@orangemountain.ca>
+

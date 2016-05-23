@@ -96,6 +96,10 @@ func (app *Application) validate(d *dict.Parser, appType uint32, appAVP *diam.AV
 		return appAVP, &ErrUnexpectedAVP{appAVP}
 	}
 	id := uint32(appID)
+	if id == 0xffffffff { // relay application id
+		app.id = append(app.id, id)
+		return nil, nil
+	}
 	avp, err := d.App(id)
 	if err != nil {
 		return appAVP, &ErrNoCommonApplication{id, typ}

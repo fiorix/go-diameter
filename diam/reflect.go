@@ -6,8 +6,290 @@ package diam
 
 import (
 	"errors"
+	// "log"
 	"reflect"
+	"strings"
+
+	"github.com/fiorix/go-diameter/diam/avp"
+	"github.com/fiorix/go-diameter/diam/datatype"
+	"github.com/fiorix/go-diameter/diam/dict"
 )
+
+// tagOptions is the string following a comma in a struct field's "json"
+// tag, or the empty string. It does not include the leading comma.
+type tagOptions string
+
+// parseTag splits a struct field's json tag into its name and
+// comma-separated options.
+func parseTag(tag string) (string, tagOptions) {
+	if idx := strings.Index(tag, ","); idx != -1 {
+		return tag[:idx], tagOptions(tag[idx+1:])
+	}
+	return tag, tagOptions("")
+}
+
+// Contains reports whether a comma-separated list of options
+// contains a particular substr flag. substr must be surrounded by a
+// string boundary or commas.
+func (o tagOptions) Contains(optionName string) bool {
+	if len(o) == 0 {
+		return false
+	}
+	s := string(o)
+	for s != "" {
+		var next string
+		i := strings.Index(s, ",")
+		if i >= 0 {
+			s, next = s[:i], s[i+1:]
+		}
+		if s == optionName {
+			return true
+		}
+		s = next
+	}
+	return false
+}
+
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
+}
+
+// Marshal encodes struct into AVPs
+func (m *Message) Marshal(src interface{}) error {
+	v := reflect.ValueOf(src)
+	if v.Kind() != reflect.Ptr {
+		return errors.New("src is not a pointer to struct")
+	}
+	err, avps := marshalStruct(m, v)
+	if err != nil {
+		return err
+	}
+	m.AVP = avps
+	m.Header.MessageLength = uint32(m.Len())
+	return nil
+}
+
+func marshalStruct(m *Message, field reflect.Value) (error, []*AVP) {
+	var err error
+	var dictAVP *dict.AVP
+	var avps []*AVP
+
+	base := reflect.Indirect(field)
+	if base.Kind() != reflect.Struct {
+		return errors.New("src is not a pointer to struct"), nil
+	}
+
+	for n := 0; n < base.NumField(); n++ {
+		f := base.Field(n)
+		bt := base.Type().Field(n)
+		tag := bt.Tag.Get("avp")
+		avpname, opts := parseTag(tag)
+		omitEmpty := opts.Contains("omitempty")
+		if len(avpname) == 0 || avpname == "-" {
+			continue
+		}
+		// log.Println(avpname, ": ", tag)
+		if omitEmpty && isEmptyValue(f) { // TODO: check the required attribute in AVP rule?
+			continue
+		}
+
+		// Lookup the AVP name (tag) in the dictionary, the dictionary AVP has the code.
+		// Relies on the fact that in the same app will not be AVPs with same code but different vendorId
+		dictAVP, err = m.Dictionary().FindAVP(m.Header.ApplicationID, avpname)
+		if err != nil {
+			return err, nil
+		}
+
+		err, avp := marshal(m, f, dictAVP)
+		if err != nil {
+			return err, nil
+		}
+		avps = append(avps, avp...)
+	}
+
+	return nil, avps
+}
+
+// marshal returns a AVP type of the field
+func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP) {
+	var data datatype.Type
+	var avps []*AVP // avps := make([]*AVP, 0, 8)
+	fieldType := field.Type()
+
+	// log.Println(fieldAVP.Name, " begin ", field.Kind())
+	// defer log.Println(fieldAVP.Name, " end")
+
+	var t reflect.Type
+	switch field.Kind() {
+	case reflect.Slice:
+		// 1. []byte  dicttype.Grouped
+		if fieldType == reflect.TypeOf(([]byte)(nil)) {
+			t = reflect.TypeOf((*datatype.Grouped)(nil)).Elem()
+			goto BASIC_TYPE
+		}
+
+		// 2.  []*diam.AVP
+		if fieldType == reflect.TypeOf(([]*AVP)(nil)) {
+			// s := reflect.New(fieldType) // a pointer to a slice
+			// s.Elem().Set(field)
+			avp := field.Interface().([]*AVP)
+			avps = append(avps, avp...)
+			return nil, avps
+		}
+
+		// 3. others
+		// log.Print("Slice len:", field.Len())
+		for n := 0; n < field.Len(); n++ {
+			err, avp := marshal(m, field.Index(n), fieldAVP)
+			if err != nil {
+				return err, nil
+			}
+			avps = append(avps, avp...)
+		}
+		return nil, avps
+
+	case reflect.Interface, reflect.Ptr:
+		if field.IsNil() {
+			return nil, avps // skip optional AVP
+		}
+		return marshal(m, field.Elem(), fieldAVP)
+	}
+
+	switch fieldAVP.Data.Type {
+	case datatype.AddressType:
+		// get Type of datatype.Address
+		t = reflect.TypeOf((*datatype.Address)(nil)).Elem()
+	case datatype.DiameterIdentityType:
+		t = reflect.TypeOf((*datatype.DiameterIdentity)(nil)).Elem()
+	case datatype.DiameterURIType:
+		t = reflect.TypeOf((*datatype.DiameterURI)(nil)).Elem()
+	case datatype.EnumeratedType:
+		t = reflect.TypeOf((*datatype.Enumerated)(nil)).Elem()
+	case datatype.Float32Type:
+		t = reflect.TypeOf((*datatype.Float32)(nil)).Elem()
+	case datatype.Float64Type:
+		t = reflect.TypeOf((*datatype.Float64)(nil)).Elem()
+	case datatype.IPFilterRuleType:
+		t = reflect.TypeOf((*datatype.IPFilterRule)(nil)).Elem()
+	case datatype.IPv4Type:
+		t = reflect.TypeOf((*datatype.IPv4)(nil)).Elem()
+	case datatype.Integer32Type:
+		t = reflect.TypeOf((*datatype.Integer32)(nil)).Elem()
+	case datatype.Integer64Type:
+		t = reflect.TypeOf((*datatype.Integer64)(nil)).Elem()
+	case datatype.OctetStringType:
+		t = reflect.TypeOf((*datatype.OctetString)(nil)).Elem()
+	case datatype.TimeType:
+		t = reflect.TypeOf((*datatype.Time)(nil)).Elem()
+	case datatype.UTF8StringType:
+		t = reflect.TypeOf((*datatype.UTF8String)(nil)).Elem()
+	case datatype.Unsigned32Type:
+		t = reflect.TypeOf((*datatype.Unsigned32)(nil)).Elem()
+	case datatype.Unsigned64Type:
+		t = reflect.TypeOf((*datatype.Unsigned64)(nil)).Elem()
+	case datatype.GroupedType:
+		// datatype.Grouped has been handled in "reflect.Slice" block above
+		// t = reflect.TypeOf(datatype.Grouped{})
+		// t = reflect.TypeOf((*datatype.Grouped)(nil)).Elem()
+
+		if field.Kind() == reflect.Struct {
+			// 1.  diam.AVP
+			// if fieldType.String() == "diam.AVP"
+			if fieldType == reflect.TypeOf(AVP{}) {
+				p := reflect.New(fieldType)
+				v := reflect.ValueOf(p).Elem()
+				v.Set(field)
+				avp := p.Interface().(*AVP)
+				return nil, append(avps, avp)
+			}
+
+			// 2. GroupedAVP
+			gAVP := &GroupedAVP{}
+			for n := 0; n < field.NumField(); n++ {
+				f := field.Field(n)
+				bt := field.Type().Field(n)
+				tag := bt.Tag.Get("avp")
+				avpname, opts := parseTag(tag)
+				omitEmpty := opts.Contains("omitempty")
+				if len(avpname) == 0 || avpname == "-" {
+					continue
+				}
+				if len(avpname) == 0 || avpname == "-" {
+					continue
+				}
+				// log.Println(avpname, ": ", tag)
+				if omitEmpty && isEmptyValue(f) { // TODO: check the required attribute in AVP rule?
+					continue
+				}
+				// Lookup the AVP name (tag) in the dictionary, the dictionary AVP has the code.
+				// Relies on the fact that in the same app will not be AVPs with same code but different vendorId
+				d, err := m.Dictionary().FindAVP(m.Header.ApplicationID, avpname)
+				if err != nil {
+					return err, nil
+				}
+				err, avp := marshal(m, f, d)
+				if err != nil {
+					return err, nil
+				}
+				gAVP.AVP = append(gAVP.AVP, avp...) // gAVP.AddAVP()
+			}
+			data = gAVP
+		} else {
+			return errors.New("AVP data type is unknown."), nil
+		}
+	default:
+		return errors.New("AVP data type is unknown."), nil
+	}
+
+BASIC_TYPE:
+	if data == nil { // basic non-grouped AVP
+		p := reflect.New(t)
+		v := reflect.Indirect(p)
+
+		if fieldType.AssignableTo(t) {
+			// log.Println("assign: ", fieldType.String()+" => "+t.String())
+			v.Set(field)
+		} else if fieldType.ConvertibleTo(t) {
+			// log.Println("convert: ", fieldType.String()+" => "+t.String())
+			v.Set(field.Convert(t))
+		} else {
+			return errors.New("AVP type mismatched. " + fieldType.String() + " => " + t.String()), nil
+		}
+		var ok bool
+		data, ok = v.Interface().(datatype.Type)
+		if !ok {
+			return errors.New("Failed to convert AVP data to datatype.Type"), nil
+		}
+	}
+
+	var avpFlags uint8 = 0
+	if fieldAVP.Must == "M" {
+		avpFlags = avp.Mbit
+	}
+
+	avp := &AVP{
+		Code:     fieldAVP.Code,
+		Flags:    avpFlags,
+		VendorID: fieldAVP.VendorID,
+		Data:     data,
+	}
+
+	return nil, append(avps, avp)
+}
 
 // Unmarshal stores the result of a diameter message in the struct
 // pointed to by dst.
@@ -104,7 +386,10 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 	for n := 0; n < base.NumField(); n++ {
 		f := base.Field(n)
 		bt := base.Type().Field(n)
-		avpname := bt.Tag.Get("avp")
+		tag := bt.Tag.Get("avp")
+		avpname, _ := parseTag(tag)
+		// omitEmpty := opts.Contains("omitempty")
+
 		if len(avpname) == 0 || avpname == "-" {
 			continue
 		}

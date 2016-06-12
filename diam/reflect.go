@@ -15,11 +15,11 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-// tagOptions is the string following a comma in a struct field's "json"
+// tagOptions is the string following a comma in a struct field's "avp"
 // tag, or the empty string. It does not include the leading comma.
 type tagOptions string
 
-// parseTag splits a struct field's json tag into its name and
+// parseTag splits a struct field's avp tag into its name and
 // comma-separated options.
 func parseTag(tag string) (string, tagOptions) {
 	if idx := strings.Index(tag, ","); idx != -1 {
@@ -225,9 +225,6 @@ func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP
 				tag := bt.Tag.Get("avp")
 				avpname, opts := parseTag(tag)
 				omitEmpty := opts.Contains("omitempty")
-				if len(avpname) == 0 || avpname == "-" {
-					continue
-				}
 				if len(avpname) == 0 || avpname == "-" {
 					continue
 				}

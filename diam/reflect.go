@@ -15,11 +15,11 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-// tagOptions is the string following a comma in a struct field's "avp"
+// tagOptions is the string following a comma in a struct field's "json"
 // tag, or the empty string. It does not include the leading comma.
 type tagOptions string
 
-// parseTag splits a struct field's avp tag into its name and
+// parseTag splits a struct field's json tag into its name and
 // comma-separated options.
 func parseTag(tag string) (string, tagOptions) {
 	if idx := strings.Index(tag, ","); idx != -1 {
@@ -136,9 +136,11 @@ func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP
 	var t reflect.Type
 	switch field.Kind() {
 	case reflect.Slice:
-		// 1. []byte  dicttype.Grouped
-		if fieldType == reflect.TypeOf(([]byte)(nil)) {
-			t = reflect.TypeOf((*datatype.Grouped)(nil)).Elem()
+		// 1. []byte
+		//  (1) dicttype.Grouped
+		//  (2) other basic type which can be a Slice. for example eg. datatype.AddressType = net.IP = []byte
+		// if fieldType == reflect.TypeOf(([]byte)(nil))
+		if fieldType.Elem().Kind() == reflect.Uint8 {
 			goto BASIC_TYPE
 		}
 
@@ -151,7 +153,7 @@ func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP
 			return nil, avps
 		}
 
-		// 3. others
+		// 3. real array of diameter AVPs
 		// log.Print("Slice len:", field.Len())
 		for n := 0; n < field.Len(); n++ {
 			err, avp := marshal(m, field.Index(n), fieldAVP)
@@ -169,10 +171,10 @@ func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP
 		return marshal(m, field.Elem(), fieldAVP)
 	}
 
+BASIC_TYPE:
 	switch fieldAVP.Data.Type {
 	case datatype.AddressType:
-		// get Type of datatype.Address
-		t = reflect.TypeOf((*datatype.Address)(nil)).Elem()
+		t = reflect.TypeOf((*datatype.Address)(nil)).Elem() // get Type of datatype.Address
 	case datatype.DiameterIdentityType:
 		t = reflect.TypeOf((*datatype.DiameterIdentity)(nil)).Elem()
 	case datatype.DiameterURIType:
@@ -202,10 +204,6 @@ func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP
 	case datatype.Unsigned64Type:
 		t = reflect.TypeOf((*datatype.Unsigned64)(nil)).Elem()
 	case datatype.GroupedType:
-		// datatype.Grouped has been handled in "reflect.Slice" block above
-		// t = reflect.TypeOf(datatype.Grouped{})
-		// t = reflect.TypeOf((*datatype.Grouped)(nil)).Elem()
-
 		if field.Kind() == reflect.Struct {
 			// 1.  diam.AVP
 			// if fieldType.String() == "diam.AVP"
@@ -245,37 +243,45 @@ func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP
 				gAVP.AVP = append(gAVP.AVP, avp...) // gAVP.AddAVP()
 			}
 			data = gAVP
+		} else if field.Kind() == reflect.Slice {
+			// when code run here, we are certain that it is datatype.Grouped AVP
+			// like "Failed-AVP", all we need to do is assigning the []byte slibe
+			//  to a datatype.Grouped
+			t = reflect.TypeOf((*datatype.Grouped)(nil)).Elem()
+			break
 		} else {
-			return errors.New("AVP data type is unknown."), nil
+			return errors.New(fieldAVP.Name + " AVP's Data type is unknown."), nil
 		}
 	default:
-		return errors.New("AVP data type is unknown."), nil
+		return errors.New(fieldAVP.Name + " AVP's Data type is unknown."), nil
 	}
 
-BASIC_TYPE:
 	if data == nil { // basic non-grouped AVP
 		p := reflect.New(t)
 		v := reflect.Indirect(p)
 
 		if fieldType.AssignableTo(t) {
-			// log.Println("assign: ", fieldType.String()+" => "+t.String())
+			// log.Println("assign: ", fieldAVP.Name, " ", fieldType.String(), " => ", t.String())
 			v.Set(field)
 		} else if fieldType.ConvertibleTo(t) {
-			// log.Println("convert: ", fieldType.String()+" => "+t.String())
+			// log.Println("convert: ", fieldAVP.Name, " ", fieldType.String(), " => ", t.String())
 			v.Set(field.Convert(t))
 		} else {
-			return errors.New("AVP type mismatched. " + fieldType.String() + " => " + t.String()), nil
+			return errors.New(fieldAVP.Name + " AVP type mismatched. " + fieldType.String() + " => " + t.String()), nil
 		}
 		var ok bool
 		data, ok = v.Interface().(datatype.Type)
 		if !ok {
-			return errors.New("Failed to convert AVP data to datatype.Type"), nil
+			return errors.New(fieldAVP.Name + ", failed to convert AVP data to datatype.Type"), nil
 		}
 	}
 
 	var avpFlags uint8 = 0
 	if fieldAVP.Must == "M" {
 		avpFlags = avp.Mbit
+	}
+	if fieldAVP.VendorID > 0 {
+		avpFlags |= avp.Vbit
 	}
 
 	avp := &AVP{

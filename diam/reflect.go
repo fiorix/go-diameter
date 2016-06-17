@@ -15,39 +15,30 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
-// tagOptions is the string following a comma in a struct field's "json"
-// tag, or the empty string. It does not include the leading comma.
-type tagOptions string
-
-// parseTag splits a struct field's json tag into its name and
-// comma-separated options.
-func parseTag(tag string) (string, tagOptions) {
-	if idx := strings.Index(tag, ","); idx != -1 {
-		return tag[:idx], tagOptions(tag[idx+1:])
+// parseAvpTag return the avp_name and omitempty option
+func parseAvpTag(tag reflect.StructTag) (string, bool) {
+	if tag == "" {
+		return "", false
 	}
-	return tag, tagOptions("")
-}
-
-// Contains reports whether a comma-separated list of options
-// contains a particular substr flag. substr must be surrounded by a
-// string boundary or commas.
-func (o tagOptions) Contains(optionName string) bool {
-	if len(o) == 0 {
-		return false
-	}
-	s := string(o)
-	for s != "" {
-		var next string
-		i := strings.Index(s, ",")
-		if i >= 0 {
-			s, next = s[:i], s[i+1:]
+	name := string(tag)
+	if strings.HasPrefix(name, "avp:\"") {
+		name = name[5 : len(name)-1]
+		omitEmpty := false
+		if strings.HasSuffix(name, ",omitempty") {
+			name = name[0 : len(name)-10]
+			omitEmpty = true
 		}
-		if s == optionName {
-			return true
+		if strings.LastIndexByte(name, '"') == -1 {
+			return name, omitEmpty
 		}
-		s = next
 	}
-	return false
+
+	name = tag.Get("avp")
+	if idx := strings.Index(name, ","); idx != -1 {
+		return name[:idx], false
+	} else {
+		return name, true
+	}
 }
 
 func isEmptyValue(v reflect.Value) bool {
@@ -96,14 +87,9 @@ func marshalStruct(m *Message, field reflect.Value) (error, []*AVP) {
 	for n := 0; n < base.NumField(); n++ {
 		f := base.Field(n)
 		bt := base.Type().Field(n)
-		tag := bt.Tag.Get("avp")
-		avpname, opts := parseTag(tag)
-		omitEmpty := opts.Contains("omitempty")
-		if len(avpname) == 0 || avpname == "-" {
-			continue
-		}
-		// log.Println(avpname, ": ", tag)
-		if omitEmpty && isEmptyValue(f) { // TODO: check the required attribute in AVP rule?
+		avpname, omitEmpty := parseAvpTag(bt.Tag)
+		if len(avpname) == 0 || (omitEmpty && isEmptyValue(f)) {
+			// TODO: check the required attribute in AVP rule?
 			continue
 		}
 
@@ -220,14 +206,9 @@ BASIC_TYPE:
 			for n := 0; n < field.NumField(); n++ {
 				f := field.Field(n)
 				bt := field.Type().Field(n)
-				tag := bt.Tag.Get("avp")
-				avpname, opts := parseTag(tag)
-				omitEmpty := opts.Contains("omitempty")
-				if len(avpname) == 0 || avpname == "-" {
-					continue
-				}
-				// log.Println(avpname, ": ", tag)
-				if omitEmpty && isEmptyValue(f) { // TODO: check the required attribute in AVP rule?
+				avpname, omitEmpty := parseAvpTag(bt.Tag)
+				if len(avpname) == 0 || (omitEmpty && isEmptyValue(f)) {
+					// TODO: check the required attribute in AVP rule?
 					continue
 				}
 				// Lookup the AVP name (tag) in the dictionary, the dictionary AVP has the code.
@@ -389,11 +370,8 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 	for n := 0; n < base.NumField(); n++ {
 		f := base.Field(n)
 		bt := base.Type().Field(n)
-		tag := bt.Tag.Get("avp")
-		avpname, _ := parseTag(tag)
-		// omitEmpty := opts.Contains("omitempty")
-
-		if len(avpname) == 0 || avpname == "-" {
+		avpname, _ := parseAvpTag(bt.Tag)
+		if len(avpname) == 0 {
 			continue
 		}
 		// Lookup the AVP name (tag) in the dictionary.

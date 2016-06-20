@@ -35,6 +35,9 @@ func TestGroupedAVP(t *testing.T) {
 		t.Fatal("AVP is not grouped")
 	}
 	b, err := a.Serialize()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !bytes.Equal(b, testGroupedAVP) {
 		t.Fatalf("Unexpected value.\nWant:\n%s\nHave:\n%s",
 			hex.Dump(testGroupedAVP), hex.Dump(b))

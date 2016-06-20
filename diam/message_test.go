@@ -17,7 +17,7 @@ import (
 )
 
 // testMessage is used by the test cases below and also in reflect_test.go.
-// The same testMessage is re-created programatically in TestNewMessage.
+// The same testMessage is re-created programmatically in TestNewMessage.
 //
 // Capabilities-Exchange-Request (CER)
 // {Code:257,Flags:0x80,Version:0x1,Length:204,ApplicationId:0,HopByHopId:0xa8cc407d,EndToEndId:0xa8c1b2b4}
@@ -114,7 +114,7 @@ var testMessage = []byte{
 //		AVP: PS-Information(874) l=48 f=VM- vnd=TGPP
 //			AVP: GGSN-Address(847) l=18 f=V-- vnd=TGPP val=127.0.0.1 (127.0.0.1)
 //			AVP: 3GPP-RAT-Type(21) l=14 f=V-- vnd=TGPP val=3031
-var testMessageWithVendorId = []byte{
+var testMessageWithVendorID = []byte{
 	0x01, 0x00, 0x01, 0x08, 0x80, 0x00, 0x01, 0x10, 0x00, 0x00, 0x00, 0x04, 0x1d, 0xf4,
 	0xb7, 0x5e, 0xb1, 0xb5, 0x0a, 0x4b, 0x00, 0x00, 0x01, 0x07, 0x40, 0x00, 0x00, 0x0e, 0x31, 0x32,
 	0x33, 0x34, 0x35, 0x36, 0x00, 0x00, 0x00, 0x00, 0x01, 0x08, 0x40, 0x00, 0x00, 0x0e, 0x63, 0x6c,
@@ -142,8 +142,8 @@ func TestReadMessage(t *testing.T) {
 	t.Logf("Message:\n%s", msg)
 }
 
-func TestReadMessageWithVendorId(t *testing.T) {
-	msg, err := ReadMessage(bytes.NewReader(testMessageWithVendorId), dict.Default)
+func TestReadMessageWithVendorID(t *testing.T) {
+	msg, err := ReadMessage(bytes.NewReader(testMessageWithVendorID), dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}

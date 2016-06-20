@@ -96,7 +96,7 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	return err
 }
 
-// successCEA sends a success answer indicating that the CER was successfuly
+// successCEA sends a success answer indicating that the CER was successfully
 // parsed and accepted by the server.
 func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER) error {
 	hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())

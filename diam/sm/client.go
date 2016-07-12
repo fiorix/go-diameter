@@ -62,6 +62,12 @@ func (cli *Client) Dial(addr string) (diam.Conn, error) {
 	})
 }
 
+func (cli *Client) DialTimeout(addr string, timeout time.Duration) (diam.Conn, error) {
+	return cli.dial(func() (diam.Conn, error) {
+		return diam.DialTimeout(addr, cli.Handler, cli.Dict, timeout)
+	})
+}
+
 // DialTLS is like Dial, but using TLS.
 func (cli *Client) DialTLS(addr, certFile, keyFile string) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {

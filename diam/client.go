@@ -28,7 +28,7 @@ func DialTimeout(addr string, handler Handler, dp *dict.Parser, timeout time.Dur
     return dial(srv, timeout)
 }
 
-func dial(srv *Server) (Conn, error) {
+func dial(srv *Server, timeout time.Duration) (Conn, error) {
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"

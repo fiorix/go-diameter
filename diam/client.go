@@ -19,13 +19,13 @@ import (
 // by the handler, which is typically nil and DefaultServeMux is used.
 // If dict is nil, dict.Default is used.
 func Dial(addr string, handler Handler, dp *dict.Parser) (Conn, error) {
-    srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-    return dial(srv, 0)
+	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
+    	return dial(srv, 0)
 }
 
 func DialTimeout(addr string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
-    srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-    return dial(srv, timeout)
+	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
+    	return dial(srv, timeout)
 }
 
 func dial(srv *Server, timeout time.Duration) (Conn, error) {

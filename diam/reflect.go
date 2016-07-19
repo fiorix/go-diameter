@@ -28,7 +28,7 @@ func parseAvpTag(tag reflect.StructTag) (string, bool) {
 			name = name[0 : len(name)-10]
 			omitEmpty = true
 		}
-		if strings.LastIndexByte(name, '"') == -1 {
+		if strings.IndexByte(name, '"') == -1 {
 			return name, omitEmpty
 		}
 	}

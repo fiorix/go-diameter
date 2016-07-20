@@ -186,13 +186,12 @@ func (cli *Client) makeCER(ip net.IP) *diam.Message {
 
 func (cli *Client) watchdog(c diam.Conn, dwac chan struct{}) {
 	disconnect := c.(diam.CloseNotifier).CloseNotify()
-	var osid uint32
+	var osid uint32 = uint32(cli.Handler.cfg.OriginStateID)
 	for {
 		select {
 		case <-disconnect:
 			return
 		case <-time.After(cli.WatchdogInterval):
-			osid++
 			cli.dwr(c, osid, dwac)
 		}
 	}

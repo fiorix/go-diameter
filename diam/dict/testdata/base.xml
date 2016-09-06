@@ -460,4 +460,6 @@
 		</avp>
 
 	</application>
+	<application id="3"> <!-- Diameter Base Accounting -->
+	</application>
 </diameter>

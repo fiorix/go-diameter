@@ -482,6 +482,8 @@ var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
 		</avp>
 
 	</application>
+	<application id="3"> <!-- Diameter Base Accounting -->
+	</application>
 </diameter>`
 
 var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>

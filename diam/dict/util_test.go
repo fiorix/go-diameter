@@ -20,7 +20,7 @@ func TestApps(t *testing.T) {
 	}
 	// Base accounting.
 	if apps[1].ID != 3 {
-		t.Fatalf("Unexpected app.ID. Want 0, have %d", apps[1].ID)
+		t.Fatalf("Unexpected app.ID. Want 3, have %d", apps[1].ID)
 	}
 	// Credit-Control applications.
 	if apps[2].ID != 4 {
@@ -28,7 +28,7 @@ func TestApps(t *testing.T) {
 	}
 	// Network Access Server
 	if apps[3].ID != 1 {
-		t.Fatalf("Unexpected app.ID. Want 4, have %d", apps[3].ID)
+		t.Fatalf("Unexpected app.ID. Want 1, have %d", apps[3].ID)
 	}
 }
 

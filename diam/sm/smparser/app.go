@@ -9,6 +9,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
+	"log"
 )
 
 // Application validates accounting, auth, and vendor specific application IDs.
@@ -102,12 +103,12 @@ func (app *Application) validate(d *dict.Parser, appType uint32, appAVP *diam.AV
 	}
 	avp, err := d.App(id)
 	if err != nil {
+		log.Printf("Application id %d is not supported locally", id)
+	} else if len(avp.Type) > 0 && avp.Type != typ {
 		return appAVP, &ErrNoCommonApplication{id, typ}
+	} else {
+		app.id = append(app.id, id)
 	}
-	if len(avp.Type) > 0 && avp.Type != typ {
-		return appAVP, &ErrNoCommonApplication{id, typ}
-	}
-	app.id = append(app.id, id)
 	return nil, nil
 }
 

@@ -29,24 +29,17 @@ var (
 	// Auth-Application-Id, or their embedded versions in
 	// the Vendor-Specific-Application-Id AVP.
 	ErrMissingApplication = errors.New("missing application")
-
-	// ErrNoCommonSecurity is returned by Parse when
-	// the CER contains the Inband-Security-Id.
-	// We currently don't support that.
-	ErrNoCommonSecurity = errors.New("no common security")
 )
 
-// ErrNoCommonApplication is returned by Parse when the
-// application IDs in the CER don't match the applications
-// defined in our dictionary.
-type ErrNoCommonApplication struct {
-	ID   uint32
-	Type string
+// ErrCapabilitiesExchange is returned by Parse when the
+// CE end in error
+type ErrCapabilitiesExchange struct {
+	Message string
 }
 
 // Error implements the error interface.
-func (e *ErrNoCommonApplication) Error() string {
-	return fmt.Sprintf("%s application %d is not supported", e.Type, e.ID)
+func (e *ErrCapabilitiesExchange) Error() string {
+	return fmt.Sprintf(e.Message)
 }
 
 // ErrUnexpectedAVP is returned by Parse when the code of the AVP passed

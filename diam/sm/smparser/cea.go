@@ -23,7 +23,7 @@ type CEA struct {
 }
 
 // Parse parses and validates the given message.
-func (cea *CEA) Parse(m *diam.Message) (err error) {
+func (cea *CEA) Parse(m *diam.Message, isServer uint8) (err error) {
 	if err = m.Unmarshal(cea); err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (cea *CEA) Parse(m *diam.Message) (err error) {
 		AuthApplicationID:           cea.AuthApplicationID,
 		VendorSpecificApplicationID: cea.VendorSpecificApplicationID,
 	}
-	if _, err := app.Parse(m.Dictionary()); err != nil {
+	if _, err := app.Parse(m.Dictionary(), isServer); err != nil {
 		return err
 	}
 	cea.appID = app.ID()

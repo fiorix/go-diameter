@@ -460,4 +460,6 @@
 		</avp>
 
 	</application>
+	<application id="3" type="acct"> <!-- Diameter Base Accounting Messages -->
+	</application>
 </diameter>

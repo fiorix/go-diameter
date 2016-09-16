@@ -30,7 +30,7 @@ type CER struct {
 // is found, then it returns the failedAVP (with the application that
 // we don't support in our dictionary) and an error. Another cause
 // for error is the presence of Inband Security, we don't support that.
-func (cer *CER) Parse(m *diam.Message) (failedAVP *diam.AVP, err error) {
+func (cer *CER) Parse(m *diam.Message, isServer uint8) (failedAVP *diam.AVP, err error) {
 	if err = m.Unmarshal(cer); err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (cer *CER) Parse(m *diam.Message) (failedAVP *diam.AVP, err error) {
 	}
 	if cer.InbandSecurityID != nil {
 		if v := cer.InbandSecurityID.Data.(datatype.Unsigned32); v != 0 {
-			return cer.InbandSecurityID, ErrNoCommonSecurity
+			return nil, &ErrCapabilitiesExchange{"NO_COMMON_SECURITY"}
 		}
 	}
 	app := &Application{
@@ -47,7 +47,7 @@ func (cer *CER) Parse(m *diam.Message) (failedAVP *diam.AVP, err error) {
 		AuthApplicationID:           cer.AuthApplicationID,
 		VendorSpecificApplicationID: cer.VendorSpecificApplicationID,
 	}
-	if failedAVP, err = app.Parse(m.Dictionary()); err != nil {
+	if failedAVP, err = app.Parse(m.Dictionary(), isServer); err != nil {
 		return failedAVP, err
 	}
 	cer.appID = app.ID()

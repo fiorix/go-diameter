@@ -157,7 +157,7 @@ func TestClient_Handshake_FailedResultCode(t *testing.T) {
 	mux := diam.NewServeMux()
 	mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {
 		cer := new(smparser.CER)
-		if _, err := cer.Parse(m); err != nil {
+		if _, err := cer.Parse(m, 1); err != nil {
 			panic(err)
 		}
 		a := m.Answer(diam.NoCommonApplication)

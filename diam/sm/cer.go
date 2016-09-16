@@ -29,22 +29,21 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			return
 		}
 		cer := new(smparser.CER)
-		failedAVP, err := cer.Parse(m)
+		_, err := cer.Parse(m, 1)
 		if err != nil {
-			if failedAVP != nil {
-				err = errorCEA(sm, c, m, cer, failedAVP)
-				if err != nil {
-					sm.Error(&diam.ErrorReport{
-						Conn:    c,
-						Message: m,
-						Error:   err,
-					})
-				}
+			err = errorCEA(sm, c, m, cer, err.Error())
+			if err != nil {
+				sm.Error(&diam.ErrorReport{
+					Conn:    c,
+					Message: m,
+					Error:   err,
+				})
 			}
 			c.Close()
 			return
 		}
 		err = successCEA(sm, c, m, cer)
+
 		if err != nil {
 			sm.Error(&diam.ErrorReport{
 				Conn:    c,
@@ -66,15 +65,16 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 // errorCEA sends an error answer indicating that the CER failed due to
 // an unsupported (acct/auth) application, and includes the AVP that
 // caused the failure in the message.
-func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, failedAVP *diam.AVP) error {
+func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, errMessage string) error {
 	hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 	if err != nil {
 		return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
 	}
 	var a *diam.Message
-	if failedAVP == cer.InbandSecurityID {
+	switch errMessage {
+	case "NO_COMMON_SECURITY":
 		a = m.Answer(diam.NoCommonSecurity)
-	} else {
+	case "NO_COMMON_APPLICATION":
 		a = m.Answer(diam.NoCommonApplication)
 	}
 	a.Header.CommandFlags |= diam.ErrorFlag
@@ -86,9 +86,6 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	if cer.OriginStateID != nil {
 		a.AddAVP(cer.OriginStateID)
 	}
-	a.NewAVP(avp.FailedAVP, avp.Mbit, 0, &diam.GroupedAVP{
-		AVP: []*diam.AVP{failedAVP},
-	})
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, sm.cfg.FirmwareRevision)
 	}
@@ -112,19 +109,25 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	if cer.OriginStateID != nil {
 		a.AddAVP(cer.OriginStateID)
 	}
-	if cer.AcctApplicationID != nil {
-		for _, acct := range cer.AcctApplicationID {
-			a.AddAVP(acct)
+	supportedApplications := smparser.PrepareSupportedApps()
+	for _, app := range supportedApplications {
+		var typ uint32
+		switch app.AppType {
+		case "auth":
+			typ = avp.AuthApplicationID
+		case "acct":
+			typ = avp.AcctApplicationID
 		}
-	}
-	if cer.AuthApplicationID != nil {
-		for _, auth := range cer.AuthApplicationID {
-			a.AddAVP(auth)
-		}
-	}
-	if cer.VendorSpecificApplicationID != nil {
-		for _, vs := range cer.VendorSpecificApplicationID {
-			a.AddAVP(vs)
+		if app.Vendor != 0 {
+			a.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(app.Vendor))
+			a.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
+				AVP: []*diam.AVP{
+					diam.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(app.Vendor)),
+					diam.NewAVP(typ, avp.Mbit, 0, datatype.Unsigned32(app.ID)),
+				},
+			})
+		} else {
+			a.NewAVP(typ, avp.Mbit, 0, datatype.Unsigned32(app.ID))
 		}
 	}
 	if sm.cfg.FirmwareRevision != 0 {

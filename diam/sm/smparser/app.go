@@ -9,7 +9,6 @@ import (
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"log"
 )
 
 // Application validates accounting, auth, and vendor specific application IDs.
@@ -20,9 +19,34 @@ type Application struct {
 	id                          []uint32 // List of supported application IDs.
 }
 
+// SupportedApp holds properties of each locally supported App
+type SupportedApp struct {
+	ID      uint32
+	AppType string
+	Vendor  uint32
+}
+
+// PrepareSupportedApps prepares a list of locally supported apps
+func PrepareSupportedApps() []*SupportedApp {
+	locallySupportedApps := []*SupportedApp{}
+	for _, app := range dict.Default.Apps() {
+		if app.ID == 0 {
+			continue
+		}
+		addApp := new(SupportedApp)
+		addApp.ID = app.ID
+		addApp.AppType = app.Type
+		for _, vendor := range app.Vendor {
+			addApp.Vendor = vendor.ID
+		}
+		locallySupportedApps = append(locallySupportedApps, addApp)
+	}
+	return locallySupportedApps
+}
+
 // Parse ensures all acct or auth applications in the CE
 // exist in this server's dictionary.
-func (app *Application) Parse(d *dict.Parser) (failedAVP *diam.AVP, err error) {
+func (app *Application) Parse(d *dict.Parser, isServer uint8) (failedAVP *diam.AVP, err error) {
 	failedAVP, err = app.validateAll(d, avp.AcctApplicationID, app.AcctApplicationID)
 	if err != nil {
 		return failedAVP, err
@@ -40,7 +64,11 @@ func (app *Application) Parse(d *dict.Parser) (failedAVP *diam.AVP, err error) {
 		}
 	}
 	if app.ID() == nil {
-		return nil, ErrMissingApplication
+		if isServer == 0 {
+			return nil, ErrMissingApplication
+		}
+		return nil, &ErrCapabilitiesExchange{"NO_COMMON_APPLICATION"}
+
 	}
 	return nil, nil
 }
@@ -103,9 +131,9 @@ func (app *Application) validate(d *dict.Parser, appType uint32, appAVP *diam.AV
 	}
 	avp, err := d.App(id)
 	if err != nil {
-		log.Printf("Application id %d is not supported locally", id)
+		//TODO Log informational message to console?
 	} else if len(avp.Type) > 0 && avp.Type != typ {
-		return appAVP, &ErrNoCommonApplication{id, typ}
+		return nil, &ErrCapabilitiesExchange{"NO_COMMON_APPLICATION"}
 	} else {
 		app.id = append(app.id, id)
 	}

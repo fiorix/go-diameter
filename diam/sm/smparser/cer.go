@@ -39,7 +39,7 @@ func (cer *CER) Parse(m *diam.Message, isServer uint8) (failedAVP *diam.AVP, err
 	}
 	if cer.InbandSecurityID != nil {
 		if v := cer.InbandSecurityID.Data.(datatype.Unsigned32); v != 0 {
-			return nil, &ErrCapabilitiesExchange{"NO_COMMON_SECURITY"}
+			return nil, ErrNoCommonSecurity
 		}
 	}
 	app := &Application{

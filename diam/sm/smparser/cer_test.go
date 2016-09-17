@@ -5,7 +5,7 @@
 package smparser
 
 import (
-	"strings"
+	//"strings"
 	"testing"
 
 	"github.com/fiorix/go-diameter/diam"
@@ -19,7 +19,7 @@ import (
 func TestCER_MissingOriginHost(t *testing.T) {
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
@@ -32,7 +32,7 @@ func TestCER_MissingOriginRealm(t *testing.T) {
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
@@ -47,7 +47,7 @@ func TestCER_MissingApplication(t *testing.T) {
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
@@ -63,19 +63,12 @@ func TestCER_NoCommonApplication(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(2))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 1)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal("Unexpected error:", err.Error())
-	}
-	if appErr.ID != 2 {
-		t.Fatalf("Unexpected app ID. Want 2, have %d", appErr.ID)
-	}
-	if !strings.Contains(appErr.Error(), "acct application 2") {
-		t.Fatalf("Unexpected error message: %s", appErr)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }
 
@@ -86,7 +79,7 @@ func TestCER_NoCommonSecurity(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(1))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
@@ -102,7 +95,7 @@ func TestCER_AcctAppID(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,16 +113,12 @@ func TestCER_FailedAcctAppID(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 1)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal(err)
-	}
-	if appErr.ID != 1000 {
-		t.Fatalf("Unexpected app ID. Want 1000, have %d", appErr.ID)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }
 
@@ -140,16 +129,12 @@ func TestCER_AcctNotAuthAppID(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal(err)
-	}
-	if appErr.ID != 1001 {
-		t.Fatalf("Unexpected app ID. Want 1001, have %d", appErr.ID)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }
 
@@ -160,7 +145,7 @@ func TestCER_AuthAppID(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(1002))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,16 +163,12 @@ func TestCER_FailedAuthAppID(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 1)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal(err)
-	}
-	if appErr.ID != 1000 {
-		t.Fatalf("Unexpected app ID. Want 1000, have %d", appErr.ID)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }
 
@@ -198,16 +179,12 @@ func TestCER_AuthNotAcctAppID(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1002))
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal(err)
-	}
-	if appErr.ID != 1002 {
-		t.Fatalf("Unexpected app ID. Want 1002, have %d", appErr.ID)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }
 
@@ -222,7 +199,7 @@ func TestCER_VSAcctAppID(t *testing.T) {
 		},
 	})
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -244,16 +221,12 @@ func TestCER_FailedVSAcctAppID(t *testing.T) {
 		},
 	})
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 1)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal(err)
-	}
-	if appErr.ID != 1000 {
-		t.Fatalf("Unexpected app ID. Want 1000, have %d", appErr.ID)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }
 
@@ -268,7 +241,7 @@ func TestCER_VSAuthAppID(t *testing.T) {
 		},
 	})
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -290,15 +263,11 @@ func TestCER_FailedVSAuthAppID(t *testing.T) {
 		},
 	})
 	cer := new(CER)
-	_, err := cer.Parse(m)
+	_, err := cer.Parse(m, 1)
 	if err == nil {
 		t.Fatal("Broken CER was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal(err)
-	}
-	if appErr.ID != 1000 {
-		t.Fatalf("Unexpected app ID. Want 1000, have %d", appErr.ID)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }

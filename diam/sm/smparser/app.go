@@ -67,7 +67,7 @@ func (app *Application) Parse(d *dict.Parser, isServer uint8) (failedAVP *diam.A
 		if isServer == 0 {
 			return nil, ErrMissingApplication
 		}
-		return nil, &ErrCapabilitiesExchange{"NO_COMMON_APPLICATION"}
+		return nil, ErrNoCommonApplication
 
 	}
 	return nil, nil
@@ -133,7 +133,7 @@ func (app *Application) validate(d *dict.Parser, appType uint32, appAVP *diam.AV
 	if err != nil {
 		//TODO Log informational message to console?
 	} else if len(avp.Type) > 0 && avp.Type != typ {
-		return nil, &ErrCapabilitiesExchange{"NO_COMMON_APPLICATION"}
+		return nil, ErrNoCommonApplication
 	} else {
 		app.id = append(app.id, id)
 	}

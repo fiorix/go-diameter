@@ -31,7 +31,7 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 		cer := new(smparser.CER)
 		_, err := cer.Parse(m, 1)
 		if err != nil {
-			err = errorCEA(sm, c, m, cer, err.Error())
+			err = errorCEA(sm, c, m, cer, err)
 			if err != nil {
 				sm.Error(&diam.ErrorReport{
 					Conn:    c,
@@ -65,16 +65,16 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 // errorCEA sends an error answer indicating that the CER failed due to
 // an unsupported (acct/auth) application, and includes the AVP that
 // caused the failure in the message.
-func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, errMessage string) error {
+func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, errMessage error) error {
 	hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 	if err != nil {
 		return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
 	}
 	var a *diam.Message
 	switch errMessage {
-	case "NO_COMMON_SECURITY":
+	case smparser.ErrNoCommonSecurity:
 		a = m.Answer(diam.NoCommonSecurity)
-	case "NO_COMMON_APPLICATION":
+	case smparser.ErrNoCommonApplication:
 		a = m.Answer(diam.NoCommonApplication)
 	}
 	a.Header.CommandFlags |= diam.ErrorFlag

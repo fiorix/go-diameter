@@ -18,7 +18,7 @@ func TestUnexpectedAVP_BadCode(t *testing.T) {
 	app := &Application{
 		AcctApplicationID: []*diam.AVP{a},
 	}
-	failedAVP, err := app.Parse(dict.Default, 0)
+	failedAVP, err := app.Parse(dict.Default, Client)
 	if err == nil {
 		t.Fatal("Unexpected application parsed successfully")
 	}
@@ -32,7 +32,7 @@ func TestUnexpectedAVP_BadData(t *testing.T) {
 	app := &Application{
 		AcctApplicationID: []*diam.AVP{a},
 	}
-	failedAVP, err := app.Parse(dict.Default, 0)
+	failedAVP, err := app.Parse(dict.Default, Client)
 	if err == nil {
 		t.Fatal("Unexpected application parsed successfully")
 	}
@@ -46,7 +46,7 @@ func TestUnexpectedAVP_BadGroup(t *testing.T) {
 	app := &Application{
 		VendorSpecificApplicationID: []*diam.AVP{a},
 	}
-	failedAVP, err := app.Parse(dict.Default, 0)
+	failedAVP, err := app.Parse(dict.Default, Client)
 	if err == nil {
 		t.Fatal("Unexpected application parsed successfully")
 	}

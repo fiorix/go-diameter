@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
+	"github.com/fiorix/go-diameter/diam/dict"
 	"github.com/fiorix/go-diameter/diam/sm/smparser"
 	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 )
@@ -29,7 +31,7 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			return
 		}
 		cer := new(smparser.CER)
-		_, err := cer.Parse(m, 1)
+		_, err := cer.Parse(m, smparser.Server)
 		if err != nil {
 			err = errorCEA(sm, c, m, cer, err)
 			if err != nil {
@@ -109,8 +111,10 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	if cer.OriginStateID != nil {
 		a.AddAVP(cer.OriginStateID)
 	}
-	supportedApplications := smparser.PrepareSupportedApps()
-	for _, app := range supportedApplications {
+	//supportedApplications := smparser.PrepareSupportedApps((*dict.Parser).Apps())
+	//supportedApplications := smparser.PrepareSupportedApps()
+	spew.Dump((*dict.Parser).Apps)
+	for _, app := range sm.supportedApps {
 		var typ uint32
 		switch app.AppType {
 		case "auth":

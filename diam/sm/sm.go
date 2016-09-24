@@ -9,8 +9,34 @@ import (
 
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/datatype"
+	"github.com/fiorix/go-diameter/diam/dict"
 	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 )
+
+// SupportedApp holds properties of each locally supported App
+type SupportedApp struct {
+	ID      uint32
+	AppType string
+	Vendor  uint32
+}
+
+// PrepareSupportedApps prepares a list of locally supported apps
+func PrepareSupportedApps(d *dict.Parser) []*SupportedApp {
+	locallySupportedApps := []*SupportedApp{}
+	for _, app := range d.Apps() {
+		if app.ID == 0 {
+			continue
+		}
+		addApp := new(SupportedApp)
+		addApp.ID = app.ID
+		addApp.AppType = app.Type
+		for _, vendor := range app.Vendor {
+			addApp.Vendor = vendor.ID
+		}
+		locallySupportedApps = append(locallySupportedApps, addApp)
+	}
+	return locallySupportedApps
+}
 
 // Settings used to configure the state machine with AVPs to be added
 // to CER on clients or CEA on servers.
@@ -38,17 +64,19 @@ type Settings struct {
 // Other handlers registered in the state machine are only executed
 // after the peer has passed the initial CER/CEA handshake.
 type StateMachine struct {
-	cfg       *Settings
-	mux       *diam.ServeMux
-	hsNotifyc chan diam.Conn // handshake notifier
+	cfg           *Settings
+	mux           *diam.ServeMux
+	hsNotifyc     chan diam.Conn // handshake notifier
+	supportedApps []*SupportedApp
 }
 
 // New creates and initializes a new StateMachine for clients or servers.
 func New(settings *Settings) *StateMachine {
 	sm := &StateMachine{
-		cfg:       settings,
-		mux:       diam.NewServeMux(),
-		hsNotifyc: make(chan diam.Conn),
+		cfg:           settings,
+		mux:           diam.NewServeMux(),
+		hsNotifyc:     make(chan diam.Conn),
+		supportedApps: PrepareSupportedApps(dict.Default),
 	}
 	sm.mux.Handle("CER", handleCER(sm))
 	sm.mux.Handle("DWR", handshakeOK(handleDWR(sm)))

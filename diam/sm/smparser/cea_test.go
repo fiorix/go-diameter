@@ -5,7 +5,6 @@
 package smparser
 
 import (
-	//"strings"
 	"testing"
 
 	"github.com/fiorix/go-diameter/diam"
@@ -17,7 +16,7 @@ import (
 func TestCEA_MissingResultCode(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)
 	cea := new(CEA)
-	err := cea.Parse(m, 0)
+	err := cea.Parse(m, Client)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -30,7 +29,7 @@ func TestCEA_MissingOriginHost(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)
 	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
 	cea := new(CEA)
-	err := cea.Parse(m, 0)
+	err := cea.Parse(m, Client)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -44,7 +43,7 @@ func TestCEA_MissingOriginRealm(t *testing.T) {
 	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	cea := new(CEA)
-	err := cea.Parse(m, 0)
+	err := cea.Parse(m, Client)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -60,7 +59,7 @@ func TestCEA_MissingApplication(t *testing.T) {
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	cea := new(CEA)
-	err := cea.Parse(m, 0)
+	err := cea.Parse(m, Client)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -77,7 +76,7 @@ func TestCEA_NoCommonApplication(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(2))
 	cea := new(CEA)
-	err := cea.Parse(m, 1)
+	err := cea.Parse(m, Server)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -94,7 +93,7 @@ func TestCEA_FailedAcctAppID(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000))
 	cea := new(CEA)
-	err := cea.Parse(m, 1)
+	err := cea.Parse(m, Server)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -111,7 +110,7 @@ func TestCEA(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4))
 	cea := new(CEA)
-	if err := cea.Parse(m, 1); err != nil {
+	if err := cea.Parse(m, Server); err != nil {
 		t.Fatal(err)
 	}
 	if cea.ResultCode != diam.Success {

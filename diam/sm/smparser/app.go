@@ -11,6 +11,15 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
+// Role stores information whether SM is initialized as a Client or a Server
+type Role uint8
+
+// ServerRole and ClientRole enums are passed to smparser for proper CER/CEA verification
+const (
+	Server Role = iota + 1
+	Client
+)
+
 // Application validates accounting, auth, and vendor specific application IDs.
 type Application struct {
 	AcctApplicationID           []*diam.AVP
@@ -19,34 +28,9 @@ type Application struct {
 	id                          []uint32 // List of supported application IDs.
 }
 
-// SupportedApp holds properties of each locally supported App
-type SupportedApp struct {
-	ID      uint32
-	AppType string
-	Vendor  uint32
-}
-
-// PrepareSupportedApps prepares a list of locally supported apps
-func PrepareSupportedApps() []*SupportedApp {
-	locallySupportedApps := []*SupportedApp{}
-	for _, app := range dict.Default.Apps() {
-		if app.ID == 0 {
-			continue
-		}
-		addApp := new(SupportedApp)
-		addApp.ID = app.ID
-		addApp.AppType = app.Type
-		for _, vendor := range app.Vendor {
-			addApp.Vendor = vendor.ID
-		}
-		locallySupportedApps = append(locallySupportedApps, addApp)
-	}
-	return locallySupportedApps
-}
-
 // Parse ensures all acct or auth applications in the CE
 // exist in this server's dictionary.
-func (app *Application) Parse(d *dict.Parser, isServer uint8) (failedAVP *diam.AVP, err error) {
+func (app *Application) Parse(d *dict.Parser, localRole Role) (failedAVP *diam.AVP, err error) {
 	failedAVP, err = app.validateAll(d, avp.AcctApplicationID, app.AcctApplicationID)
 	if err != nil {
 		return failedAVP, err
@@ -64,7 +48,7 @@ func (app *Application) Parse(d *dict.Parser, isServer uint8) (failedAVP *diam.A
 		}
 	}
 	if app.ID() == nil {
-		if isServer == 0 {
+		if localRole == Client {
 			return nil, ErrMissingApplication
 		}
 		return nil, ErrNoCommonApplication

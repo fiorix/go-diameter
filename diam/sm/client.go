@@ -104,7 +104,7 @@ func (cli *Client) validate() error {
 	}
 	// Make sure the given applications exist in the dictionary
 	// before sending a CER.
-	_, err := app.Parse(cli.Dict, 0)
+	_, err := app.Parse(cli.Dict, smparser.Client)
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func (cli *Client) makeCER(ip net.IP) *diam.Message {
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, cli.Dict)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cli.Handler.cfg.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cli.Handler.cfg.OriginRealm)
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(ip))
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.AddressIPv4(ip))
 	m.NewAVP(avp.VendorID, avp.Mbit, 0, cli.Handler.cfg.VendorID)
 	m.NewAVP(avp.ProductName, 0, 0, cli.Handler.cfg.ProductName)
 	if cli.Handler.cfg.OriginStateID != 0 {

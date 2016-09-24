@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
@@ -111,9 +110,6 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	if cer.OriginStateID != nil {
 		a.AddAVP(cer.OriginStateID)
 	}
-	//supportedApplications := smparser.PrepareSupportedApps((*dict.Parser).Apps())
-	//supportedApplications := smparser.PrepareSupportedApps()
-	spew.Dump((*dict.Parser).Apps)
 	for _, app := range sm.supportedApps {
 		var typ uint32
 		switch app.AppType {

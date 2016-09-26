@@ -25,11 +25,10 @@ import (
 
 // The Handler interface allow arbitrary objects to be
 // registered to serve particular messages like CER, DWR.
-//
-// ServeDIAM should write messages to the Conn and then return.
-// Returning signals that the request is finished and that the
-// server can move on to the next request on the connection.
 type Handler interface {
+	// ServeDIAM should write messages to the Conn and then return.
+	// Returning signals that the request is finished and that the
+	// server can move on to the next request on the connection.
 	ServeDIAM(Conn, *Message)
 }
 

@@ -104,7 +104,7 @@ func (cli *Client) validate() error {
 	}
 	// Make sure the given applications exist in the dictionary
 	// before sending a CER.
-	_, err := app.Parse(cli.Dict)
+	_, err := app.Parse(cli.Dict, smparser.Client)
 	if err != nil {
 		return err
 	}
@@ -186,7 +186,7 @@ func (cli *Client) makeCER(ip net.IP) *diam.Message {
 
 func (cli *Client) watchdog(c diam.Conn, dwac chan struct{}) {
 	disconnect := c.(diam.CloseNotifier).CloseNotify()
-	var osid uint32 = uint32(cli.Handler.cfg.OriginStateID)
+	var osid = uint32(cli.Handler.cfg.OriginStateID)
 	for {
 		select {
 		case <-disconnect:

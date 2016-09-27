@@ -43,7 +43,7 @@ func TestHandleCER_HandshakeMetadata(t *testing.T) {
 	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -88,7 +88,7 @@ func TestHandleCER_Acct(t *testing.T) {
 	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -127,7 +127,7 @@ func TestHandleCER_Acct_Fail(t *testing.T) {
 	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000))
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -170,7 +170,7 @@ func TestHandleCER_VS_Acct(t *testing.T) {
 			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001)),
 		},
 	})
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -213,7 +213,7 @@ func TestHandleCER_VS_Acct_Fail(t *testing.T) {
 			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000)),
 		},
 	})
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -252,7 +252,7 @@ func TestHandleCER_Auth(t *testing.T) {
 	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(1002))
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -291,7 +291,7 @@ func TestHandleCER_Auth_Fail(t *testing.T) {
 	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000))
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -334,7 +334,7 @@ func TestHandleCER_VS_Auth(t *testing.T) {
 			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(1002)),
 		},
 	})
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -377,7 +377,7 @@ func TestHandleCER_VS_Auth_Fail(t *testing.T) {
 			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000)),
 		},
 	})
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -416,7 +416,7 @@ func TestHandleCER_InbandSecurity(t *testing.T) {
 	m.NewAVP(avp.VendorID, avp.Mbit, 0, clientSettings.VendorID)
 	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)

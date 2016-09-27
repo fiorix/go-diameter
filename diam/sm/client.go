@@ -179,7 +179,7 @@ func (cli *Client) makeCER(ip net.IP) *diam.Message {
 		}
 	}
 	if cli.Handler.cfg.FirmwareRevision != 0 {
-		m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, cli.Handler.cfg.FirmwareRevision)
+		m.NewAVP(avp.FirmwareRevision, 0, 0, cli.Handler.cfg.FirmwareRevision)
 	}
 	return m
 }

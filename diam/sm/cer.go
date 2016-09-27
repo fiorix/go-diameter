@@ -87,7 +87,7 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 		a.AddAVP(cer.OriginStateID)
 	}
 	if sm.cfg.FirmwareRevision != 0 {
-		a.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, sm.cfg.FirmwareRevision)
+		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
 	}
 	_, err = a.WriteTo(c)
 	return err
@@ -130,7 +130,7 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 		}
 	}
 	if sm.cfg.FirmwareRevision != 0 {
-		a.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, sm.cfg.FirmwareRevision)
+		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
 	}
 	_, err = a.WriteTo(c)
 	return err

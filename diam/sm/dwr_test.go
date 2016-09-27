@@ -44,7 +44,7 @@ func TestHandleDWR(t *testing.T) {
 	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)
@@ -106,7 +106,7 @@ func TestHandleDWR_Fail(t *testing.T) {
 	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
-	m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, clientSettings.FirmwareRevision)
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
 	_, err = m.WriteTo(cli)
 	if err != nil {
 		t.Fatal(err)

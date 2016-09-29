@@ -12,12 +12,17 @@ import (
 )
 
 // Address data type.
-type Address net.IP
+type Address []byte
+
+//type Address net.IP
 
 // DecodeAddress decodes an Address data type from byte array.
 func DecodeAddress(b []byte) (Type, error) {
-	if len(b) < 6 {
+	if len(b) < 3 {
 		return nil, errors.New("Not enough data to make an Address")
+	}
+	if binary.BigEndian.Uint16(b[:2]) <= 0 || binary.BigEndian.Uint16(b[:2]) >= 65535 {
+		return nil, errors.New("Invalid address type received")
 	}
 	switch binary.BigEndian.Uint16(b[:2]) {
 	case 0x01:
@@ -29,7 +34,7 @@ func DecodeAddress(b []byte) (Type, error) {
 			return nil, errors.New("Invalid length for IPv6")
 		}
 	default:
-		return nil, fmt.Errorf("Unsupported address family: 0x%x", b[:2])
+		// Do nothing, we are not validating every possible address type
 	}
 	return Address(b[2:]), nil
 }
@@ -72,5 +77,5 @@ func (addr Address) Type() TypeID {
 
 // String implements the Type interface.
 func (addr Address) String() string {
-	return fmt.Sprintf("Address{%s},Padding:%d", net.IP(addr), addr.Padding())
+	return fmt.Sprintf("Address{%s}, Padding:%d", string(addr), addr.Padding())
 }

@@ -16,12 +16,6 @@ type GenericAddress struct {
 	AddrValue []byte
 }
 
-// DecodeGenericAddress is not used anywhere, it is here so that GenericAddress
-// satisfies Type interface
-func DecodeGenericAddress(b []byte) (Type, error) {
-	return GenericAddress{}, nil
-}
-
 // Serialize implements the Type interface.
 func (addr GenericAddress) Serialize() []byte {
 	var b []byte

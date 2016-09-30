@@ -69,7 +69,14 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 			return nil, err
 		}
 	}
-	rw, err := net.DialTimeout("tcp", addr, timeout)
+
+	var rw net.Conn
+	var err error
+	if timeout == 0 {
+		rw, err = net.Dial("tcp", addr)
+	} else {
+		rw, err = net.DialTimeout("tcp", addr, timeout)
+	}
 	if err != nil {
 		return nil, err
 	}

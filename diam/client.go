@@ -9,6 +9,7 @@ package diam
 import (
 	"crypto/tls"
 	"net"
+	"time"
 
 	"github.com/fiorix/go-diameter/diam/dict"
 )
@@ -19,15 +20,26 @@ import (
 // If dict is nil, dict.Default is used.
 func Dial(addr string, handler Handler, dp *dict.Parser) (Conn, error) {
 	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return dial(srv)
+    	return dial(srv, 0)
 }
 
-func dial(srv *Server) (Conn, error) {
+func DialTimeout(addr string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
+	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
+    	return dial(srv, timeout)
+}
+
+func dial(srv *Server, timeout time.Duration) (Conn, error) {
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"
 	}
-	rw, err := net.Dial("tcp", addr)
+	var rw net.Conn
+	var err error
+	if timeout == 0 {
+		rw, err = net.Dial("tcp", addr)
+	} else {
+	        rw, err = net.DialTimeout("tcp", addr, timeout)
+	}
 	if err != nil {
 		return nil, err
 	}

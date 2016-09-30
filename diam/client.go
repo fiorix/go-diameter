@@ -54,10 +54,16 @@ func dial(srv *Server, timeout time.Duration) (Conn, error) {
 // DialTLS is the same as Dial, but for TLS.
 func DialTLS(addr, certFile, keyFile string, handler Handler, dp *dict.Parser) (Conn, error) {
 	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return dialTLS(srv, certFile, keyFile)
+	return dialTLS(srv, certFile, keyFile, 0)
 }
 
-func dialTLS(srv *Server, certFile, keyFile string) (Conn, error) {
+// DialTLSTimeout is the same as DialTimeout, but for TLS.
+func DialTLSTimeout(addr, certFile, keyFile string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
+	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
+	return dialTLS(srv, certFile, keyFile, timeout)
+}
+
+func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn, error) {
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"
@@ -74,7 +80,14 @@ func dialTLS(srv *Server, certFile, keyFile string) (Conn, error) {
 			return nil, err
 		}
 	}
-	rw, err := net.Dial("tcp", addr)
+
+	var rw net.Conn
+	var err error
+	if timeout == 0 {
+		rw, err = net.Dial("tcp", addr)
+	} else {
+		rw, err = net.DialTimeout("tcp", addr, timeout)
+	}
 	if err != nil {
 		return nil, err
 	}

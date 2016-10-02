@@ -27,14 +27,6 @@ func TestClient_Dial_MissingStateMachine(t *testing.T) {
 	}
 }
 
-func TestClient_Dial_MissingApplication(t *testing.T) {
-	cli := &Client{Handler: New(&Settings{})}
-	_, err := cli.Dial("")
-	if err != smparser.ErrMissingApplication {
-		t.Fatal(err)
-	}
-}
-
 func TestClient_Dial_InvalidAddress(t *testing.T) {
 	cli := &Client{
 		Handler: New(clientSettings),
@@ -73,15 +65,15 @@ func TestClient_Handshake(t *testing.T) {
 			diam.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, clientSettings.VendorID),
 		},
 		AcctApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
 		},
 		AuthApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
 		},
 		VendorSpecificApplicationID: []*diam.AVP{
 			diam.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
 				AVP: []*diam.AVP{
-					diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+					diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
 				},
 			}),
 		},
@@ -102,15 +94,15 @@ func TestClient_Handshake_Notify(t *testing.T) {
 			diam.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, clientSettings.VendorID),
 		},
 		AcctApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
 		},
 		AuthApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
 		},
 		VendorSpecificApplicationID: []*diam.AVP{
 			diam.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
 				AVP: []*diam.AVP{
-					diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+					diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
 				},
 			}),
 		},
@@ -144,7 +136,7 @@ func TestClient_Handshake_FailParseCEA(t *testing.T) {
 	cli := &Client{
 		Handler: New(clientSettings),
 		AcctApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
 		},
 	}
 	_, err := cli.Dial(srv.Addr)
@@ -174,7 +166,7 @@ func TestClient_Handshake_FailedResultCode(t *testing.T) {
 	cli := &Client{
 		Handler: New(clientSettings),
 		AcctApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
 		},
 	}
 	_, err := cli.Dial(srv.Addr)
@@ -204,7 +196,7 @@ func TestClient_Handshake_RetransmitTimeout(t *testing.T) {
 		MaxRetransmits:     3,
 		RetransmitInterval: time.Millisecond,
 		AcctApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
 		},
 	}
 	_, err := cli.Dial(srv.Addr)
@@ -227,7 +219,7 @@ func TestClient_Watchdog(t *testing.T) {
 		WatchdogInterval: 100 * time.Millisecond,
 		Handler:          New(clientSettings),
 		AcctApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
 		},
 	}
 	c, err := cli.Dial(srv.Addr)
@@ -262,7 +254,7 @@ func TestClient_Watchdog_Timeout(t *testing.T) {
 		WatchdogInterval:   50 * time.Millisecond,
 		Handler:            New(clientSettings),
 		AcctApplicationID: []*diam.AVP{
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(0)),
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
 		},
 	}
 	c, err := cli.Dial(srv.Addr)

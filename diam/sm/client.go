@@ -14,6 +14,7 @@ import (
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
+	//"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 var (
@@ -62,6 +63,7 @@ func (cli *Client) Dial(addr string) (diam.Conn, error) {
 	})
 }
 
+// DialTimeout is like Dial, but with timeout
 func (cli *Client) DialTimeout(addr string, timeout time.Duration) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {
 		return diam.DialTimeout(addr, cli.Handler, cli.Dict, timeout)
@@ -121,8 +123,9 @@ func (cli *Client) validate() error {
 			}
 		}
 		if isSupported == false {
-			err := fmt.Errorf("Client attempts to advertise unsupported application - type: acct, id: %d", acctAppID)
+			err := fmt.Errorf("Client attempts to advertise unsupported application - type: auth, id: %d", acctAppID)
 			return err
+			//return smparser.ErrMissingApplication
 		}
 
 	}
@@ -138,6 +141,7 @@ func (cli *Client) validate() error {
 		if isSupported == false {
 			err := fmt.Errorf("Client attempts to advertise unsupported application - type: auth, id: %d", authAppID)
 			return err
+			//return smparser.ErrMissingApplication
 		}
 
 	}

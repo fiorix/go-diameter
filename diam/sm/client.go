@@ -62,10 +62,23 @@ func (cli *Client) Dial(addr string) (diam.Conn, error) {
 	})
 }
 
+func (cli *Client) DialTimeout(addr string, timeout time.Duration) (diam.Conn, error) {
+	return cli.dial(func() (diam.Conn, error) {
+		return diam.DialTimeout(addr, cli.Handler, cli.Dict, timeout)
+	})
+}
+
 // DialTLS is like Dial, but using TLS.
 func (cli *Client) DialTLS(addr, certFile, keyFile string) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {
 		return diam.DialTLS(addr, certFile, keyFile, cli.Handler, cli.Dict)
+	})
+}
+
+// DialTLSTimeout is like DialTimeout, but using TLS.
+func (cli *Client) DialTLSTimeout(addr, certFile, keyFile string, timeout time.Duration) (diam.Conn, error) {
+	return cli.dial(func() (diam.Conn, error) {
+		return diam.DialTLSTimeout(addr, certFile, keyFile, cli.Handler, cli.Dict, timeout)
 	})
 }
 
@@ -104,7 +117,7 @@ func (cli *Client) validate() error {
 	}
 	// Make sure the given applications exist in the dictionary
 	// before sending a CER.
-	_, err := app.Parse(cli.Dict)
+	_, err := app.Parse(cli.Dict, smparser.Client)
 	if err != nil {
 		return err
 	}
@@ -179,14 +192,14 @@ func (cli *Client) makeCER(ip net.IP) *diam.Message {
 		}
 	}
 	if cli.Handler.cfg.FirmwareRevision != 0 {
-		m.NewAVP(avp.FirmwareRevision, avp.Mbit, 0, cli.Handler.cfg.FirmwareRevision)
+		m.NewAVP(avp.FirmwareRevision, 0, 0, cli.Handler.cfg.FirmwareRevision)
 	}
 	return m
 }
 
 func (cli *Client) watchdog(c diam.Conn, dwac chan struct{}) {
 	disconnect := c.(diam.CloseNotifier).CloseNotify()
-	var osid uint32 = uint32(cli.Handler.cfg.OriginStateID)
+	var osid = uint32(cli.Handler.cfg.OriginStateID)
 	for {
 		select {
 		case <-disconnect:

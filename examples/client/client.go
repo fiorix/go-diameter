@@ -91,10 +91,12 @@ func main() {
 		EnableWatchdog:     true,
 		WatchdogInterval:   5 * time.Second,
 		AcctApplicationID: []*diam.AVP{
-			// Advertise that we want support for both
-			// Accounting applications 4 and 999.
-			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)), // RFC 4006
+			// Advertise that we want support accounting application with id 999
 			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(helloApplication)),
+		},
+		AuthApplicationID: []*diam.AVP{
+			// Advertise support for credit control application
+			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)), // RFC 4006
 		},
 	}
 
@@ -281,7 +283,7 @@ const (
 // helloDictionary is our custom, example dictionary.
 var helloDictionary = xml.Header + `
 <diameter>
-	<application id="999">
+	<application id="999" type="acct">
 		<command code="111" short="HM" name="Hello-Message">
 			<request>
 				<rule avp="Session-Id" required="true" max="1"/>

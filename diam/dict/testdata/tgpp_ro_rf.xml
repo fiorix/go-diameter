@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-	<application id="4">
+	<application id="4" type="auth">
 		<vendor id="10415" name="TGPP"/>
 
 		<avp name="TGPP-Charging-Characteristics" code="13" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">

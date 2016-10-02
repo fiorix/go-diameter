@@ -5,7 +5,6 @@
 package smparser
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/fiorix/go-diameter/diam"
@@ -17,7 +16,7 @@ import (
 func TestCEA_MissingResultCode(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)
 	cea := new(CEA)
-	err := cea.Parse(m)
+	err := cea.Parse(m, Client)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -30,7 +29,7 @@ func TestCEA_MissingOriginHost(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)
 	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
 	cea := new(CEA)
-	err := cea.Parse(m)
+	err := cea.Parse(m, Client)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -44,7 +43,7 @@ func TestCEA_MissingOriginRealm(t *testing.T) {
 	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	cea := new(CEA)
-	err := cea.Parse(m)
+	err := cea.Parse(m, Client)
 	if err == nil {
 		t.Fatal("Broken CEA was parsed with no errors")
 	}
@@ -55,13 +54,14 @@ func TestCEA_MissingOriginRealm(t *testing.T) {
 
 func TestCEA_MissingApplication(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, dict.Default)
+	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
-	cer := new(CER)
-	_, err := cer.Parse(m)
+	cea := new(CEA)
+	err := cea.Parse(m, Client)
 	if err == nil {
-		t.Fatal("Broken CER was parsed with no errors")
+		t.Fatal("Broken CEA was parsed with no errors")
 	}
 	if err != ErrMissingApplication {
 		t.Fatal("Unexpected error:", err)
@@ -70,24 +70,18 @@ func TestCEA_MissingApplication(t *testing.T) {
 
 func TestCEA_NoCommonApplication(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, dict.Default)
+	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(2))
-	cer := new(CER)
-	_, err := cer.Parse(m)
+	cea := new(CEA)
+	err := cea.Parse(m, Server)
 	if err == nil {
-		t.Fatal("Broken CER was parsed with no errors")
+		t.Fatal("Broken CEA was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal("Unexpected error:", err.Error())
-	}
-	if appErr.ID != 2 {
-		t.Fatalf("Unexpected app ID. Want 2, have %d", appErr.ID)
-	}
-	if !strings.Contains(appErr.Error(), "acct application 2") {
-		t.Fatalf("Unexpected error message: %s", appErr)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }
 
@@ -99,16 +93,12 @@ func TestCEA_FailedAcctAppID(t *testing.T) {
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
 	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000))
 	cea := new(CEA)
-	err := cea.Parse(m)
+	err := cea.Parse(m, Server)
 	if err == nil {
-		t.Fatal("Broken CER was parsed with no errors")
+		t.Fatal("Broken CEA was parsed with no errors")
 	}
-	appErr, ok := err.(*ErrNoCommonApplication)
-	if !ok {
-		t.Fatal(err)
-	}
-	if appErr.ID != 1000 {
-		t.Fatalf("Unexpected app ID. Want 1000, have %d", appErr.ID)
+	if err != ErrNoCommonApplication {
+		t.Fatal("Unexpected error:", err)
 	}
 }
 
@@ -118,9 +108,9 @@ func TestCEA(t *testing.T) {
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
-	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(4))
+	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4))
 	cea := new(CEA)
-	if err := cea.Parse(m); err != nil {
+	if err := cea.Parse(m, Server); err != nil {
 		t.Fatal(err)
 	}
 	if cea.ResultCode != diam.Success {

@@ -482,12 +482,14 @@ var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
 		</avp>
 
 	</application>
+	<application id="3" type="acct"> <!-- Diameter Base Accounting Messages -->
+	</application>
 </diameter>`
 
 var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
-	<application id="4">
+	<application id="4" type="auth">
 		<!-- Diameter Credit Control Application -->
 		<!-- http://tools.ietf.org/html/rfc4006 -->
 
@@ -939,7 +941,7 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 var networkaccessserverXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
-	<application id="1">
+	<application id="1" type="auth">
 		<!-- Diameter Network Access Server Application -->
 		<!-- http://tools.ietf.org/html/rfc7155 -->
 
@@ -1902,7 +1904,7 @@ var networkaccessserverXML = `<?xml version="1.0" encoding="UTF-8"?>
 
 var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-	<application id="4">
+	<application id="4" type="auth">
 		<vendor id="10415" name="TGPP"/>
 
 		<avp name="TGPP-Charging-Characteristics" code="13" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">

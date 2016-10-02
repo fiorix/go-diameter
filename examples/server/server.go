@@ -174,7 +174,7 @@ func handleALL(c diam.Conn, m *diam.Message) {
 // helloDictionary is our custom, example dictionary.
 var helloDictionary = xml.Header + `
 <diameter>
-	<application id="999">
+	<application id="999" type="acct">
 		<command code="111" short="HM" name="Hello-Message">
 			<request>
 				<rule avp="Session-Id" required="true" max="1"/>

@@ -6,6 +6,7 @@ package sm
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 var (
@@ -110,16 +110,36 @@ func (cli *Client) validate() error {
 		// Set default WatchdogInterval
 		cli.WatchdogInterval = 5 * time.Second
 	}
-	app := &smparser.Application{
-		AcctApplicationID:           cli.AcctApplicationID,
-		AuthApplicationID:           cli.AuthApplicationID,
-		VendorSpecificApplicationID: cli.VendorSpecificApplicationID,
+	// Make sure the applications supplied to Client are supported locally
+	for _, submittedAcctApp := range cli.AcctApplicationID {
+		acctAppID := uint32(submittedAcctApp.Data.(datatype.Unsigned32))
+		isSupported := false
+		for _, localApp := range cli.Handler.supportedApps {
+			if localApp.AppType == "acct" && localApp.ID == acctAppID {
+				isSupported = true
+				break
+			}
+		}
+		if isSupported == false {
+			err := fmt.Errorf("Client attempts to advertise unsupported application - type: acct, id: %d", acctAppID)
+			return err
+		}
+
 	}
-	// Make sure the given applications exist in the dictionary
-	// before sending a CER.
-	_, err := app.Parse(cli.Dict, smparser.Client)
-	if err != nil {
-		return err
+	for _, submittedAuthApp := range cli.AuthApplicationID {
+		authAppID := uint32(submittedAuthApp.Data.(datatype.Unsigned32))
+		isSupported := false
+		for _, localApp := range cli.Handler.supportedApps {
+			if localApp.AppType == "auth" && localApp.ID == authAppID {
+				isSupported = true
+				break
+			}
+		}
+		if isSupported == false {
+			err := fmt.Errorf("Client attempts to advertise unsupported application - type: auth, id: %d", authAppID)
+			return err
+		}
+
 	}
 	return nil
 }

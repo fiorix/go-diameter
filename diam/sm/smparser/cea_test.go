@@ -118,7 +118,7 @@ func TestCEA(t *testing.T) {
 			diam.Success, cea.ResultCode)
 	}
 	if cea.OriginStateID != 1 {
-		t.Fatalf("Unexpected Result-Code. Want 1, have %d", cea.OriginStateID)
+		t.Fatalf("Unexpected Origin-State-ID. Want 1, have %d", cea.OriginStateID)
 	}
 	if app := cea.Applications(); len(app) != 1 {
 		if app[0] != 4 {

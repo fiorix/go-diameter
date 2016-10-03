@@ -14,7 +14,6 @@ import (
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
-	//"github.com/fiorix/go-diameter/diam/sm/smparser"
 )
 
 var (
@@ -123,9 +122,8 @@ func (cli *Client) validate() error {
 			}
 		}
 		if isSupported == false {
-			err := fmt.Errorf("Client attempts to advertise unsupported application - type: auth, id: %d", acctAppID)
+			err := fmt.Errorf("Client attempts to advertise unsupported application - type: acct, id: %d", acctAppID)
 			return err
-			//return smparser.ErrMissingApplication
 		}
 
 	}
@@ -141,7 +139,6 @@ func (cli *Client) validate() error {
 		if isSupported == false {
 			err := fmt.Errorf("Client attempts to advertise unsupported application - type: auth, id: %d", authAppID)
 			return err
-			//return smparser.ErrMissingApplication
 		}
 
 	}

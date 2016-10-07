@@ -14,14 +14,12 @@ import (
 // Address data type.
 type Address []byte
 
-//type Address net.IP
-
 // DecodeAddress decodes an Address data type from byte array.
 func DecodeAddress(b []byte) (Type, error) {
 	if len(b) < 3 {
 		return nil, errors.New("Not enough data to make an Address")
 	}
-	if binary.BigEndian.Uint16(b[:2]) <= 0 || binary.BigEndian.Uint16(b[:2]) >= 65535 {
+	if binary.BigEndian.Uint16(b[:2]) == 0 || binary.BigEndian.Uint16(b[:2]) == 65535 {
 		return nil, errors.New("Invalid address type received")
 	}
 	switch binary.BigEndian.Uint16(b[:2]) {
@@ -34,7 +32,7 @@ func DecodeAddress(b []byte) (Type, error) {
 			return nil, errors.New("Invalid length for IPv6")
 		}
 	default:
-		// Do nothing, we are not validating every possible address type
+		return Address(b), nil
 	}
 	return Address(b[2:]), nil
 }
@@ -46,27 +44,38 @@ func (addr Address) Serialize() []byte {
 		b = make([]byte, 6)
 		b[1] = 0x01
 		copy(b[2:], ip4)
-	} else {
+	} else if ip6 := net.IP(addr).To16(); ip6 != nil {
 		b = make([]byte, 18)
 		b[1] = 0x02
 		copy(b[2:], addr)
-
+	} else {
+		b = make([]byte, len(addr))
+		copy(b, addr)
 	}
 	return b
 }
 
 // Len implements the Type interface.
 func (addr Address) Len() int {
-	ip4 := net.IP(addr).To4()
-	if ip4 != nil {
-		return len(ip4) + 2 // Two from address family.
+	if ip4 := net.IP(addr).To4(); ip4 != nil {
+		return len(addr) + 2 // two bytes from the address family
+	} else if ip6 := net.IP(addr).To16(); ip6 != nil {
+		return len(addr) + 2 // two bytes from the address family
+	} else {
+		return len(addr)
 	}
-	return len(addr) + 2
 }
 
 // Padding implements the Type interface.
 func (addr Address) Padding() int {
-	l := len(addr) + 2 // two bytes from the address family
+	var l int
+	if ip4 := net.IP(addr).To4(); ip4 != nil {
+		l = len(addr) + 2 // two bytes from the address family
+	} else if ip6 := net.IP(addr).To16(); ip6 != nil {
+		l = len(addr) + 2 // two bytes from the address family
+	} else {
+		l = len(addr)
+	}
 	return pad4(l) - l
 }
 
@@ -77,5 +86,11 @@ func (addr Address) Type() TypeID {
 
 // String implements the Type interface.
 func (addr Address) String() string {
-	return fmt.Sprintf("Address{%s}, Padding:%d", string(addr), addr.Padding())
+	if ip4 := net.IP(addr).To4(); ip4 != nil {
+		return fmt.Sprintf("Address{%s},Padding:%d", net.IP(addr), addr.Padding())
+	}
+	if ip6 := net.IP(addr).To16(); ip6 != nil {
+		return fmt.Sprintf("Address{%s},Padding:%d", net.IP(addr), addr.Padding())
+	}
+	return fmt.Sprintf("Address{%#v}, Type{%#v} Padding:%d", addr[2:], addr[:2], addr.Padding())
 }

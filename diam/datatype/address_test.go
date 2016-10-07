@@ -24,9 +24,9 @@ func TestAddressIPv4(t *testing.T) {
 		t.Fatalf("Unexpected type. Want %d, have %d",
 			AddressType, address.Type())
 	}
-	/*if address.Len() != 6 {
+	if address.Len() != 6 {
 		t.Fatalf("Unexpected len. Want 6, have %d", address.Len())
-	}*/
+	}
 	if len(address.String()) == 0 {
 		t.Fatalf("Unexpected empty string")
 	}

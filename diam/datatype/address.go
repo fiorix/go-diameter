@@ -51,6 +51,7 @@ func (addr Address) Serialize() []byte {
 	} else {
 		b = make([]byte, len(addr))
 		copy(b, addr)
+		fmt.Println("UNKNOWN")
 	}
 	return b
 }
@@ -58,9 +59,9 @@ func (addr Address) Serialize() []byte {
 // Len implements the Type interface.
 func (addr Address) Len() int {
 	if ip4 := net.IP(addr).To4(); ip4 != nil {
-		return len(addr) + 2 // two bytes from the address family
+		return len(ip4) + 2 // two bytes from the address family
 	} else if ip6 := net.IP(addr).To16(); ip6 != nil {
-		return len(addr) + 2 // two bytes from the address family
+		return len(ip6) + 2 // two bytes from the address family
 	} else {
 		return len(addr)
 	}
@@ -70,9 +71,9 @@ func (addr Address) Len() int {
 func (addr Address) Padding() int {
 	var l int
 	if ip4 := net.IP(addr).To4(); ip4 != nil {
-		l = len(addr) + 2 // two bytes from the address family
+		l = len(ip4) + 2 // two bytes from the address family
 	} else if ip6 := net.IP(addr).To16(); ip6 != nil {
-		l = len(addr) + 2 // two bytes from the address family
+		l = len(ip6) + 2 // two bytes from the address family
 	} else {
 		l = len(addr)
 	}

@@ -51,7 +51,6 @@ func (addr Address) Serialize() []byte {
 	} else {
 		b = make([]byte, len(addr))
 		copy(b, addr)
-		fmt.Println("UNKNOWN")
 	}
 	return b
 }

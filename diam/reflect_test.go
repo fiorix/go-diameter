@@ -49,6 +49,21 @@ func TestUnmarshalString(t *testing.T) {
 	}
 }
 
+func TestUnmarshalTimeDatatype(t *testing.T) {
+	expectedTime := "Time{2015-12-09 16:40:53 +0100 CET}"
+	m, _ := ReadMessage(bytes.NewReader(testMessageWithVendorID), dict.Default)
+	type Data struct {
+		EventTimestamp datatype.Time `avp:"Event-Timestamp"`
+	}
+	var d Data
+	if err := m.Unmarshal(&d); err != nil {
+		t.Fatal(err)
+	}
+	if d.EventTimestamp.String() != expectedTime {
+		t.Fatalf("Unexpected value, want %s, have %s", expectedTime, d.EventTimestamp.String())
+	}
+}
+
 func TestUnmarshalNetIP(t *testing.T) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	type Data struct {

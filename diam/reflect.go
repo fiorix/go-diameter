@@ -431,6 +431,12 @@ func unmarshal(m *Message, f reflect.Value, avps []*AVP) {
 			break
 		}
 
+		// Check for time datatype
+		if fieldType.AssignableTo(reflect.TypeOf(avps[0].Data)) {
+			f.Set(reflect.ValueOf(avps[0].Data))
+			break
+		}
+
 		// Handle grouped AVPs.
 		if group, ok := avps[0].Data.(*GroupedAVP); ok {
 			scanStruct(m, f, group.AVP)

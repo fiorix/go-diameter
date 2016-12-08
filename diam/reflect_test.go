@@ -50,7 +50,7 @@ func TestUnmarshalString(t *testing.T) {
 }
 
 func TestUnmarshalTimeDatatype(t *testing.T) {
-	expectedTime := "Time{2015-12-09 16:40:53 +0100 CET}"
+	expectedTime := "Time{2015-12-09 15:40:53 +0000 UTC}"
 	m, _ := ReadMessage(bytes.NewReader(testMessageWithVendorID), dict.Default)
 	type Data struct {
 		EventTimestamp datatype.Time `avp:"Event-Timestamp"`

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
@@ -54,6 +55,21 @@ func TestUnmarshalTimeDatatype(t *testing.T) {
 	m, _ := ReadMessage(bytes.NewReader(testMessageWithVendorID), dict.Default)
 	type Data struct {
 		EventTimestamp datatype.Time `avp:"Event-Timestamp"`
+	}
+	var d Data
+	if err := m.Unmarshal(&d); err != nil {
+		t.Fatal(err)
+	}
+	if d.EventTimestamp.String() != expectedTime {
+		t.Fatalf("Unexpected value, want %s, have %s", expectedTime, d.EventTimestamp.String())
+	}
+}
+
+func TestUnmarshalTimeType(t *testing.T) {
+	expectedTime := "2015-12-09 15:40:53 +0000 UTC"
+	m, _ := ReadMessage(bytes.NewReader(testMessageWithVendorID), dict.Default)
+	type Data struct {
+		EventTimestamp time.Time `avp:"Event-Timestamp"`
 	}
 	var d Data
 	if err := m.Unmarshal(&d); err != nil {

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/fiorix/go-diameter/diam/datatype"
 	"github.com/fiorix/go-diameter/diam/dict"
@@ -46,6 +47,37 @@ func TestUnmarshalString(t *testing.T) {
 	}
 	if d.OriginHost != "test" {
 		t.Fatalf("Unexpected value. Want test, have %s", d.OriginHost)
+	}
+}
+
+func TestUnmarshalTimeDatatype(t *testing.T) {
+	expectedTime := "2015-12-09 15:40:53 +0000 UTC"
+	m, _ := ReadMessage(bytes.NewReader(testMessageWithVendorID), dict.Default)
+	type Data struct {
+		EventTimestamp datatype.Time `avp:"Event-Timestamp"`
+	}
+	var d Data
+	if err := m.Unmarshal(&d); err != nil {
+		t.Fatal(err)
+	}
+	timestamp := time.Time(d.EventTimestamp)
+	if timestamp.UTC().String() != expectedTime {
+		t.Fatalf("Unexpected value, want %s, have %s", expectedTime, timestamp.UTC().String())
+	}
+}
+
+func TestUnmarshalTimeType(t *testing.T) {
+	expectedTime := "2015-12-09 15:40:53 +0000 UTC"
+	m, _ := ReadMessage(bytes.NewReader(testMessageWithVendorID), dict.Default)
+	type Data struct {
+		EventTimestamp time.Time `avp:"Event-Timestamp"`
+	}
+	var d Data
+	if err := m.Unmarshal(&d); err != nil {
+		t.Fatal(err)
+	}
+	if d.EventTimestamp.UTC().String() != expectedTime {
+		t.Fatalf("Unexpected value, want %s, have %s", expectedTime, d.EventTimestamp.UTC().String())
 	}
 }
 

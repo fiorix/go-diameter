@@ -6,7 +6,6 @@ package diam
 
 import (
 	"errors"
-	// "log"
 	"reflect"
 	"strings"
 
@@ -36,9 +35,8 @@ func parseAvpTag(tag reflect.StructTag) (string, bool) {
 	name = tag.Get("avp")
 	if idx := strings.Index(name, ","); idx != -1 {
 		return name[:idx], false
-	} else {
-		return name, true
 	}
+	return name, true
 }
 
 func isEmptyValue(v reflect.Value) bool {
@@ -393,7 +391,6 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 
 func unmarshal(m *Message, f reflect.Value, avps []*AVP) {
 	fieldType := f.Type()
-
 	switch f.Kind() {
 	case reflect.Slice:
 		// Copy byte arrays.
@@ -423,11 +420,23 @@ func unmarshal(m *Message, f reflect.Value, avps []*AVP) {
 			f.Set(reflect.ValueOf(avps[0]))
 			break
 		}
-
 		// Test for AVP
 		at = reflect.TypeOf(*avps[0])
 		if fieldType.ConvertibleTo(at) {
 			f.Set(reflect.ValueOf(*avps[0]))
+			break
+		}
+
+		// Used for unmarshalling time datatype
+		if fieldType.AssignableTo(reflect.TypeOf(avps[0].Data)) {
+			f.Set(reflect.ValueOf(avps[0].Data))
+			break
+		}
+
+		// Used for unmarshalling time type
+		if fieldType.ConvertibleTo(reflect.TypeOf(avps[0].Data)) {
+			timeStamp := reflect.ValueOf(avps[0].Data).Convert(fieldType)
+			f.Set(timeStamp)
 			break
 		}
 

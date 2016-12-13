@@ -51,7 +51,7 @@ func TestUnmarshalString(t *testing.T) {
 }
 
 func TestUnmarshalTimeDatatype(t *testing.T) {
-	expectedTime := "Time{2015-12-09 15:40:53 +0000 UTC}"
+	expectedTime := "2015-12-09 15:40:53 +0000 UTC"
 	m, _ := ReadMessage(bytes.NewReader(testMessageWithVendorID), dict.Default)
 	type Data struct {
 		EventTimestamp datatype.Time `avp:"Event-Timestamp"`
@@ -60,8 +60,9 @@ func TestUnmarshalTimeDatatype(t *testing.T) {
 	if err := m.Unmarshal(&d); err != nil {
 		t.Fatal(err)
 	}
-	if d.EventTimestamp.String() != expectedTime {
-		t.Fatalf("Unexpected value, want %s, have %s", expectedTime, d.EventTimestamp.String())
+	timestamp := time.Time(d.EventTimestamp)
+	if timestamp.UTC().String() != expectedTime {
+		t.Fatalf("Unexpected value, want %s, have %s", expectedTime, timestamp.UTC().String())
 	}
 }
 
@@ -75,8 +76,8 @@ func TestUnmarshalTimeType(t *testing.T) {
 	if err := m.Unmarshal(&d); err != nil {
 		t.Fatal(err)
 	}
-	if d.EventTimestamp.String() != expectedTime {
-		t.Fatalf("Unexpected value, want %s, have %s", expectedTime, d.EventTimestamp.String())
+	if d.EventTimestamp.UTC().String() != expectedTime {
+		t.Fatalf("Unexpected value, want %s, have %s", expectedTime, d.EventTimestamp.UTC().String())
 	}
 }
 

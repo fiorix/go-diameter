@@ -68,6 +68,26 @@ func TestCEA_MissingApplication(t *testing.T) {
 	}
 }
 
+func TestCEA_MissingApplicationWithError(t *testing.T) {
+	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, dict.Default)
+	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.ResourcesExceeded))
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
+	cea := new(CEA)
+	err := cea.Parse(m, Client)
+	if err == nil {
+		t.Fatal("Broken CEA was parsed with no errors")
+	}
+	e, ok := err.(*ErrFailedResultCode)
+	if !ok {
+		t.Fatalf("Unexpected error type. Want *ErrFailedResultCode, have %T", err)
+	}
+	if e.Code != diam.ResourcesExceeded {
+		t.Fatalf("Unexpected ResultCode. Want %d, have %d", diam.ResourcesExceeded, e.Code)
+	}
+}
+
 func TestCEA_NoCommonApplication(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, dict.Default)
 	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))

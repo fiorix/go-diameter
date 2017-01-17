@@ -173,7 +173,7 @@ func TestClient_Handshake_FailedResultCode(t *testing.T) {
 	if err == nil {
 		t.Fatal("Unexpected CER worked")
 	}
-	e, ok := err.(*ErrFailedResultCode)
+	e, ok := err.(*smparser.ErrFailedResultCode)
 	if !ok {
 		t.Fatal(err)
 	}

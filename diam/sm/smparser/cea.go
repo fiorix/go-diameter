@@ -21,6 +21,8 @@ type CEA struct {
 	AcctApplicationID           []*diam.AVP               `avp:"Acct-Application-Id"`
 	AuthApplicationID           []*diam.AVP               `avp:"Auth-Application-Id"`
 	VendorSpecificApplicationID []*diam.AVP               `avp:"Vendor-Specific-Application-Id"`
+	FailedAVP                   []*diam.AVP               `avp:"Failed-AVP"`
+	ErrorMessage                string                    `avp:"Error-Message"`
 	appID                       []uint32                  // List of supported application IDs.
 }
 
@@ -28,6 +30,7 @@ type CEA struct {
 // answer (CEA) contains a Result-Code AVP that is not success (2001).
 type ErrFailedResultCode struct {
 	Code uint32
+	Cea  *CEA
 }
 
 // Error implements the error interface.
@@ -44,7 +47,7 @@ func (cea *CEA) Parse(m *diam.Message, localRole Role) (err error) {
 		return err
 	}
 	if cea.ResultCode != diam.Success {
-		return &ErrFailedResultCode{Code: cea.ResultCode}
+		return &ErrFailedResultCode{Code: cea.ResultCode, Cea: cea}
 	}
 	app := &Application{
 		AcctApplicationID:           cea.AcctApplicationID,

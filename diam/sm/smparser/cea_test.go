@@ -71,6 +71,12 @@ func TestCEA_MissingApplication(t *testing.T) {
 func TestCEA_MissingApplicationWithError(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, dict.Default)
 	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.ResourcesExceeded))
+	m.NewAVP(avp.FailedAVP, avp.Mbit, 0, &diam.GroupedAVP{
+		AVP: []*diam.AVP{
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000)),
+		},
+	})
+
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
@@ -83,8 +89,19 @@ func TestCEA_MissingApplicationWithError(t *testing.T) {
 	if !ok {
 		t.Fatalf("Unexpected error type. Want *ErrFailedResultCode, have %T", err)
 	}
-	if e.Code != diam.ResourcesExceeded {
-		t.Fatalf("Unexpected ResultCode. Want %d, have %d", diam.ResourcesExceeded, e.Code)
+	if e.ResultCode != diam.ResourcesExceeded {
+		t.Fatalf("Unexpected ResultCode. Want %d, have %d", diam.ResourcesExceeded, e.ResultCode)
+	}
+	g, ok := e.FailedAVP[0].Data.(*diam.GroupedAVP)
+	if !ok {
+		t.Fatalf("Unexpected type. Want *diam.GroupedAVP, have %T", e.FailedAVP[0].Data)
+	}
+	d, ok := g.AVP[0].Data.(datatype.Unsigned32)
+	if !ok {
+		t.Fatalf("Unexpected type. Want *datatype.Unsigned32, have %T", e.FailedAVP[0].Data)
+	}
+	if d != 1000 {
+		t.Fatalf("Wrong value for FailedAVP. Want 1000, have %d", d)
 	}
 }
 

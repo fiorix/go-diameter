@@ -29,13 +29,12 @@ type CEA struct {
 // ErrFailedResultCode is returned by Dial or DialTLS when the handshake
 // answer (CEA) contains a Result-Code AVP that is not success (2001).
 type ErrFailedResultCode struct {
-	Code uint32
-	Cea  *CEA
+	*CEA
 }
 
 // Error implements the error interface.
-func (e *ErrFailedResultCode) Error() string {
-	return fmt.Sprintf("failed Result-Code AVP: %d", e.Code)
+func (e ErrFailedResultCode) Error() string {
+	return fmt.Sprintf("failed Result-Code AVP: %d", e.CEA.ResultCode)
 }
 
 // Parse parses and validates the given message.
@@ -47,7 +46,7 @@ func (cea *CEA) Parse(m *diam.Message, localRole Role) (err error) {
 		return err
 	}
 	if cea.ResultCode != diam.Success {
-		return &ErrFailedResultCode{Code: cea.ResultCode, Cea: cea}
+		return &ErrFailedResultCode{CEA: cea}
 	}
 	app := &Application{
 		AcctApplicationID:           cea.AcctApplicationID,

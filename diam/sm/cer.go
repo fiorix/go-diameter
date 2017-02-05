@@ -76,6 +76,8 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 		a = m.Answer(diam.NoCommonSecurity)
 	case smparser.ErrNoCommonApplication:
 		a = m.Answer(diam.NoCommonApplication)
+	default:
+		a = m.Answer(diam.UnableToComply)
 	}
 	a.Header.CommandFlags |= diam.ErrorFlag
 	a.NewAVP(avp.OriginHost, avp.Mbit, 0, sm.cfg.OriginHost)

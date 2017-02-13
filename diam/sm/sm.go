@@ -41,10 +41,11 @@ func PrepareSupportedApps(d *dict.Parser) []*SupportedApp {
 // Settings used to configure the state machine with AVPs to be added
 // to CER on clients or CEA on servers.
 type Settings struct {
-	OriginHost  datatype.DiameterIdentity
-	OriginRealm datatype.DiameterIdentity
-	VendorID    datatype.Unsigned32
-	ProductName datatype.UTF8String
+	OriginHost   datatype.DiameterIdentity
+	OriginRealm  datatype.DiameterIdentity
+	HostIPAdress datatype.Address
+	VendorID     datatype.Unsigned32
+	ProductName  datatype.UTF8String
 
 	// OriginStateID is optional for clients, and not added if unset.
 	//

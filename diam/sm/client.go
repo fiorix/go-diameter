@@ -146,11 +146,17 @@ func (cli *Client) validate() error {
 }
 
 func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
-	ip, _, err := net.SplitHostPort(c.LocalAddr().String())
-	if err != nil {
-		return nil, err
+	var ipAddress datatype.Address
+	if len(cli.Handler.cfg.HostIPAdress) > 0 {
+		ipAddress = cli.Handler.cfg.HostIPAdress
+	} else {
+		ip, _, err := net.SplitHostPort(c.LocalAddr().String())
+		if err != nil {
+			return nil, err
+		}
+		ipAddress = datatype.Address(net.ParseIP(ip))
 	}
-	m := cli.makeCER(net.ParseIP(ip))
+	m := cli.makeCER(ipAddress)
 	// Ignore CER, but not DWR.
 	cli.Handler.mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {})
 	// Handle CEA and DWA.
@@ -180,11 +186,11 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	return nil, ErrHandshakeTimeout
 }
 
-func (cli *Client) makeCER(ip net.IP) *diam.Message {
+func (cli *Client) makeCER(ip datatype.Address) *diam.Message {
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, cli.Dict)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cli.Handler.cfg.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cli.Handler.cfg.OriginRealm)
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(ip))
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, ip)
 	m.NewAVP(avp.VendorID, avp.Mbit, 0, cli.Handler.cfg.VendorID)
 	m.NewAVP(avp.ProductName, 0, 0, cli.Handler.cfg.ProductName)
 	if cli.Handler.cfg.OriginStateID != 0 {

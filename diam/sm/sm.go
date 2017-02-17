@@ -41,11 +41,10 @@ func PrepareSupportedApps(d *dict.Parser) []*SupportedApp {
 // Settings used to configure the state machine with AVPs to be added
 // to CER on clients or CEA on servers.
 type Settings struct {
-	OriginHost   datatype.DiameterIdentity
-	OriginRealm  datatype.DiameterIdentity
-	HostIPAdress datatype.Address
-	VendorID     datatype.Unsigned32
-	ProductName  datatype.UTF8String
+	OriginHost  datatype.DiameterIdentity
+	OriginRealm datatype.DiameterIdentity
+	VendorID    datatype.Unsigned32
+	ProductName datatype.UTF8String
 
 	// OriginStateID is optional for clients, and not added if unset.
 	//
@@ -57,6 +56,14 @@ type Settings struct {
 
 	// FirmwareRevision is optional, and not added if unset.
 	FirmwareRevision datatype.Unsigned32
+
+	// HostIPAdress is optional for both clients and servers, when not set local
+	// host IP address is used.
+	//
+	// This property may be set when the IP address of the host sending/receiving
+	// the request is different from the configured allowed IPs in the other end,
+	// for example when using a VPN or a gateway.
+	HostIPAdress datatype.Address
 }
 
 // StateMachine is a specialized type of diam.ServeMux that handles

@@ -44,6 +44,16 @@ var (
 		FirmwareRevision: 1,
 	}
 
+	serverSettings2 = &Settings{
+		OriginHost:       "srv2",
+		OriginRealm:      "test2",
+		VendorID:         13,
+		ProductName:      "go-diameter",
+		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
+		FirmwareRevision: 1,
+		HostIPAdress:     localhostAddress,
+	}
+
 	clientSettings = &Settings{
 		OriginHost:       "cli",
 		OriginRealm:      "test",
@@ -51,5 +61,15 @@ var (
 		ProductName:      "go-diameter",
 		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
+	}
+
+	clientSettings2 = &Settings{
+		OriginHost:       "cli2",
+		OriginRealm:      "test2",
+		VendorID:         13,
+		ProductName:      "go-diameter",
+		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
+		FirmwareRevision: 1,
+		HostIPAdress:     localhostAddress,
 	}
 )

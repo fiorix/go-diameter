@@ -85,6 +85,35 @@ func TestClient_Handshake(t *testing.T) {
 	c.Close()
 }
 
+func TestClient_Handshake_CustomIP(t *testing.T) {
+	srv := diamtest.NewServer(New(serverSettings), dict.Default)
+	defer srv.Close()
+	cli := &Client{
+		Handler: New(clientSettings2),
+		SupportedVendorID: []*diam.AVP{
+			diam.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, clientSettings.VendorID),
+		},
+		AcctApplicationID: []*diam.AVP{
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
+		},
+		AuthApplicationID: []*diam.AVP{
+			diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
+		},
+		VendorSpecificApplicationID: []*diam.AVP{
+			diam.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
+				AVP: []*diam.AVP{
+					diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4)),
+				},
+			}),
+		},
+	}
+	c, err := cli.Dial(srv.Addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.Close()
+}
+
 func TestClient_Handshake_Notify(t *testing.T) {
 	srv := diamtest.NewServer(New(serverSettings), dict.Default)
 	defer srv.Close()

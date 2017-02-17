@@ -56,6 +56,14 @@ type Settings struct {
 
 	// FirmwareRevision is optional, and not added if unset.
 	FirmwareRevision datatype.Unsigned32
+
+	// HostIPAdress is optional for both clients and servers, when not set local
+	// host IP address is used.
+	//
+	// This property may be set when the IP address of the host sending/receiving
+	// the request is different from the configured allowed IPs in the other end,
+	// for example when using a VPN or a gateway.
+	HostIPAdress datatype.Address
 }
 
 // StateMachine is a specialized type of diam.ServeMux that handles

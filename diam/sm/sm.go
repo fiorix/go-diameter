@@ -109,7 +109,7 @@ func (sm *StateMachine) Handle(cmd string, handler diam.Handler) {
 // HandleFunc implements the diam.Handler interface.
 func (sm *StateMachine) HandleFunc(cmd string, handler diam.HandlerFunc) {
 	switch cmd {
-	case "CER", "CEA", "DWR", "DWA":
+	case "CER", "CEA", "DWR":
 		sm.Error(&diam.ErrorReport{
 			Error: fmt.Errorf("cannot overwrite %s command in the state machine", cmd),
 		})

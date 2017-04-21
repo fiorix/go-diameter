@@ -41,6 +41,9 @@ var (
 // By default, retransmission and watchdog are disabled. Retransmission is
 // enabled by setting MaxRetransmits to a number greater than zero, and
 // watchdog is enabled by setting EnableWatchdog to true.
+//
+// A custom message handler for Device-Watchdog-Answer (DWA) can be registered.
+// However, that will be overwritten if watchdog is enabled.
 type Client struct {
 	Dict                        *dict.Parser  // Dictionary parser (uses dict.Default if unset)
 	Handler                     *StateMachine // Message handler

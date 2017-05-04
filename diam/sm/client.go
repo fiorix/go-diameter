@@ -41,6 +41,9 @@ var (
 // By default, retransmission and watchdog are disabled. Retransmission is
 // enabled by setting MaxRetransmits to a number greater than zero, and
 // watchdog is enabled by setting EnableWatchdog to true.
+//
+// A custom message handler for Device-Watchdog-Answer (DWA) can be registered.
+// However, that will be overwritten if watchdog is enabled.
 type Client struct {
 	Dict                        *dict.Parser  // Dictionary parser (uses dict.Default if unset)
 	Handler                     *StateMachine // Message handler
@@ -161,9 +164,13 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	cli.Handler.mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {})
 	// Handle CEA and DWA.
 	errc := make(chan error)
-	dwac := make(chan struct{})
 	cli.Handler.mux.Handle("CEA", handleCEA(cli.Handler, errc))
-	cli.Handler.mux.Handle("DWA", handshakeOK(handleDWA(cli.Handler, dwac)))
+
+	var dwac chan struct{}
+	if cli.EnableWatchdog {
+		dwac = make(chan struct{})
+		cli.Handler.mux.Handle("DWA", handshakeOK(handleDWA(cli.Handler, dwac)))
+	}
 	for i := 0; i < (int(cli.MaxRetransmits) + 1); i++ {
 		_, err := m.WriteTo(c)
 		if err != nil {

@@ -519,9 +519,11 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 	if len(addr) == 0 {
 		addr = ":3868"
 	}
-	config := &tls.Config{}
-	if srv.TLSConfig != nil {
-		*config = *srv.TLSConfig
+	var config *tls.Config
+	if srv.TLSConfig == nil {
+		config = new(tls.Config)
+	} else {
+		config = srv.TLSConfig.Clone()
 	}
 	var err error
 	config.Certificates = make([]tls.Certificate, 1)

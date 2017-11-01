@@ -103,6 +103,7 @@ func handleCER(errc chan error, useTLS bool) diam.HandlerFunc {
 		AcctApplicationID *diam.AVP `avp:"Acct-Application-Id"`
 	}
 	return func(c diam.Conn, m *diam.Message) {
+
 		if c.LocalAddr() == nil {
 			errc <- fmt.Errorf("LocalAddr is nil")
 		}
@@ -142,7 +143,10 @@ func handleCER(errc chan error, useTLS bool) diam.HandlerFunc {
 		if err != nil {
 			errc <- err
 		}
-		<-c.(diam.CloseNotifier).CloseNotify()
+		c.(diam.CloseNotifier).CloseNotify()
+		go func() {
+			<-c.(diam.CloseNotifier).CloseNotify()
+		}()
 		//log.Println("Client", c.RemoteAddr(), "disconnected")
 	}
 }
@@ -168,8 +172,8 @@ func handleCEA(errc chan error, wait chan struct{}) diam.HandlerFunc {
 		AcctApplicationID int    `avp:"Acct-Application-Id"`
 	}
 	return func(c diam.Conn, m *diam.Message) {
+
 		var resp CEA
-		defer close(wait)
 		err := m.Unmarshal(&resp)
 		if err != nil {
 			errc <- err
@@ -199,7 +203,18 @@ func handleCEA(errc chan error, wait chan struct{}) diam.HandlerFunc {
 			errc <- fmt.Errorf("Unexpected AcctApplicationID. Want 1, have %d", resp.AcctApplicationID)
 			return
 		}
+		// Initialize & start close notifier
+		closeNotifyChan := c.(diam.CloseNotifier).CloseNotify()
+		// Wait on close notify chan outside of main serve loop, closeNotifier routine is started by
+		// liveSwitchReader.Read to avoid io.Pipe deadlock issue
+		go func() {
+			<-closeNotifyChan // wait on c.Close to complete
+			select {          // close only if not already closed
+			case <-wait:
+			default:
+				close(wait)
+			}
+		}()
 		c.Close()
-		<-c.(diam.CloseNotifier).CloseNotify()
 	}
 }

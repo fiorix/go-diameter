@@ -99,7 +99,7 @@ func (cli *Client) DialTLSTimeout(addr, certFile, keyFile string, timeout time.D
 func (cli *Client) DialNetworkTLS(network, addr, certFile, keyFile string) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {
 		return diam.DialNetworkTLS(network, addr, certFile, keyFile, cli.Handler, cli.Dict)
-  })
+	})
 }
 
 // NewConn is like Dial, but using an already open net.Conn.
@@ -185,6 +185,7 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	m := cli.makeCER(ipAddress)
 	// Ignore CER, but not DWR.
 	cerClientHandler := func(c diam.Conn, m *diam.Message) {}
+	// See sm.go for Base Diam Idx declarations
 	cli.Handler.mux.HandleIdx(baseCERIdx, diam.HandlerFunc(cerClientHandler))
 	cli.Handler.mux.HandleFunc("CER", cerClientHandler)
 	// Handle CEA and DWA.

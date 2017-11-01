@@ -6,19 +6,34 @@
 
 package dict
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 // Default is a Parser object with pre-loaded
 // Base Protocol and Credit Control dictionaries.
 var Default *Parser
 
 func init() {
-	Default, _ = NewParser()
-	Default.Load(bytes.NewReader([]byte(baseXML)))
-	Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
-	Default.Load(bytes.NewReader([]byte(networkaccessserverXML)))
-	Default.Load(bytes.NewReader([]byte(tgpprorfXML)))
-	Default.Load(bytes.NewReader([]byte(tgpps6aXML)))
+	var dictionaries = []struct{ name, xml string }{
+		{"Base", baseXML},
+		{"Credit Control", creditcontrolXML},
+		{"Network Access Server", networkaccessserverXML},
+		{"TGPP", tgpprorfXML},
+		{"TGPP_S6a", tgpps6aXML},
+	}
+	var err error
+	Default, err = NewParser()
+	if err != nil {
+		panic(err)
+	}
+	for _, dict := range dictionaries {
+		err = Default.Load(bytes.NewReader([]byte(dict.xml)))
+		if err != nil {
+			panic(fmt.Sprintf("Cannot load %s dictionary: %s", dict.name, err))
+		}
+	}
 }
 
 var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -4393,6 +4408,39 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </answer>
         </command>
 
+        <command code="317" short="CL" name="Cancel-Location">
+            <request>
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+                <rule avp="Auth-Session-State" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Destination-Host" required="true" max="1"/>
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="User-Name" required="true" max="1"/>
+                <rule avp="Supported-Features" required="false"/>
+                <rule avp="Cancellation-Type" required="true" max="1"/>
+                <rule avp="CLR-Flags" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </request>
+            <answer>
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+                <rule avp="Supported-Features" required="false"/>
+                <rule avp="Result-Code" required="false" max="1"/>
+                <rule avp="Experimental-Result" required="false" max="1"/>
+                <rule avp="Auth-Session-State" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="AVP" required="false"/>
+                <rule avp="Failed-AVP" required="false"/>
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </answer>
+        </command>
+
         <command code="318" short="AI" name="Authentication-Information">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
@@ -4991,6 +5039,16 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Unsigned32"/>
         </avp>
 
+        <avp name="Cancellation-Type" code="1420" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="MME_UPDATE_PROCEDURE"/>
+                <item code="1" name="SGSN_UDPATE_PROCEDURE"/>
+                <item code="2" name="SUBSCRIPTION_WITHDRAWAL"/>
+                <item code="3" name="UPDATE_PROCEDURE_IWF"/>
+                <item code="4" name="INITIAL_ATTACH_PROCEDURE"/>
+            </data>
+        </avp>
+
         <avp name="RAND" code="1447" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="OctetString"/>
         </avp>
@@ -5024,6 +5082,10 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
         </avp>
 
         <avp name="ULA-Flags" code="1406" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="CLR-Flags" code="1638" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
             <data type="Unsigned32"/>
         </avp>
 

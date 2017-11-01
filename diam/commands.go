@@ -12,6 +12,7 @@ const (
 	AbortSession              = 274
 	Accounting                = 271
 	AuthenticationInformation = 318
+	CancelLocation            = 317
 	CapabilitiesExchange      = 257
 	CreditControl             = 272
 	DeviceWatchdog            = 280
@@ -35,6 +36,8 @@ const (
 	CCR = "CCR"
 	CEA = "CEA"
 	CER = "CER"
+	CLA = "CLA"
+	CLR = "CLR"
 	DPA = "DPA"
 	DPR = "DPR"
 	DWA = "DWA"

@@ -59,11 +59,20 @@ type CloseNotifier interface {
 // reads and switches, if its mutex is held.
 type liveSwitchReader struct {
 	sync.Mutex
-	r io.Reader
+	r         io.Reader
+	pr        *io.PipeReader
+	pipeCopyF func()
 }
 
 func (sr *liveSwitchReader) Read(p []byte) (n int, err error) {
 	sr.Lock()
+	// Check if closeNotifier was created prior to this Read call & start it
+	if sr.pr != nil && sr.pipeCopyF != nil {
+		go sr.pipeCopyF()
+		sr.r = sr.pr
+		sr.pr = nil
+		sr.pipeCopyF = nil
+	}
 	r := sr.r
 	sr.Unlock()
 	return r.Read(p)
@@ -89,18 +98,23 @@ func (c *conn) closeNotify() <-chan struct{} {
 	if c.closeNotifyc == nil {
 		c.closeNotifyc = make(chan struct{})
 		pr, pw := io.Pipe()
-		readSource := c.sr.r
 		c.sr.Lock()
-		c.sr.r = pr
-		c.sr.Unlock()
-		go func() {
+		readSource := c.sr.r
+		c.sr.pr = pr
+		// Create closeNotifier pipe copy routine, but do not start it here
+		// If we start it immediately, pipe Write can block indefinitely if we are already in
+		// liveSwitchReader.Read() with original sr.r since Pipe.Write blocks in absence of corresponding
+		// pipe reader
+		// We should only swap the reader outside of r.Read call
+		c.sr.pipeCopyF = func() {
 			_, err := io.Copy(pw, readSource)
 			if err == nil {
 				err = io.EOF
 			}
 			pw.CloseWithError(err)
 			c.notifyClientGone()
-		}()
+		}
+		c.sr.Unlock()
 	}
 	return c.closeNotifyc
 }

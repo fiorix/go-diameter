@@ -72,7 +72,9 @@ type Data struct {
 
 // Enum contains the code and name of Enumerated items.
 type Enum struct {
-	Code uint8  `xml:"code,attr"`
+	// rfc6733 (section 4.3.1):
+	// The Enumerated format is derived from the Integer32 Basic AVP Format.
+	Code int32  `xml:"code,attr"`
 	Name string `xml:"name,attr"`
 }
 

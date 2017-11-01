@@ -20,12 +20,12 @@ import (
 // If dict is nil, dict.Default is used.
 func Dial(addr string, handler Handler, dp *dict.Parser) (Conn, error) {
 	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-    	return dial(srv, 0)
+	return dial(srv, 0)
 }
 
 func DialTimeout(addr string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
 	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-    	return dial(srv, timeout)
+	return dial(srv, timeout)
 }
 
 func dial(srv *Server, timeout time.Duration) (Conn, error) {
@@ -38,7 +38,7 @@ func dial(srv *Server, timeout time.Duration) (Conn, error) {
 	if timeout == 0 {
 		rw, err = net.Dial("tcp", addr)
 	} else {
-	        rw, err = net.DialTimeout("tcp", addr, timeout)
+		rw, err = net.DialTimeout("tcp", addr, timeout)
 	}
 	if err != nil {
 		return nil, err
@@ -68,9 +68,11 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 	if len(addr) == 0 {
 		addr = ":3868"
 	}
-	config := &tls.Config{InsecureSkipVerify: true}
-	if srv.TLSConfig != nil {
-		*config = *srv.TLSConfig
+	var config *tls.Config
+	if srv.TLSConfig == nil {
+		config = &tls.Config{InsecureSkipVerify: true}
+	} else {
+		config = TLSConfigClone(srv.TLSConfig)
 	}
 	if len(certFile) != 0 {
 		var err error

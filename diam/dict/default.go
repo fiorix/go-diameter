@@ -13,11 +13,28 @@ import "bytes"
 var Default *Parser
 
 func init() {
-	Default, _ = NewParser()
-	Default.Load(bytes.NewReader([]byte(baseXML)))
-	Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
-	Default.Load(bytes.NewReader([]byte(networkaccessserverXML)))
-	Default.Load(bytes.NewReader([]byte(tgpprorfXML)))
+	var err error
+
+	Default, err = NewParser()
+	if err != nil {
+		panic(err)
+	}
+	err = Default.Load(bytes.NewReader([]byte(baseXML)))
+	if err != nil {
+		panic(err)
+	}
+	err = Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
+	if err != nil {
+		panic(err)
+	}
+	err = Default.Load(bytes.NewReader([]byte(networkaccessserverXML)))
+	if err != nil {
+		panic(err)
+	}
+	err = Default.Load(bytes.NewReader([]byte(tgpprorfXML)))
+	if err != nil {
+		panic(err)
+	}
 }
 
 var baseXML = `<?xml version="1.0" encoding="UTF-8"?>

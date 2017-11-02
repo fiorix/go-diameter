@@ -57,25 +57,24 @@ func (p *Parser) FindAVPWithVendor(appid uint32, code interface{}, vendorID uint
 		err error
 	)
 retry:
-	switch code.(type) {
+	switch codeVal := code.(type) {
 	case string:
-		avp, ok = p.avpname[nameIdx{appid, code.(string), vendorID}]
+		avp, ok = p.avpname[nameIdx{appid, codeVal, vendorID}]
 		if !ok && appid == 0 {
-			err = fmt.Errorf("Could not find AVP string %s for VendorID: %d", code.(string), vendorID)
+			err = fmt.Errorf("Could not find AVP %T(%q) for Vendor: %d", codeVal, codeVal, vendorID)
 		}
 	case uint32:
-		avp, ok = p.avpcode[codeIdx{appid, code.(uint32), vendorID}]
+		avp, ok = p.avpcode[codeIdx{appid, codeVal, vendorID}]
 		if !ok && appid == 0 {
-			err = fmt.Errorf("Could not find AVP uint32 %d for Vendor: %d",
-				code.(uint32), vendorID)
+			err = fmt.Errorf("Could not find AVP %T(%d) for Vendor: %d", codeVal, codeVal, vendorID)
 		}
 	case int:
-		avp, ok = p.avpcode[codeIdx{appid, uint32(code.(int)), vendorID}]
+		avp, ok = p.avpcode[codeIdx{appid, uint32(codeVal), vendorID}]
 		if !ok && appid == 0 {
-			err = fmt.Errorf("Could not find AVP int %d for VendorID: %d", code.(int), vendorID)
+			err = fmt.Errorf("Could not find AVP %T(%d) for Vendor: %d", codeVal, codeVal, vendorID)
 		}
 	default:
-		return nil, fmt.Errorf("Unsupported AVP code type %#v", code)
+		return nil, fmt.Errorf("Unsupported AVP code type %T(%#v)", codeVal, code)
 	}
 	if ok {
 		return avp, nil

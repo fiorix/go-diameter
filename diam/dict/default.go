@@ -6,34 +6,32 @@
 
 package dict
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 // Default is a Parser object with pre-loaded
 // Base Protocol and Credit Control dictionaries.
 var Default *Parser
 
 func init() {
+	var dictionaries = []struct{ name, xml string }{
+		{"Base", baseXML},
+		{"Credit Control", creditcontrolXML},
+		{"Network Access Server", networkaccessserverXML},
+		{"TGPP", tgpprorfXML},
+	}
 	var err error
-
 	Default, err = NewParser()
 	if err != nil {
 		panic(err)
 	}
-	err = Default.Load(bytes.NewReader([]byte(baseXML)))
-	if err != nil {
-		panic(err)
-	}
-	err = Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
-	if err != nil {
-		panic(err)
-	}
-	err = Default.Load(bytes.NewReader([]byte(networkaccessserverXML)))
-	if err != nil {
-		panic(err)
-	}
-	err = Default.Load(bytes.NewReader([]byte(tgpprorfXML)))
-	if err != nil {
-		panic(err)
+	for _, dict := range dictionaries {
+		err = Default.Load(bytes.NewReader([]byte(dict.xml)))
+		if err != nil {
+			panic(fmt.Sprintf("Cannot load %s dictionary: %s", dict.name, err))
+		}
 	}
 }
 

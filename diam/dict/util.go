@@ -57,24 +57,24 @@ func (p *Parser) FindAVPWithVendor(appid uint32, code interface{}, vendorID uint
 		err error
 	)
 retry:
-	switch code.(type) {
+	switch codeVal := code.(type) {
 	case string:
-		avp, ok = p.avpname[nameIdx{appid, code.(string), vendorID}]
+		avp, ok = p.avpname[nameIdx{appid, codeVal, vendorID}]
 		if !ok && appid == 0 {
-			err = fmt.Errorf("Could not find AVP %s", code.(string))
+			err = fmt.Errorf("Could not find AVP %T(%q) for Vendor: %d", codeVal, codeVal, vendorID)
 		}
 	case uint32:
-		avp, ok = p.avpcode[codeIdx{appid, code.(uint32), vendorID}]
+		avp, ok = p.avpcode[codeIdx{appid, codeVal, vendorID}]
 		if !ok && appid == 0 {
-			err = fmt.Errorf("Could not find AVP %d", code.(uint32))
+			err = fmt.Errorf("Could not find AVP %T(%d) for Vendor: %d", codeVal, codeVal, vendorID)
 		}
 	case int:
-		avp, ok = p.avpcode[codeIdx{appid, uint32(code.(int)), vendorID}]
+		avp, ok = p.avpcode[codeIdx{appid, uint32(codeVal), vendorID}]
 		if !ok && appid == 0 {
-			err = fmt.Errorf("Could not find AVP %d", code.(int))
+			err = fmt.Errorf("Could not find AVP %T(%d) for Vendor: %d", codeVal, codeVal, vendorID)
 		}
 	default:
-		return nil, fmt.Errorf("Unsupported AVP code type %#v", code)
+		return nil, fmt.Errorf("Unsupported AVP code type %T(%#v)", codeVal, code)
 	}
 	if ok {
 		return avp, nil
@@ -152,7 +152,7 @@ func (p *Parser) FindCommand(appid, code uint32) (*Command, error) {
 // given AVP appid, code and n. (n is the enum code in the dictionary)
 //
 // Enum must never be called concurrently with LoadFile or Load.
-func (p *Parser) Enum(appid, code uint32, n uint8) (*Enum, error) {
+func (p *Parser) Enum(appid, code uint32, n int32) (*Enum, error) {
 	avp, err := p.FindAVP(appid, code)
 	if err != nil {
 		return nil, err

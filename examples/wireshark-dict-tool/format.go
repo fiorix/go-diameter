@@ -56,7 +56,7 @@ type DataType struct {
 // Enum contains the code and name of Enumerated items.
 type Enum struct {
 	Name string `xml:"name,attr"`
-	Code uint8  `xml:"code,attr"`
+	Code int32  `xml:"code,attr"`
 }
 
 // Grouped represents a grouped AVP definition.

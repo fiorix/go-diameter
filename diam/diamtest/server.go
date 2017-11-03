@@ -74,11 +74,10 @@ func (s *Server) StartTLS() {
 	if err != nil {
 		panic(fmt.Sprintf("diamtest: NewTLSServer: %v", err))
 	}
-
-	existingConfig := s.TLS
-	s.TLS = new(tls.Config)
-	if existingConfig != nil {
-		*s.TLS = *existingConfig
+	if s.TLS != nil {
+		s.TLS = diam.TLSConfigClone(s.TLS)
+	} else {
+		s.TLS = new(tls.Config)
 	}
 	/*
 		if s.TLS.NextProtos == nil {
@@ -105,23 +104,23 @@ func (s *Server) Close() {
 // generated from src/crypto/tls:
 // go run generate_cert.go  --rsa-bits 512 --host 127.0.0.1,::1,example.com --ca --start-date "Jan 1 00:00:00 1970" --duration=1000000h
 var localhostCert = []byte(`-----BEGIN CERTIFICATE-----
-MIIBdzCCASOgAwIBAgIBADALBgkqhkiG9w0BAQUwEjEQMA4GA1UEChMHQWNtZSBD
-bzAeFw03MDAxMDEwMDAwMDBaFw00OTEyMzEyMzU5NTlaMBIxEDAOBgNVBAoTB0Fj
-bWUgQ28wWjALBgkqhkiG9w0BAQEDSwAwSAJBAN55NcYKZeInyTuhcCwFMhDHCmwa
-IUSdtXdcbItRB/yfXGBhiex00IaLXQnSU+QZPRZWYqeTEbFSgihqi1PUDy8CAwEA
-AaNoMGYwDgYDVR0PAQH/BAQDAgCkMBMGA1UdJQQMMAoGCCsGAQUFBwMBMA8GA1Ud
-EwEB/wQFMAMBAf8wLgYDVR0RBCcwJYILZXhhbXBsZS5jb22HBH8AAAGHEAAAAAAA
-AAAAAAAAAAAAAAEwCwYJKoZIhvcNAQEFA0EAAoQn/ytgqpiLcZu9XKbCJsJcvkgk
-Se6AbGXgSlq+ZCEVo0qIwSgeBqmsJxUu7NCSOwVJLYNEBO2DtIxoYVk+MA==
+MIIBjTCCATegAwIBAgIPKRqtFb1X/uogs0UPGkUyMA0GCSqGSIb3DQEBCwUAMBIx
+EDAOBgNVBAoTB0FjbWUgQ28wIBcNNzAwMTAxMDAwMDAwWhgPMjA4NDAxMjkxNjAw
+MDBaMBIxEDAOBgNVBAoTB0FjbWUgQ28wXDANBgkqhkiG9w0BAQEFAANLADBIAkEA
+tMn18UcCiDO20RhkwA/88FmSDaIAVNjLtel657wVDoWgci2MRMcPeSccgsYS4xDn
+ezTHlHFOGUG/zbo/xCUn/wIDAQABo2gwZjAOBgNVHQ8BAf8EBAMCAqQwEwYDVR0l
+BAwwCgYIKwYBBQUHAwEwDwYDVR0TAQH/BAUwAwEB/zAuBgNVHREEJzAlggtleGFt
+cGxlLmNvbYcEfwAAAYcQAAAAAAAAAAAAAAAAAAAAATANBgkqhkiG9w0BAQsFAANB
+AKeVsv55EyCtiTX2v1BGkDT2Yz/XvUAO8+dIRro2Sbl/sPs3AbwsfPtmzEs2971o
+enpSR+RxdEI1vz+fW2SgTQ4=
 -----END CERTIFICATE-----`)
 
-// localhostKey is the private key for localhostCert.
 var localhostKey = []byte(`-----BEGIN RSA PRIVATE KEY-----
-MIIBPAIBAAJBAN55NcYKZeInyTuhcCwFMhDHCmwaIUSdtXdcbItRB/yfXGBhiex0
-0IaLXQnSU+QZPRZWYqeTEbFSgihqi1PUDy8CAwEAAQJBAQdUx66rfh8sYsgfdcvV
-NoafYpnEcB5s4m/vSVe6SU7dCK6eYec9f9wpT353ljhDUHq3EbmE4foNzJngh35d
-AekCIQDhRQG5Li0Wj8TM4obOnnXUXf1jRv0UkzE9AHWLG5q3AwIhAPzSjpYUDjVW
-MCUXgckTpKCuGwbJk7424Nb8bLzf3kllAiA5mUBgjfr/WtFSJdWcPQ4Zt9KTMNKD
-EUO0ukpTwEIl6wIhAMbGqZK3zAAFdq8DD2jPx+UJXnh0rnOkZBzDtJ6/iN69AiEA
-1Aq8MJgTaYsDQWyU/hDq5YkDJc9e9DSCvUIzqxQWMQE=
+MIIBOgIBAAJBALTJ9fFHAogzttEYZMAP/PBZkg2iAFTYy7Xpeue8FQ6FoHItjETH
+D3knHILGEuMQ53s0x5RxThlBv826P8QlJ/8CAwEAAQJAdGjCw1xc5gSeh960KPNi
+hAS4xax1mCyMZxLyv7pcuJ7+51Pfg9XvChp8iH1rOolWRAlLUjyNqcoHdAQjcJ8P
+aQIhAMtjcaQjz1pzt8DuRVJSWZ1WfDWr9T2I8RDhRV2tVODrAiEA4430sKoiZ2NY
+4jIcWnqFdF67QVeFO1YlOj8aWBJesD0CIQCxLVD6/yMMFdBWZnrHCuv8LzIHA2Sh
+FWGDJerqfyt4vwIgOUUK5kOLcRXR0uvlsufPGqCU5DcQswRVTjl/edb1uckCIEhp
+k/edVSu51t+U3IK2Jav3CDauyjgZ2+5osUckI8Ax
 -----END RSA PRIVATE KEY-----`)

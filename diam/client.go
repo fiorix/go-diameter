@@ -121,3 +121,15 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 	go c.serve()
 	return c.writer, nil
 }
+
+// NewConn is the same as Dial, but using an already open net.Conn.
+func NewConn(rw net.Conn, addr string, handler Handler, dp *dict.Parser) (Conn, error) {
+	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
+
+	c, err := srv.newConn(rw)
+	if err != nil {
+		return nil, err
+	}
+	go c.serve()
+	return c.writer, nil
+}

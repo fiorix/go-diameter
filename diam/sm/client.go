@@ -99,6 +99,13 @@ func (cli *Client) DialTLSTimeout(addr, certFile, keyFile string, timeout time.D
 func (cli *Client) DialNetworkTLS(network, addr, certFile, keyFile string) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {
 		return diam.DialNetworkTLS(network, addr, certFile, keyFile, cli.Handler, cli.Dict)
+  })
+}
+
+// NewConn is like Dial, but using an already open net.Conn.
+func (cli *Client) NewConn(rw net.Conn, addr string) (diam.Conn, error) {
+	return cli.dial(func() (diam.Conn, error) {
+		return diam.NewConn(rw, addr, cli.Handler, cli.Dict)
 	})
 }
 

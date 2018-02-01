@@ -76,8 +76,8 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 
 func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command, err error) {
 	b := buf.Bytes()[:HeaderLength]
-	if _, err = io.ReadFull(r, b); err != nil {
-		return nil, io.ErrUnexpectedEOF
+	if _, err := io.ReadFull(r, b); err != nil {
+		return nil, err
 	}
 	m.Header, err = DecodeHeader(b)
 	if err != nil {
@@ -95,11 +95,11 @@ func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command,
 
 func (m *Message) readBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command) error {
 	b := readerBufferSlice(buf, int(m.Header.MessageLength-HeaderLength))
-	_, err := io.ReadFull(r, b)
+	n, err := io.ReadFull(r, b)
 	if err != nil {
-		return err
+		return fmt.Errorf("readBody Error: %v, %d bytes read", err, n)
 	}
-	n := m.maxAVPsFor(cmd)
+	n = m.maxAVPsFor(cmd)
 	if n == 0 {
 		// TODO: fail to load the dictionary instead.
 		return fmt.Errorf(
@@ -464,7 +464,11 @@ func printGrouped(prefix string, m *Message, a *AVP, indent int) string {
 			ga.Code,
 			ga.VendorID,
 		); err != nil {
-			fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, ga, err)
+			if dictAVP != nil {
+				fmt.Fprintf(&b, "%s\t%s %s (%s),\n", prefix, dictAVP.Name, ga, err)
+			} else {
+				fmt.Fprintf(&b, "%s\tUnknown %s (%s),\n", prefix, ga, err)
+			}
 		} else {
 			if ga.Data.Type() == GroupedAVPType {
 				indent++

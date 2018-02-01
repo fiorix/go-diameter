@@ -8,13 +8,41 @@ package diam
 
 // Diameter command codes.
 const (
-	AA                   = 265
-	AbortSession         = 274
-	Accounting           = 271
-	CapabilitiesExchange = 257
-	CreditControl        = 272
-	DeviceWatchdog       = 280
-	DisconnectPeer       = 282
-	ReAuth               = 258
-	SessionTermination   = 275
+	AA                        = 265
+	AbortSession              = 274
+	Accounting                = 271
+	AuthenticationInformation = 318
+	CapabilitiesExchange      = 257
+	CreditControl             = 272
+	DeviceWatchdog            = 280
+	DisconnectPeer            = 282
+	ReAuth                    = 258
+	SessionTermination        = 275
+	UpdateLocation            = 316
+)
+
+// Short Command Names
+const (
+	AAA = "AAA"
+	AAR = "AAR"
+	ACA = "ACA"
+	ACR = "ACR"
+	AIA = "AIA"
+	AIR = "AIR"
+	ASA = "ASA"
+	ASR = "ASR"
+	CCA = "CCA"
+	CCR = "CCR"
+	CEA = "CEA"
+	CER = "CER"
+	DPA = "DPA"
+	DPR = "DPR"
+	DWA = "DWA"
+	DWR = "DWR"
+	RAA = "RAA"
+	RAR = "RAR"
+	STA = "STA"
+	STR = "STR"
+	ULA = "ULA"
+	ULR = "ULR"
 )

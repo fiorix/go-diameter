@@ -57,14 +57,20 @@ type Settings struct {
 	// FirmwareRevision is optional, and not added if unset.
 	FirmwareRevision datatype.Unsigned32
 
-	// HostIPAdress is optional for both clients and servers, when not set local
+	// HostIPAddress is optional for both clients and servers, when not set local
 	// host IP address is used.
 	//
 	// This property may be set when the IP address of the host sending/receiving
 	// the request is different from the configured allowed IPs in the other end,
 	// for example when using a VPN or a gateway.
-	HostIPAdress datatype.Address
+	HostIPAddress datatype.Address
 }
+
+var (
+	baseCERIdx = diam.CommandIndex{AppID: 0, Code: diam.CapabilitiesExchange, Request: true}
+	baseCEAIdx = diam.CommandIndex{AppID: 0, Code: diam.CapabilitiesExchange, Request: false}
+	baseDWRIdx = diam.CommandIndex{AppID: 0, Code: diam.DeviceWatchdog, Request: true}
+)
 
 // StateMachine is a specialized type of diam.ServeMux that handles
 // the CER/CEA handshake and DWR/DWA messages for clients or servers.
@@ -88,6 +94,8 @@ func New(settings *Settings) *StateMachine {
 	}
 	sm.mux.Handle("CER", handleCER(sm))
 	sm.mux.Handle("DWR", handshakeOK(handleDWR(sm)))
+	sm.mux.HandleIdx(baseCERIdx, handleCER(sm))
+	sm.mux.HandleIdx(baseDWRIdx, handleDWR(sm))
 	return sm
 }
 
@@ -104,6 +112,17 @@ func (sm *StateMachine) ServeDIAM(c diam.Conn, m *diam.Message) {
 // Handle implements the diam.Handler interface.
 func (sm *StateMachine) Handle(cmd string, handler diam.Handler) {
 	sm.HandleFunc(cmd, handler.ServeDIAM)
+}
+
+func (sm *StateMachine) HandleIdx(cmd diam.CommandIndex, handler diam.Handler) {
+	switch cmd {
+	case baseCERIdx, baseCEAIdx, baseDWRIdx:
+		sm.Error(&diam.ErrorReport{
+			Error: fmt.Errorf("cannot overwrite %v command in the state machine", cmd),
+		})
+	default:
+		sm.mux.HandleIdx(cmd, handshakeOK(handler.ServeDIAM))
+	}
 }
 
 // HandleFunc implements the diam.Handler interface.

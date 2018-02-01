@@ -14,32 +14,46 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 )
 
+// DialNetwork connects to the peer pointed to by network & addr and returns the Conn that
+// can be used to send diameter messages. Incoming messages are handled
+// by the handler, which is typically nil and DefaultServeMux is used.
+// If dict is nil, dict.Default is used.
+func DialNetwork(network, addr string, handler Handler, dp *dict.Parser) (Conn, error) {
+	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
+	return dial(srv, 0)
+}
+
+func DialNetworkTimeout(network, addr string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
+	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
+	return dial(srv, timeout)
+}
+
 // Dial connects to the peer pointed to by addr and returns the Conn that
 // can be used to send diameter messages. Incoming messages are handled
 // by the handler, which is typically nil and DefaultServeMux is used.
 // If dict is nil, dict.Default is used.
 func Dial(addr string, handler Handler, dp *dict.Parser) (Conn, error) {
-	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return dial(srv, 0)
+	return DialNetwork("tcp", addr, handler, dp)
 }
 
 func DialTimeout(addr string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
-	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return dial(srv, timeout)
+	return DialNetworkTimeout("tcp", addr, handler, dp, timeout)
 }
 
+// dial network wrapper
 func dial(srv *Server, timeout time.Duration) (Conn, error) {
+	network := srv.Network
+	if len(network) == 0 {
+		network = "tcp"
+	}
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"
 	}
 	var rw net.Conn
 	var err error
-	if timeout == 0 {
-		rw, err = net.Dial("tcp", addr)
-	} else {
-		rw, err = net.DialTimeout("tcp", addr, timeout)
-	}
+	dialer := getDialer(network, timeout)
+	rw, err = dialer.Dial(network, addr)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +77,19 @@ func DialTLSTimeout(addr, certFile, keyFile string, handler Handler, dp *dict.Pa
 	return dialTLS(srv, certFile, keyFile, timeout)
 }
 
+// DialNetworkTLS is the same as DialNetwork, but for TLS.
+func DialNetworkTLS(network, addr, certFile, keyFile string, handler Handler, dp *dict.Parser) (Conn, error) {
+	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
+	return dialTLS(srv, certFile, keyFile, 0)
+}
+
+// dialTLS net TCP wrapper
 func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn, error) {
+	var err error
+	network := srv.Network
+	if len(network) == 0 {
+		network = "tcp"
+	}
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"
@@ -75,7 +101,6 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 		config = TLSConfigClone(srv.TLSConfig)
 	}
 	if len(certFile) != 0 {
-		var err error
 		config.Certificates = make([]tls.Certificate, 1)
 		config.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
 		if err != nil {
@@ -84,12 +109,8 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 	}
 
 	var rw net.Conn
-	var err error
-	if timeout == 0 {
-		rw, err = net.Dial("tcp", addr)
-	} else {
-		rw, err = net.DialTimeout("tcp", addr, timeout)
-	}
+	dialer := getDialer(network, timeout)
+	rw, err = dialer.Dial(network, addr)
 	if err != nil {
 		return nil, err
 	}

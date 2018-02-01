@@ -28,7 +28,7 @@ func TestCapabilitiesExchange(t *testing.T) {
 
 	wait := make(chan struct{})
 	cmux := diam.NewServeMux()
-	cmux.Handle("CEA", handleCEA(errc, wait))
+	cmux.HandleIdx(diam.CommandIndex{AppID: 0, Code: diam.CapabilitiesExchange, Request: false}, handleCEA(errc, wait))
 
 	cli, err := diam.Dial(srv.Addr, cmux, nil)
 	if err != nil {
@@ -168,8 +168,8 @@ func handleCEA(errc chan error, wait chan struct{}) diam.HandlerFunc {
 		AcctApplicationID int    `avp:"Acct-Application-Id"`
 	}
 	return func(c diam.Conn, m *diam.Message) {
-		defer close(wait)
 		var resp CEA
+		defer close(wait)
 		err := m.Unmarshal(&resp)
 		if err != nil {
 			errc <- err

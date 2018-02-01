@@ -96,7 +96,12 @@ func (p *Parser) Load(r io.Reader) error {
 		p.appcode[app.ID] = app
 		// Cache commands.
 		for _, cmd := range app.Command {
-			p.command[codeIdx{app.ID, cmd.Code, UndefinedVendorID}] = cmd
+			idx := codeIdx{app.ID, cmd.Code, UndefinedVendorID}
+			_, exist := p.command[idx]
+			if exist {
+				return fmt.Errorf("Command: %s cannot be added: index exists", cmd)
+			}
+			p.command[idx] = cmd
 		}
 		// Cache AVPs.
 		for _, avp := range app.AVP {

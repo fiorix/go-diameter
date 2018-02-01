@@ -11,8 +11,8 @@ import (
 
 func TestApps(t *testing.T) {
 	apps := Default.Apps()
-	if len(apps) != 5 {
-		t.Fatalf("Unexpected # of apps. Want 5, have %d", len(apps))
+	if len(apps) != 6 {
+		t.Fatalf("Unexpected # of apps. Want 6, have %d", len(apps))
 	}
 	// Base protocol.
 	if apps[0].ID != 0 {
@@ -30,6 +30,10 @@ func TestApps(t *testing.T) {
 	if apps[3].ID != 1 {
 		t.Fatalf("Unexpected app.ID. Want 1, have %d", apps[3].ID)
 	}
+	// 3GPP S6a applications
+	if apps[5].ID != 16777251 {
+		t.Fatalf("Unexpected app.ID. Want 16777251, have %d", apps[5].ID)
+	}
 }
 
 func TestApp(t *testing.T) {
@@ -40,6 +44,16 @@ func TestApp(t *testing.T) {
 	// Credit-Control applications.
 	if _, err := Default.App(4); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func findAVPCodeTest(t *testing.T, app uint32, codeStr string, vendor, expectedCode uint32) {
+	if avp, err := Default.FindAVPWithVendor(app, codeStr, vendor); err != nil {
+		t.Fatalf("FindAVP error: %v for app %d & %s AVP", err, app, codeStr)
+	} else if avp.Code != expectedCode {
+		t.Fatalf(
+			"Unexpected code %d for %s AVP and %d vendor. Expected: %d",
+			avp.Code, codeStr, vendor, expectedCode)
 	}
 }
 
@@ -57,24 +71,22 @@ func TestFindAVPWithVendor(t *testing.T) {
 	if _, err := Default.FindAVPWithVendor(4, 999, UndefinedVendorID); err == nil {
 		t.Error("Should get not found")
 	}
-	if avp, err := Default.FindAVPWithVendor(4, "Session-Id", UndefinedVendorID); err != nil {
-		t.Fatal(err)
-	} else if avp.Code != 263 {
-		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
-	}
-	if avp, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", 94); err != nil {
-		t.Fatal(err)
-	} else if avp.Code != 5105 {
-		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
-	}
-	if avp, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", UndefinedVendorID); err != nil {
-		t.Fatal(err)
-	} else if avp.Code != 5105 {
-		t.Fatalf("Unexpected code %d for Session-Id AVP", avp.Code)
-	}
+	findAVPCodeTest(t, 4, "Session-Id", UndefinedVendorID, 263)
+	findAVPCodeTest(t, 4, "Session-Start-Indicator", 94, 5105)
+	findAVPCodeTest(t, 4, "Session-Start-Indicator", UndefinedVendorID, 5105)
+
 	if _, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", 0); err == nil {
 		t.Error("Should get not found")
 	}
+	findAVPCodeTest(t, 16777251, "Supported-Features", UndefinedVendorID, 628)
+
+	// Test 'parent' AVP find - S6a app ID, tgpp_ro_rf dictionary
+	findAVPCodeTest(t, 16777251, "GMLC-Address", UndefinedVendorID, 2405)
+
+	if _, err := Default.FindAVPWithVendor(16777251, "User-Password", UndefinedVendorID); err == nil {
+		t.Error("User-Password Should not be found for app 16777251")
+	}
+	findAVPCodeTest(t, 1, "User-Password", UndefinedVendorID, 2)
 }
 
 func TestFindAVP(t *testing.T) {
@@ -95,6 +107,18 @@ func TestFindCommand(t *testing.T) {
 	if cmd, err := Default.FindCommand(999, 257); err != nil {
 		t.Error(err)
 	} else if cmd.Short != "CE" {
+		t.Fatalf("Unexpected command: %#v", cmd)
+	}
+
+	if cmd, err := Default.FindCommand(16777251, 316); err != nil {
+		t.Error(err)
+	} else if cmd.Short != "UL" {
+		t.Fatalf("Unexpected command: %#v", cmd)
+	}
+
+	if cmd, err := Default.FindCommand(16777251, 318); err != nil {
+		t.Error(err)
+	} else if cmd.Short != "AI" {
 		t.Fatalf("Unexpected command: %#v", cmd)
 	}
 }

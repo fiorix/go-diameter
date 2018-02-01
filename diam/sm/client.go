@@ -65,6 +65,14 @@ func (cli *Client) Dial(addr string) (diam.Conn, error) {
 	})
 }
 
+// DialNetwork calls the network address set as ip:port, performs a handshake and optionally
+// start a watchdog goroutine in background.
+func (cli *Client) DialNetwork(network, addr string) (diam.Conn, error) {
+	return cli.dial(func() (diam.Conn, error) {
+		return diam.DialNetwork(network, addr, cli.Handler, cli.Dict)
+	})
+}
+
 // DialTimeout is like Dial, but with timeout
 func (cli *Client) DialTimeout(addr string, timeout time.Duration) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {
@@ -79,10 +87,18 @@ func (cli *Client) DialTLS(addr, certFile, keyFile string) (diam.Conn, error) {
 	})
 }
 
-// DialTLSTimeout is like DialTimeout, but using TLS.
+// DialTLSTimeout is like DialNetwork, but using TLS.
 func (cli *Client) DialTLSTimeout(addr, certFile, keyFile string, timeout time.Duration) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {
 		return diam.DialTLSTimeout(addr, certFile, keyFile, cli.Handler, cli.Dict, timeout)
+	})
+}
+
+// DialNetworkTLS calls the network address set as ip:port, performs a handshake and optionally
+// start a watchdog goroutine in background.
+func (cli *Client) DialNetworkTLS(network, addr, certFile, keyFile string) (diam.Conn, error) {
+	return cli.dial(func() (diam.Conn, error) {
+		return diam.DialNetworkTLS(network, addr, certFile, keyFile, cli.Handler, cli.Dict)
 	})
 }
 
@@ -150,8 +166,8 @@ func (cli *Client) validate() error {
 
 func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	var ipAddress datatype.Address
-	if len(cli.Handler.cfg.HostIPAdress) > 0 {
-		ipAddress = cli.Handler.cfg.HostIPAdress
+	if len(cli.Handler.cfg.HostIPAddress) > 0 {
+		ipAddress = cli.Handler.cfg.HostIPAddress
 	} else {
 		ip, _, err := net.SplitHostPort(c.LocalAddr().String())
 		if err != nil {

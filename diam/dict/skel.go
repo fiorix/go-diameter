@@ -8,6 +8,7 @@ package dict
 
 import (
 	"encoding/xml"
+	"fmt"
 
 	"github.com/fiorix/go-diameter/diam/datatype"
 )
@@ -42,6 +43,13 @@ type Command struct {
 	Short   string      `xml:"short,attr"`
 	Request CommandRule `xml:"request"`
 	Answer  CommandRule `xml:"answer"`
+}
+
+func (cmd *Command) String() string {
+	if cmd == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%s (%s) CODE: %d", cmd.Name, cmd.Short, cmd.Code)
 }
 
 // CommandRule contains rules for a given command.

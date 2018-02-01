@@ -67,8 +67,8 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 // caused the failure in the message.
 func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, errMessage error) error {
 	var hostAddress datatype.Address
-	if len(sm.cfg.HostIPAdress) > 0 {
-		hostAddress = sm.cfg.HostIPAdress
+	if len(sm.cfg.HostIPAddress) > 0 {
+		hostAddress = sm.cfg.HostIPAddress
 	} else {
 		hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 		if err != nil {
@@ -106,8 +106,8 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 // parsed and accepted by the server.
 func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER) error {
 	var hostAddress datatype.Address
-	if len(sm.cfg.HostIPAdress) > 0 {
-		hostAddress = sm.cfg.HostIPAdress
+	if len(sm.cfg.HostIPAddress) > 0 {
+		hostAddress = sm.cfg.HostIPAddress
 	} else {
 		hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 		if err != nil {

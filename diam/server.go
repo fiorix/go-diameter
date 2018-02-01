@@ -9,7 +9,6 @@ package diam
 import (
 	"bufio"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -42,6 +41,8 @@ type Conn interface {
 	Dictionary() *dict.Parser       // Dictionary parser of the connection
 	Context() context.Context       // Returns the internal context
 	SetContext(ctx context.Context) // Stores a new context
+	Connection() net.Conn           // Returns network connection
+
 }
 
 // The CloseNotifier interface is implemented by Conns which
@@ -259,6 +260,10 @@ func (w *response) SetContext(ctx context.Context) {
 	w.xmu.Unlock()
 }
 
+func (w *response) Connection() net.Conn {
+	return w.conn.rwc
+}
+
 // The HandlerFunc type is an adapter to allow the use of
 // ordinary functions as diameter handlers.  If f is a function
 // with the appropriate signature, HandlerFunc(f) is a
@@ -302,21 +307,32 @@ func (er *ErrorReport) String() string {
 // command from the incoming message against a list of
 // registered commands and calls the handler.
 type ServeMux struct {
-	e  chan *ErrorReport
-	mu sync.RWMutex // Guards m.
-	m  map[string]muxEntry
+	e      chan *ErrorReport
+	mu     sync.RWMutex // Guards m.
+	m      map[string]muxEntry
+	idxMap map[CommandIndex]muxEntry
 }
 
 type muxEntry struct {
-	h   Handler
-	cmd string
+	h      Handler
+	cmd    string
+	cmdIdx CommandIndex
 }
+
+type CommandIndex struct {
+	AppID   uint32
+	Code    uint32
+	Request bool
+}
+
+var ALL_CMD_INDEX = CommandIndex{^uint32(0), ^uint32(0), false}
 
 // NewServeMux allocates and returns a new ServeMux.
 func NewServeMux() *ServeMux {
 	return &ServeMux{
-		e: make(chan *ErrorReport, 1),
-		m: make(map[string]muxEntry),
+		e:      make(chan *ErrorReport, 1),
+		m:      make(map[string]muxEntry),
+		idxMap: make(map[CommandIndex]muxEntry),
 	}
 }
 
@@ -344,13 +360,24 @@ func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 	defer mux.mu.RUnlock()
 	dcmd, err := m.Dictionary().FindCommand(
 		m.Header.ApplicationID,
-		m.Header.CommandCode,
-	)
+		m.Header.CommandCode)
+
 	if err != nil {
 		// Try the catch-all.
-		mux.serve("ALL", c, m)
+		mux.serveIdx(ALL_CMD_INDEX, c, m)
 		return
 	}
+
+	idx := CommandIndex{
+		m.Header.ApplicationID,
+		m.Header.CommandCode,
+		m.Header.CommandFlags&RequestFlag == RequestFlag}
+	_, ok := mux.idxMap[idx]
+	if ok {
+		mux.serveIdx(idx, c, m)
+		return
+	}
+
 	var cmd string
 	if m.Header.CommandFlags&RequestFlag == RequestFlag {
 		cmd = dcmd.Short + "R"
@@ -360,14 +387,14 @@ func (mux *ServeMux) ServeDIAM(c Conn, m *Message) {
 	mux.serve(cmd, c, m)
 }
 
-func (mux *ServeMux) serve(cmd string, c Conn, m *Message) {
-	entry, ok := mux.m[cmd]
+func (mux *ServeMux) serveIdx(cmd CommandIndex, c Conn, m *Message) {
+	entry, ok := mux.idxMap[cmd]
 	if ok {
 		entry.h.ServeDIAM(c, m)
 		return
 	}
 	// Try catch-all.
-	entry, ok = mux.m["ALL"]
+	entry, ok = mux.idxMap[ALL_CMD_INDEX]
 	if ok {
 		entry.h.ServeDIAM(c, m)
 		return
@@ -375,19 +402,53 @@ func (mux *ServeMux) serve(cmd string, c Conn, m *Message) {
 	mux.Error(&ErrorReport{
 		Conn:    c,
 		Message: m,
-		Error:   errors.New("unhandled message"),
+		Error:   fmt.Errorf("unhandled message for index: %+v", cmd),
+	})
+}
+
+func (mux *ServeMux) serve(cmd string, c Conn, m *Message) {
+	entry, ok := mux.m[cmd]
+	if ok {
+		entry.h.ServeDIAM(c, m)
+		return
+	}
+	// Try catch-all.
+	entry, ok = mux.idxMap[ALL_CMD_INDEX]
+	if ok {
+		entry.h.ServeDIAM(c, m)
+		return
+	}
+	mux.Error(&ErrorReport{
+		Conn:    c,
+		Message: m,
+		Error:   fmt.Errorf("unhandled message for '%s'", cmd),
 	})
 }
 
 // Handle registers the handler for the given code.
 // If a handler already exists for code, Handle panics.
-func (mux *ServeMux) Handle(cmd string, handler Handler) {
+func (mux *ServeMux) Handle(shortCmd string, handler Handler) {
 	mux.mu.Lock()
 	defer mux.mu.Unlock()
 	if handler == nil {
 		panic("DIAM: nil handler")
 	}
-	mux.m[cmd] = muxEntry{h: handler, cmd: cmd}
+	if shortCmd == "ALL" {
+		mux.idxMap[ALL_CMD_INDEX] = muxEntry{h: handler, cmd: shortCmd}
+		return
+	}
+	mux.m[shortCmd] = muxEntry{h: handler, cmd: shortCmd}
+}
+
+// Handle registers the handler for the given code.
+// If a handler already exists for code, Handle panics.
+func (mux *ServeMux) HandleIdx(cmd CommandIndex, handler Handler) {
+	mux.mu.Lock()
+	defer mux.mu.Unlock()
+	if handler == nil {
+		panic("DIAM: nil handler")
+	}
+	mux.idxMap[cmd] = muxEntry{h: handler, cmdIdx: cmd}
 }
 
 // HandleFunc registers the handler function for the given command.
@@ -424,7 +485,8 @@ func Serve(l net.Listener, handler Handler) error {
 
 // A Server defines parameters for running a diameter server.
 type Server struct {
-	Addr         string        // TCP address to listen on, ":3868" if empty
+	Network      string        // network of the address - empty string defaults to tcp
+	Addr         string        // address to listen on, ":3868" if empty
 	Handler      Handler       // handler to invoke, DefaultServeMux if nil
 	Dict         *dict.Parser  // diameter dictionaries for this server
 	ReadTimeout  time.Duration // maximum duration before timing out read of the request
@@ -445,15 +507,21 @@ func (sh serverHandler) ServeDIAM(w Conn, m *Message) {
 	handler.ServeDIAM(w, m)
 }
 
-// ListenAndServe listens on the TCP network address srv.Addr and then
+// ListenAndServe listens on the network address srv.Addr and then
 // calls Serve to handle requests on incoming connections.  If
-// srv.Addr is blank, ":3868" is used.
+//
+// If srv.Network is blank, "tcp" is used
+// If srv.Addr is blank, ":3868" is used.
 func (srv *Server) ListenAndServe() error {
+	network := srv.Network
+	if len(network) == 0 {
+		network = "tcp"
+	}
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"
 	}
-	l, e := net.Listen("tcp", addr)
+	l, e := Listen(network, addr)
 	if e != nil {
 		return e
 	}
@@ -482,15 +550,36 @@ func (srv *Server) Serve(l net.Listener) error {
 				time.Sleep(tempDelay)
 				continue
 			}
+			network := "<nil>"
+			address := network
+			addr := l.Addr()
+			if addr != nil {
+				network = addr.Network()
+				address = addr.String()
+			}
+			log.Printf("diam: accept error: %v for %s %s", e, network, address)
 			return e
 		}
 		tempDelay = 0
 		if c, err := srv.newConn(rw); err != nil {
+			log.Printf("srv.newConn error: %v", err)
 			continue
 		} else {
 			go c.serve()
 		}
 	}
+}
+
+// ListenAndServeNetwork listens on the network & addr
+// and then calls Serve with handler to handle requests
+// on incoming connections.
+//
+// If handler is nil, DefaultServeMux is used.
+//
+// If dict is nil, dict.Default is used.
+func ListenAndServeNetwork(network, addr string, handler Handler, dp *dict.Parser) error {
+	server := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
+	return server.ListenAndServe()
 }
 
 // ListenAndServe listens on the TCP network address addr
@@ -501,11 +590,10 @@ func (srv *Server) Serve(l net.Listener) error {
 //
 // If dict is nil, dict.Default is used.
 func ListenAndServe(addr string, handler Handler, dp *dict.Parser) error {
-	server := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return server.ListenAndServe()
+	return ListenAndServeNetwork("tcp", addr, handler, dp)
 }
 
-// ListenAndServeTLS listens on the TCP network address srv.Addr and
+// ListenAndServeTLS listens on the network address srv.Addr and
 // then calls Serve to handle requests on incoming TLS connections.
 //
 // Filenames containing a certificate and matching private key for
@@ -513,8 +601,13 @@ func ListenAndServe(addr string, handler Handler, dp *dict.Parser) error {
 // certificate authority, the certFile should be the concatenation
 // of the server's certificate followed by the CA's certificate.
 //
+// If srv.Network is blank, "tcp" is used
 // If srv.Addr is blank, ":3868" is used.
 func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
+	network := srv.Network
+	if len(network) == 0 {
+		network = "tcp"
+	}
 	addr := srv.Addr
 	if len(addr) == 0 {
 		addr = ":3868"
@@ -531,12 +624,24 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 	if err != nil {
 		return err
 	}
-	conn, err := net.Listen("tcp", addr)
+	conn, err := Listen(network, addr)
 	if err != nil {
 		return err
 	}
 	tlsListener := tls.NewListener(conn, config)
 	return srv.Serve(tlsListener)
+}
+
+// ListenAndServeNetworkTLS acts identically to ListenAndServeNetwork, except that it
+// expects SSL connections. Additionally, files containing a certificate and
+// matching private key for the server must be provided. If the certificate
+// is signed by a certificate authority, the certFile should be the concatenation
+// of the server's certificate followed by the CA's certificate.
+//
+// One can use generate_cert.go in crypto/tls to generate cert.pem and key.pem.
+func ListenAndServeNetworkTLS(network, addr string, certFile string, keyFile string, handler Handler, dp *dict.Parser) error {
+	server := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
+	return server.ListenAndServeTLS(certFile, keyFile)
 }
 
 // ListenAndServeTLS acts identically to ListenAndServe, except that it
@@ -547,6 +652,5 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 //
 // One can use generate_cert.go in crypto/tls to generate cert.pem and key.pem.
 func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler, dp *dict.Parser) error {
-	server := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return server.ListenAndServeTLS(certFile, keyFile)
+	return ListenAndServeNetworkTLS("tcp", addr, certFile, keyFile, handler, dp)
 }

@@ -9,31 +9,42 @@ import (
 	"testing"
 )
 
-const testDict = "./testdata/base.xml"
+var testDicts = []string{
+	"./testdata/base.xml",
+	"./testdata/credit_control.xml",
+	"./testdata/network_access_server.xml",
+	"./testdata/tgpp_ro_rf.xml",
+	"./testdata/tgpp_s6a.xml"}
 
 func TestNewParser(t *testing.T) {
-	p, err := NewParser(testDict)
-	if err != nil {
-		t.Fatal(err)
+	for _, dict := range testDicts {
+		p, err := NewParser(dict)
+		if err != nil {
+			t.Fatalf("Error Creating Parser from %s: %s", dict, err)
+		}
+		t.Log(p)
 	}
-	t.Log(p)
 }
 
 func TestLoadFile(t *testing.T) {
-	p, _ := NewParser()
-	if err := p.LoadFile(testDict); err != nil {
-		t.Fatal(err)
+	for _, dict := range testDicts {
+		p, _ := NewParser()
+		if err := p.LoadFile(dict); err != nil {
+			t.Fatalf("Error Loading %s: %s", dict, err)
+		}
 	}
 }
 
 func TestLoad(t *testing.T) {
-	f, err := os.Open(testDict)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
-	p, _ := NewParser()
-	if err = p.Load(f); err != nil {
-		t.Fatal(err)
+	for _, dict := range testDicts {
+		f, err := os.Open(dict)
+		if err != nil {
+			t.Fatalf("Error Opening %s: %s", dict, err)
+		}
+		defer f.Close()
+		p, _ := NewParser()
+		if err = p.Load(f); err != nil {
+			t.Fatalf("Error Loading Parsing %s: %s", dict, err)
+		}
 	}
 }

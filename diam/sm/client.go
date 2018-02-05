@@ -87,7 +87,7 @@ func (cli *Client) DialTLS(addr, certFile, keyFile string) (diam.Conn, error) {
 	})
 }
 
-// DialTLSTimeout is like DialNetwork, but using TLS.
+// DialTLSTimeout is like DialTimeout, but using TLS.
 func (cli *Client) DialTLSTimeout(addr, certFile, keyFile string, timeout time.Duration) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {
 		return diam.DialTLSTimeout(addr, certFile, keyFile, cli.Handler, cli.Dict, timeout)
@@ -184,7 +184,9 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	}
 	m := cli.makeCER(ipAddress)
 	// Ignore CER, but not DWR.
-	cli.Handler.mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {})
+	cerClientHandler := func(c diam.Conn, m *diam.Message) {}
+	cli.Handler.mux.HandleIdx(baseCERIdx, diam.HandlerFunc(cerClientHandler))
+	cli.Handler.mux.HandleFunc("CER", cerClientHandler)
 	// Handle CEA and DWA.
 	errc := make(chan error)
 	cli.Handler.mux.Handle("CEA", handleCEA(cli.Handler, errc))

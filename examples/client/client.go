@@ -33,6 +33,7 @@ import (
 	"flag"
 	"log"
 	"math/rand"
+	"net"
 	"strconv"
 	"time"
 
@@ -59,6 +60,7 @@ func main() {
 	bench := flag.Bool("bench", false, "benchmark the server by sending ACR messages")
 	benchCli := flag.Int("bench_clients", 1, "number of client connections")
 	benchMsgs := flag.Int("bench_msgs", 1000, "number of ACR messages to send")
+	networkType := flag.String("network_type", "tcp", "protocol type tcp/sctp")
 
 	flag.Parse()
 	if len(*addr) == 0 {
@@ -78,6 +80,7 @@ func main() {
 		ProductName:      "go-diameter",
 		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
+		HostIPAddress:    datatype.Address(net.ParseIP("127.0.0.1")),
 	}
 
 	// Create the state machine (it's a diam.ServeMux) and client.
@@ -109,7 +112,7 @@ func main() {
 	go printErrors(mux.ErrorReports())
 
 	connect := func() (diam.Conn, error) {
-		return dial(cli, *addr, *certFile, *keyFile, *ssl)
+		return dial(cli, *addr, *certFile, *keyFile, *ssl, *networkType)
 	}
 
 	if *bench {
@@ -162,11 +165,11 @@ func printErrors(ec <-chan *diam.ErrorReport) {
 	}
 }
 
-func dial(cli *sm.Client, addr, cert, key string, ssl bool) (diam.Conn, error) {
+func dial(cli *sm.Client, addr, cert, key string, ssl bool, networkType string) (diam.Conn, error) {
 	if ssl {
-		return cli.DialTLS(addr, cert, key)
+		return cli.DialNetworkTLS(networkType, addr, cert, key)
 	}
-	return cli.Dial(addr)
+	return cli.DialNetwork(networkType, addr)
 }
 
 func sendHMR(c diam.Conn, cfg *sm.Settings) error {

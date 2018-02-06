@@ -13,6 +13,14 @@ import (
 	"github.com/fiorix/go-diameter/diam/datatype"
 )
 
+// parentAppIds map allows for hierarchical AVP search dependencies
+// If an AVP code was not found in the app's dictionary, the search will continue in the parent app
+// dictionary and only then in base diameter dictionary
+// Note: care must be taken to avoid creating parent-child loops
+var parentAppIds map[uint32]uint32 = map[uint32]uint32{
+	16777251: 4,
+}
+
 // Apps return a list of all applications loaded in the Parser object.
 // Apps must never be called concurrently with LoadFile or Load.
 func (p *Parser) Apps() []*App {
@@ -41,6 +49,22 @@ func (p *Parser) App(code uint32) (*App, error) {
 // does not exist in the dictionary Parser object.
 var ErrApplicationUnsupported = errors.New("application unsupported")
 
+func MakeUnknownAVP(appid, code, vendorID uint32) *AVP {
+	return &AVP{
+		Name:     fmt.Sprintf("Unknown-%d-%d", code, vendorID),
+		Code:     code,
+		VendorID: vendorID,
+		Data: Data{
+			Type:     datatype.UnknownType,
+			TypeName: "Unknown",
+		},
+		App: &App{
+			ID:     appid,
+			Vendor: []*Vendor{&Vendor{ID: vendorID}},
+		},
+	}
+}
+
 // FindAVPWithVendor is a helper function that returns a pre-loaded AVP from the Parser, considering vendorID as filter.
 // For no vendorID filter, use UndefinedVendorID constant
 // If the AVP code is not found for the given appid it tries with appid=0
@@ -56,6 +80,7 @@ func (p *Parser) FindAVPWithVendor(appid uint32, code interface{}, vendorID uint
 		ok  bool
 		err error
 	)
+	origAppID := appid
 retry:
 	switch codeVal := code.(type) {
 	case string:
@@ -79,10 +104,21 @@ retry:
 	if ok {
 		return avp, nil
 	} else if appid != 0 {
-		// Try searching the base dictionary.
-		appid = 0
+		parentAppId, isScoppedApp := parentAppIds[appid]
+		if isScoppedApp {
+			// Try searching 'parent' dictionary
+			appid = parentAppId
+		} else {
+			// Try searching the base dictionary.
+			appid = 0
+		}
 		goto retry
+	} else {
+		if codeU32, isUint32 := code.(uint32); isUint32 {
+			return MakeUnknownAVP(origAppID, codeU32, vendorID), err
+		}
 	}
+
 	return nil, err
 }
 

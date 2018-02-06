@@ -18,12 +18,16 @@ import (
 
 // These tests use dictionary, settings and functions from sm_test.go.
 
-func TestHandleCER_HandshakeMetadata(t *testing.T) {
+func TestHandleCER_HandshakeMetadataTCP(t *testing.T) {
+	testHandleCER_HandshakeMetadata(t, "tcp")
+}
+
+func testHandleCER_HandshakeMetadata(t *testing.T, network string) {
 	sm := New(serverSettings)
-	srv := diamtest.NewServer(sm, dict.Default)
+	srv := diamtest.NewServerNetwork(network, sm, dict.Default)
 	defer srv.Close()
 	hsc := make(chan diam.Conn, 1)
-	cli, err := diam.Dial(srv.Addr, nil, dict.Default)
+	cli, err := diam.DialNetwork(network, srv.Addr, nil, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -395,16 +399,24 @@ func TestHandleCER_Auth_Fail(t *testing.T) {
 	}
 }
 
-func TestHandleCER_VS_Auth(t *testing.T) {
+func TestHandleCER_VS_AuthTCP(t *testing.T) {
+	testHandleCER_VS_Auth(t, "tcp")
+}
+
+func testHandleCER_VS_AuthSCTP(t *testing.T) {
+	testHandleCER_VS_Auth(t, "sctp")
+}
+
+func testHandleCER_VS_Auth(t *testing.T, network string) {
 	sm := New(serverSettings)
-	srv := diamtest.NewServer(sm, dict.Default)
+	srv := diamtest.NewServerNetwork(network, sm, dict.Default)
 	defer srv.Close()
 	mc := make(chan *diam.Message, 1)
 	mux := diam.NewServeMux()
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
+	cli, err := diam.DialNetwork(network, srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -438,16 +450,20 @@ func TestHandleCER_VS_Auth(t *testing.T) {
 	}
 }
 
-func TestHandleCER_VS_Auth_Fail(t *testing.T) {
+func TestHandleCER_VS_Auth_FailTCP(t *testing.T) {
+	testHandleCER_VS_Auth_Fail(t, "tcp")
+}
+
+func testHandleCER_VS_Auth_Fail(t *testing.T, network string) {
 	sm := New(serverSettings)
-	srv := diamtest.NewServer(sm, dict.Default)
+	srv := diamtest.NewServerNetwork(network, sm, dict.Default)
 	defer srv.Close()
 	mc := make(chan *diam.Message, 1)
 	mux := diam.NewServeMux()
 	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
+	cli, err := diam.DialNetwork(network, srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -26,15 +26,22 @@ func testResultCode(m *diam.Message, want uint32) bool {
 	return false
 }
 
-// TestStateMachine establishes a connection with a test server and
+// TestStateMachineTCP establishes a connection with a test TCP server and
 // sends a Re-Auth-Request message to ensure the handshake was
 // completed and that the RAR handler has context from the peer.
-func TestStateMachine(t *testing.T) {
+func TestStateMachineTCP(t *testing.T) {
+	testStateMachine(t, "tcp")
+}
+
+/// TestStateMachine establishes a connection with a test server and
+// sends a Re-Auth-Request message to ensure the handshake was
+// completed and that the RAR handler has context from the peer.
+func testStateMachine(t *testing.T, network string) {
 	sm := New(serverSettings)
 	if sm.Settings() != serverSettings {
 		t.Fatal("Invalid settings")
 	}
-	srv := diamtest.NewServer(sm, dict.Default)
+	srv := diamtest.NewServerNetwork(network, sm, dict.Default)
 	defer srv.Close()
 	// CER handlers are ignored by the state machine.
 	// Using Handle instead of HandleFunc to exercise that code.
@@ -61,7 +68,7 @@ func TestStateMachine(t *testing.T) {
 	mux.HandleFunc("DWA", func(c diam.Conn, m *diam.Message) {
 		mc <- m
 	})
-	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
+	cli, err := diam.DialNetwork(network, srv.Addr, mux, dict.Default)
 	if err != nil {
 		t.Fatal(err)
 	}

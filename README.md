@@ -25,6 +25,9 @@ See the API documentation at http://godoc.org/github.com/fiorix/go-diameter
   	* Credit Control [RFC 4006](http://tools.ietf.org/html/rfc4006)
   	* Network Access Server [RFC 7155](http://tools.ietf.org/html/rfc7155)
   	* 3GPP specific AVPs from [TS 32.299 version 12.7.0](http://www.etsi.org/deliver/etsi_ts/132200_132299/132299/12.07.00_60/ts_132299v120700p.pdf)
+  	* 3GPP S6a specific commands and AVPs from
+  	  	[RFC 5516](https://tools.ietf.org/html/rfc5516) and
+  	  	[TS 129 272](http://www.etsi.org/deliver/etsi_ts/129200_129299/129272/10.09.00_60/ts_129272v100900p.pdf)
 - Human readable AVP representation (for debugging)
 - TLS, IPv4 and IPv6 support for both clients and servers
 - Stack based on [net/http](http://golang.org/pkg/net/http/) for simplicity

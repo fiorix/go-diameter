@@ -11,6 +11,7 @@ type DecoderFunc func([]byte) (Type, error)
 
 // Decoder is a map of AVP data types indexed by TypeID.
 var Decoder = map[TypeID]DecoderFunc{
+	UnknownType:          DecodeUnknown,
 	AddressType:          DecodeAddress,
 	DiameterIdentityType: DecodeDiameterIdentity,
 	DiameterURIType:      DecodeDiameterURI,

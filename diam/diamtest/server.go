@@ -16,6 +16,7 @@ import (
 // A Server is a Diameter server listening on a system-chosen port on the
 // local loopback interface, for use in end-to-end tests.
 type Server struct {
+	Network  string
 	Addr     string
 	Listener net.Listener
 	TLS      *tls.Config
@@ -25,9 +26,7 @@ type Server struct {
 // NewServer starts and returns a new Server.
 // The caller should call Close when finished, to shut it down.
 func NewServer(handler diam.Handler, dp *dict.Parser) *Server {
-	ts := NewUnstartedServer(handler, dp)
-	ts.Start()
-	return ts
+	return NewServerNetwork("tcp", handler, dp)
 }
 
 // NewUnstartedServer returns a new Server but doesn't start it.
@@ -37,19 +36,49 @@ func NewServer(handler diam.Handler, dp *dict.Parser) *Server {
 //
 // The caller should call Close when finished, to shut it down.
 func NewUnstartedServer(handler diam.Handler, dp *dict.Parser) *Server {
+	return NewUnstartedServerNetwork("tcp", handler, dp)
+}
+
+// NewServerNetwork starts and returns a new Server listening on specified network.
+// The caller should call Close when finished, to shut it down.
+func NewServerNetwork(network string, handler diam.Handler, dp *dict.Parser) *Server {
+	ts := NewUnstartedServerNetwork(network, handler, dp)
+	ts.Start()
+	return ts
+}
+
+// NewUnstartedServerNetwork returns a new Server on the network but doesn't start it.
+//
+// After changing its configuration, the caller should call Start or
+// StartTLS.
+//
+// The caller should call Close when finished, to shut it down.
+func NewUnstartedServerNetwork(network string, handler diam.Handler, dp *dict.Parser) *Server {
 	return &Server{
-		Listener: newLocalListener(),
+		Listener: newLocalListener(network),
 		Config: &diam.Server{
+			Network: network,
 			Handler: handler,
 			Dict:    dp,
 		},
 	}
 }
 
-func newLocalListener() net.Listener {
-	l, err := net.Listen("tcp", "127.0.0.1:0")
+func newLocalListener(network string) net.Listener {
+	if len(network) == 0 {
+		network = "tcp"
+	}
+	l, err := diam.Listen(network, "127.0.0.1:0")
 	if err != nil {
-		if l, err = net.Listen("tcp6", "[::1]:0"); err != nil {
+		switch network {
+		case "sctp":
+			network = "sctp6"
+		case "tcp":
+			network = "tcp6"
+		default:
+			panic(fmt.Sprintf("diamtest: failed to listen on network %s: %v", network, err))
+		}
+		if l, err = diam.Listen(network, "[::1]:0"); err != nil {
 			panic(fmt.Sprintf("diamtest: failed to listen on a port: %v", err))
 		}
 	}

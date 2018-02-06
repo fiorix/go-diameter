@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
-	<application id="4" type="auth">
+	<application id="4" type="auth" name="Charging Control">
 		<!-- Diameter Credit Control Application -->
 		<!-- http://tools.ietf.org/html/rfc4006 -->
 

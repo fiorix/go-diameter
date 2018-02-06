@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-	<application id="4" type="auth">
+	<application id="4" type="auth" name="TGPP">
 		<vendor id="10415" name="TGPP"/>
 
 		<avp name="TGPP-Charging-Characteristics" code="13" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
@@ -1468,6 +1468,20 @@
 			<data type="Unsigned32"/>
 		</avp>
 
+		<avp name="Pre-emption-Capability" code="1047" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Enumerated">
+				<item code="0" name="PRE-EMPTION_CAPABILITY_ENABLED"/>
+				<item code="1" name="PRE-EMPTION_CAPABILITY_DISABLED"/>
+			</data>
+		</avp>
+
+		<avp name="Pre-emption-Vulnerability" code="1048" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Enumerated">
+				<item code="0" name="PRE-EMPTION_VULNERABILITY_ENABLED"/>
+				<item code="1" name="PRE-EMPTION_VULNERABILITY_DISABLED"/>
+			</data>
+		</avp>
+
 		<avp name="PS-Append-Free-Format-Data" code="867" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="Enumerated">
 				<item code="0" name="Append"/>
@@ -2413,6 +2427,14 @@
 
 		<avp name="Volume-Quota-Threshold" code="869" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="SGSN-Number" code="1489" must="V,M" may-encrypt="N" vendor-id="10415">
+			<data type="OctetString"/>
+		</avp>
+
+		<avp name="GMLC-Address" code="2405" must="V,M" may-encrypt="N" vendor-id="10415">
+			<data type="Address"/>
 		</avp>
 
 	</application>

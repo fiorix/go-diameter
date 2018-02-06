@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <diameter>
 
-	<application id="1" type="auth">
+	<application id="1" type="auth" name="Network Access">
 		<!-- Diameter Network Access Server Application -->
 		<!-- http://tools.ietf.org/html/rfc7155 -->
 

@@ -85,11 +85,16 @@ func TestClient_Handshake(t *testing.T) {
 	c.Close()
 }
 
-func TestClient_Handshake_CustomIP(t *testing.T) {
-	srv := diamtest.NewServer(New(serverSettings), dict.Default)
+func TestClient_Handshake_CustomIP_TCP(t *testing.T) {
+	testClient_Handshake_CustomIP(t, "tcp")
+}
+
+func testClient_Handshake_CustomIP(t *testing.T, network string) {
+	srv := diamtest.NewServerNetwork(network, New(serverSettings), dict.Default)
 	defer srv.Close()
 	cli := &Client{
-		Handler: New(clientSettings2),
+		RetransmitInterval: time.Second * 3,
+		Handler:            New(clientSettings2),
 		SupportedVendorID: []*diam.AVP{
 			diam.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, clientSettings.VendorID),
 		},
@@ -107,7 +112,7 @@ func TestClient_Handshake_CustomIP(t *testing.T) {
 			}),
 		},
 	}
-	c, err := cli.Dial(srv.Addr)
+	c, err := cli.DialNetwork(network, srv.Addr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -271,9 +276,9 @@ func TestClient_Watchdog(t *testing.T) {
 func TestClient_Watchdog_Timeout(t *testing.T) {
 	sm := New(serverSettings)
 	var once sync.Once
-	sm.mux.HandleFunc("DWR", func(c diam.Conn, m *diam.Message) {
+	sm.mux.HandleIdx(baseDWRIdx, handshakeOK(func(c diam.Conn, m *diam.Message) {
 		once.Do(func() { m.Answer(diam.UnableToComply).WriteTo(c) })
-	})
+	}))
 	srv := diamtest.NewServer(sm, dict.Default)
 	defer srv.Close()
 	cli := &Client{

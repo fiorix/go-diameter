@@ -43,7 +43,7 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data datatype.Type) *AVP {
 func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
 	avp := &AVP{}
 	if err := avp.DecodeFromBytes(data, application, dictionary); err != nil {
-		return nil, err
+		return avp, err
 	}
 	return avp, nil
 }
@@ -76,7 +76,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	}
 	// Find this code in the dictionary.
 	dictAVP, err := dictionary.FindAVPWithVendor(application, a.Code, a.VendorID)
-	if err != nil {
+	if err != nil && dictAVP == nil {
 		return err
 	}
 	bodyLen := a.Length - hdrLength

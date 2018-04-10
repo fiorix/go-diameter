@@ -33,7 +33,9 @@ See the API documentation at http://godoc.org/github.com/fiorix/go-diameter
 - Stack based on [net/http](http://golang.org/pkg/net/http/) for simplicity
 - Ships with sample client, server, snoop agent and benchmark tool
 - [State machines](http://tools.ietf.org/html/rfc6733#section-5.6) for CER/CEA and DWR/DWA for clients and servers
-
+- TCP and SCTP support. SCTP support relies on kernel SCTP implementation and external github.com/ishidawataru/sctp
+  package and currently will only work with Go 1.8+ and Linux 386
+  
 ## Install
 
 go-diameter requires at least Go 1.4.

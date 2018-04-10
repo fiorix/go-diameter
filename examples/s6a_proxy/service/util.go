@@ -13,9 +13,9 @@ import (
 )
 
 // genSID generates a unique string to be used as diameter message Session ID
-// the generated session ID consists of a const prefix 'magma;', unix timestamp & rand
+// the generated session ID consists of a const prefix 's6a_proxy;', unix timestamp & rand
 func genSID() string {
-	return fmt.Sprintf("magma;%d_%X", uint(time.Now().Unix()), rand.Uint32())
+	return fmt.Sprintf("s6a_proxy;%d_%X", uint(time.Now().Unix()), rand.Uint32())
 }
 
 // updateSession resets chan in the session map & closes and returns previous chan associated with the sid if any

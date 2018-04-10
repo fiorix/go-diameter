@@ -88,7 +88,7 @@ func sendCER(w io.Writer) (n int64, err error) {
 		avp.HostIPAddress,
 		avp.Mbit,
 		0,
-		datatype.Address(net.ParseIP(sctpLAdds.IP[len(sctpLAdds.IP)-1].String())))
+		datatype.Address(net.ParseIP(sctpLAdds.IPAddrs[len(sctpLAdds.IPAddrs)-1].String())))
 	m.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(99))
 	m.NewAVP(avp.ProductName, avp.Mbit, 0, datatype.UTF8String("go-diameter"))
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, originStateID)

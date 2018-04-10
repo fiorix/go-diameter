@@ -4583,7 +4583,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Notification-To-UE-User" required="false" max="1"/>
                 <rule avp="External-Client" required="false"/>
                 <rule avp="PLMN-Client" required="false"/>
-                <rule avp="TGPP_Service-Type" required="false"/>
+                <rule avp="TGPP-Service-Type" required="false"/>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>avp>
@@ -4635,7 +4635,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </data>
         </avp>
 
-        <avp name="TGPP_Service-Type" code="1483" must="M,V" may-encrypt="N" vendor-id="10415">
+        <avp name="TGPP-Service-Type" code="1483" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="Grouped">
                 <rule avp="ServiceTypeIdentity" required="true" max="1"/>
                 <rule avp="GMLC-Restriction" required="false" max="1"/>

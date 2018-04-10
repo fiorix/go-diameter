@@ -577,7 +577,7 @@ const (
 	TGPPPDPType                                = 3
 	TGPPRATType                                = 21
 	TGPPSelectionMode                          = 12
-	TGPP_ServiceType                           = 1483
+	TGPPServiceType                            = 1483
 	TGPPSessionStopIndicator                   = 11
 	TGPPSGSNMCCMNC                             = 18
 	TGPPUserLocationInfo                       = 22

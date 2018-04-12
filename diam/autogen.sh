@@ -124,19 +124,34 @@ cat << EOF > $src
 
 package dict
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 // Default is a Parser object with pre-loaded
 // Base Protocol and Credit Control dictionaries.
 var Default *Parser
 
 func init() {
-	Default, _ = NewParser()
-	Default.Load(bytes.NewReader([]byte(baseXML)))
-	Default.Load(bytes.NewReader([]byte(creditcontrolXML)))
-	Default.Load(bytes.NewReader([]byte(networkaccessserverXML)))
-	Default.Load(bytes.NewReader([]byte(tgpprorfXML)))
-	Default.Load(bytes.NewReader([]byte(tgpps6aXML)))
+	var dictionaries = []struct{ name, xml string }{
+		{"Base", baseXML},
+		{"Credit Control", creditcontrolXML},
+		{"Network Access Server", networkaccessserverXML},
+		{"TGPP", tgpprorfXML},
+		{"TGPP_S6a", tgpps6aXML},
+	}
+	var err error
+	Default, err = NewParser()
+	if err != nil {
+		panic(err)
+	}
+	for _, dict := range dictionaries {
+		err = Default.Load(bytes.NewReader([]byte(dict.xml)))
+		if err != nil {
+			panic(fmt.Sprintf("Cannot load %s dictionary: %s", dict.name, err))
+		}
+	}
 }
 
 EOF

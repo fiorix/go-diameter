@@ -98,6 +98,7 @@ const (
 	CalledStationID                            = 30
 	CallingPartyAddress                        = 831
 	CallingStationID                           = 31
+	CancellationType                           = 1420
 	CarrierSelectRoutingInformation            = 2023
 	CauseCode                                  = 861
 	CCCorrelationID                            = 411
@@ -129,6 +130,7 @@ const (
 	ClassIdentifier                            = 1214
 	ClientAddress                              = 2018
 	ClientIdentity                             = 1480
+	CLRFlags                                   = 1638
 	CNIPMulticastDistribution                  = 921
 	CNOperatorSelectionEntity                  = 3421
 	CompleteDataListIncludedIndicator          = 1468
@@ -575,6 +577,7 @@ const (
 	TGPPPDPType                                = 3
 	TGPPRATType                                = 21
 	TGPPSelectionMode                          = 12
+	TGPPServiceType                            = 1483
 	TGPPSessionStopIndicator                   = 11
 	TGPPSGSNMCCMNC                             = 18
 	TGPPUserLocationInfo                       = 22

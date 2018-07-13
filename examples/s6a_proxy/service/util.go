@@ -92,7 +92,7 @@ func (s *s6aProxy) cleanupConn(c diam.Conn) {
 		s.conn = nil
 	}
 	s.mu.Unlock()
-	s.conn.Close()
+	c.Close()
 }
 
 // TranslateBaseDiamResultCode maps Base Diameter Result Code to GRPC Status Error and returns it,

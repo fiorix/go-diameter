@@ -581,6 +581,7 @@ const (
 	TGPPSessionStopIndicator                   = 11
 	TGPPSGSNMCCMNC                             = 18
 	TGPPUserLocationInfo                       = 22
+	TGPP_ServiceType                           = 1483
 	TimeFirstUsage                             = 2043
 	TimeLastUsage                              = 2044
 	TimeQuotaMechanism                         = 1270

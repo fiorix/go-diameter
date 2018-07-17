@@ -4477,6 +4477,179 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </answer>
         </command>
 
+        <command code="321" short="PU" name="Purge-UE">
+            <!--
+                < Purge-UE-Request> ::=	< Diameter Header: 321, REQ, PXY, 16777251 >
+                < Session-Id >
+                [ DRMP ]
+                [ Vendor-Specific-Application-Id ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                [ Destination-Host ]
+                { Destination-Realm }
+                { User-Name }
+                [ OC-Supported-Features ]
+                [ PUR-Flags ]
+                *[ Supported-Features ]
+                [ EPS-Location-Information ]
+                *[ AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <request>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Destination-Host" required="false" max="1" />
+                <rule avp="Destination-Realm" required="true" max="1" />
+                <rule avp="User-Name" required="true" max="1" />
+                <rule avp="OC-Supported-Features" required="false" max="1" />
+                <rule avp="PUR-Flags" required="false" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="EPS-Location-Information" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </request>
+
+            <!--
+                < Purge-UE-Answer> ::=	< Diameter Header: 321, PXY, 16777251 >
+                < Session-Id >
+                [ DRMP ]
+                [ Vendor-Specific-Application-Id ]
+                *[ Supported-Features ]
+                [ Result-Code ]
+                [ Experimental-Result ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                [ OC-Supported-Features ]
+                [ OC-OLR ]
+                *[ Load ]
+                [ PUA-Flags ]
+                *[ AVP ]
+                [ Failed-AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <answer>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="Result-Code" required="false" max="1" />
+                <rule avp="Experimental-Result" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="OC-Supported-Features" required="false" max="1" />
+                <rule avp="OC-OLR" required="false" max="1" />
+                <!-- rule avp="Load" required="false" /-->
+                <rule avp="PUA-Flags" required="false" max="1" />
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </answer>
+        </command>
+
+        <command code="323" short="NO" name="Notify">
+            <!--
+                < Notify-Request> ::=	< Diameter Header: 323, REQ, PXY, 16777251 >
+                < Session-Id >
+                [ Vendor-Specific-Application-Id ]
+                [ DRMP ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                [ Destination-Host ]
+                { Destination-Realm }
+                { User-Name }
+                [ OC-Supported-Features ]
+                * [ Supported-Features ]
+                [ Terminal-Information ]
+                [ MIP6-Agent-Info ]
+                [ Visited-Network-Identifier ]
+                [ Context-Identifier ]
+                [ Service-Selection ]
+                [ Alert-Reason ]
+                [ UE-SRVCC-Capability ]
+                [ NOR-Flags ]
+                [ Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ]
+                [ Maximum-UE-Availability-Time ]
+                *[ Monitoring-Event-Config-Status ]
+                [ Emergency-Services ]
+                *[ AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <request>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Destination-Host" required="false" max="1" />
+                <rule avp="Destination-Realm" required="true" max="1" />
+                <rule avp="User-Name" required="true" max="1" />
+                <rule avp="OC-Supported-Features" required="false" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="Terminal-Information" required="false" max="1" />
+                <rule avp="MIP6-Agent-Info" required="false" max="1" />
+                <rule avp="Visited-Network-Identifier" required="false" max="1" />
+                <rule avp="Context-Identifier" required="false" max="1" />
+                <rule avp="Service-Selection" required="false" max="1" />
+                <rule avp="Alert-Reason" required="false" max="1" />
+                <rule avp="UE-SRVCC-Capability" required="false" max="1" />
+                <rule avp="NOR-Flags" required="false" max="1" />
+                <rule avp="Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions" required="false" max="1" />
+                <rule avp="Maximum-UE-Availability-Type" required="false" max="1" />
+                <rule avp="Monitoring-Event-Config-Status" required="false" />
+                <rule avp="Emergency-Services" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </request>
+            <!--
+                < Notify-Answer> ::=	< Diameter Header: 323, PXY, 16777251 >
+                < Session-Id >
+                [ DRMP ]
+                [ Vendor-Specific-Application-Id ]
+                [ Result-Code ]
+                [ Experimental-Result ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                [ OC-Supported-Features ]
+                [ OC-OLR ]
+                *[ Load ]
+                *[ Supported-Features ]
+                *[ AVP ]
+                [ Failed-AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <answer>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Result-Code" required="false" max="1" />
+                <rule avp="Experimental-Result" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="OC-Supported-Features" required="false" max="1" />
+                <rule avp="OC-OLR" required="false" max="1" />
+                <!-- rule avp="Load" required="false" /-->
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </answer>
+        </command>
+
         <avp name="Supported-Features" code="628" vendor-id="10415" must="V" may="M" may-encrypt="N">
             <data type="Grouped">
                 <rule avp="Vendor-Id" required="true" max="1"/>
@@ -5132,14 +5305,6 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </data>
         </avp>
 
-        <avp name="MIP-Home-Agent-Host" code="348" vendor-id="10415">
-            <data type="Grouped">
-                <rule avp="Destination-Realm" required="true" max="1"/>
-                <rule avp="Destination-Host" required="true" max="1"/>
-                <rule avp="AVP" required="false"/>
-            </data>
-        </avp>
-
         <avp name="MIP-Home-Agent-Address" code="334" must="M" must-not="V" vendor-id="10415">
             <data type="Address"/>
         </avp>
@@ -5158,6 +5323,47 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
 
         <avp name="MIP6-Home-Link-Prefix" code="125" vendor-id="10415">
             <data type="OctetString"/>
+        </avp>
+
+        <avp code="1402" name="IMEI" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String" />
+        </avp>
+
+        <avp code="1403" name="Software-Version" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String" />
+        </avp>
+
+        <avp code="1443" name="NOR-Flags" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp code="1636" name="Subscribed-VSRVCC" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="VSRVCC_SUBSCRIBED" />
+            </data>
+        </avp>
+
+        <!-- RFC 4004 -->
+        <avp name="MIP-Home-Agent-Host" code="348" must="M" may="P" must-not="V" may-encrypt="Y">
+            <data type="Grouped">
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="Destination-Host" required="true" max="1"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <!-- RFC 5447 Diameter Mobile IPv6: Support for Network Access Server to Diameter Server Interaction -->
+        <avp code="486" name="MIP6-Agent-Info" must="M" may="P" must-not="V" may-encrypt="Y">
+            <data type="Grouped">
+                <rule avp="MIP-Home-Agent-Address" required="false" max="2" />
+                <rule avp="MIP-Home-Agent-Host" required="false" max="1" />
+                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1" />
+            </data>
+        </avp>
+
+        <!-- RFC 5778 Diameter Mobile IPv6: Support for Home Agent to Diameter Server Interaction -->
+        <avp code="493" name="Service-Selection" must="M" may="P" must-not="V" may-encrypt="Y">
+            <data type="UTF8String" />
         </avp>
 
     </application>

@@ -17,6 +17,8 @@ const (
 	CreditControl             = 272
 	DeviceWatchdog            = 280
 	DisconnectPeer            = 282
+	Notify                    = 323
+	PurgeUE                   = 321
 	ReAuth                    = 258
 	SessionTermination        = 275
 	UpdateLocation            = 316
@@ -42,6 +44,10 @@ const (
 	DPR = "DPR"
 	DWA = "DWA"
 	DWR = "DWR"
+	NOA = "NOA"
+	NOR = "NOR"
+	PUA = "PUA"
+	PUR = "PUR"
 	RAA = "RAA"
 	RAR = "RAR"
 	STA = "STA"

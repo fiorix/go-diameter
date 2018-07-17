@@ -8,6 +8,26 @@
 # Run `sh autogen.sh` to re-generate these files after changing
 # dictionary XML files.
 
+os="$(uname -s)"
+
+if [ -z "$SED" ]; then
+	if [ "$os" = "Darwin" ]; then
+		command -v gsed || {
+			echo "gsed is required. install it by running 'brew install gnu-sed'"
+			exit 1
+		}
+		SED="gsed"
+	else
+		SED="sed"
+	fi
+fi
+
+if [ -z "$SORT_FLAG_IGNORE_CASE" ]; then
+	if [ "$os" = "Darwin" ]; then
+		SORT_FLAG_IGNORE_CASE="-f"
+	fi
+fi
+
 dict=dict/testdata/*.xml
 
 ## Generate commands.go
@@ -26,14 +46,14 @@ package diam
 const (
 EOF
 
-cat $dict | sed \
+cat $dict | "$SED" \
 	-e 's/-//g' \
 	-ne 's/.*command code="\(.*\)" .* name="\(.*\)".*/\2 = \1/p' \
 	| sort -u >> $src
 
 echo ')\n// Short Command Names\nconst (\n' >> $src
 
-cat $dict | sed \
+cat $dict | "$SED" \
 	-e 's/-//g' \
 	-ne 's/.*command code="[0-9]*".*\s.*short="\([^"]*\).*/\1R = "\1R"\n\1A = "\1A"/p' \
 	| sort -u >> $src
@@ -57,7 +77,7 @@ package diam
 const (
 EOF
 
-cat $dict | sed \
+cat $dict | "$SED" \
     -e :1 -e 's/\("[^"]*\)[[:space:]]\([^"]*"\)/\1_\2/g;t1' \
     -ne 's/\s*<application\s*id="\([0-9]*\)".*name="\(.*\)".*/\U\2_APP_ID = \1/p' \
     | sort -u | sort -nk 3 >> $src
@@ -81,11 +101,11 @@ package avp
 const (
 EOF
 
-cat $dict | sed \
+cat $dict | "$SED" \
 	-e 's/-Id\([-"s]\)/-ID\1/g' \
 	-e 's/-//g' \
 	-ne 's/.*avp name="\(.*\)" code="\([0-9]*\)".*/\1 = \2/p' \
-	| sort -u >> $src
+	| LC_COLLATE=C sort -u "$SORT_FLAG_IGNORE_CASE" >> $src
 
 echo ')\n' >> $src
 
@@ -139,7 +159,7 @@ EOF
 for f in $dict
 do
 
-var=`basename $f | sed -e 's/\.xml/XML/g' -e 's/_//g'`
+var=`basename $f | "$SED" -e 's/\.xml/XML/g' -e 's/_//g'`
 cat << EOF >> $src
 var $var=\``cat $f`\`
 

@@ -63,7 +63,7 @@ type Settings struct {
 	// This property may be set when the IP address of the host sending/receiving
 	// the request is different from the configured allowed IPs in the other end,
 	// for example when using a VPN or a gateway.
-	HostIPAddress datatype.Address
+	HostIPAddresses []datatype.Address
 }
 
 var (

@@ -66,15 +66,15 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 // an unsupported (acct/auth) application, and includes the AVP that
 // caused the failure in the message.
 func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, errMessage error) error {
-	var hostAddress datatype.Address
-	if len(sm.cfg.HostIPAddress) > 0 {
-		hostAddress = sm.cfg.HostIPAddress
+	var hostAddresses []datatype.Address
+	if len(sm.cfg.HostIPAddresses) > 0 {
+		hostAddresses = sm.cfg.HostIPAddresses
 	} else {
 		hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 		if err != nil {
 			return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
 		}
-		hostAddress = datatype.Address(net.ParseIP(hostIP))
+		hostAddresses = []datatype.Address{datatype.Address(net.ParseIP(hostIP))}
 	}
 
 	var a *diam.Message
@@ -89,7 +89,9 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	a.Header.CommandFlags |= diam.ErrorFlag
 	a.NewAVP(avp.OriginHost, avp.Mbit, 0, sm.cfg.OriginHost)
 	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, sm.cfg.OriginRealm)
-	a.NewAVP(avp.HostIPAddress, avp.Mbit, 0, hostAddress)
+	for _, hostAddress := range hostAddresses {
+		a.NewAVP(avp.HostIPAddress, avp.Mbit, 0, hostAddress)
+	}
 	a.NewAVP(avp.VendorID, avp.Mbit, 0, sm.cfg.VendorID)
 	a.NewAVP(avp.ProductName, 0, 0, sm.cfg.ProductName)
 	if cer.OriginStateID != nil {
@@ -105,20 +107,23 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 // successCEA sends a success answer indicating that the CER was successfully
 // parsed and accepted by the server.
 func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER) error {
-	var hostAddress datatype.Address
-	if len(sm.cfg.HostIPAddress) > 0 {
-		hostAddress = sm.cfg.HostIPAddress
+	var hostAddresses []datatype.Address
+	if len(sm.cfg.HostIPAddresses) > 0 {
+		hostAddresses = sm.cfg.HostIPAddresses
 	} else {
 		hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 		if err != nil {
 			return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
 		}
-		hostAddress = datatype.Address(net.ParseIP(hostIP))
+		hostAddresses = []datatype.Address{datatype.Address(net.ParseIP(hostIP))}
 	}
+
 	a := m.Answer(diam.Success)
 	a.NewAVP(avp.OriginHost, avp.Mbit, 0, sm.cfg.OriginHost)
 	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, sm.cfg.OriginRealm)
-	a.NewAVP(avp.HostIPAddress, avp.Mbit, 0, hostAddress)
+	for _, hostAddress := range hostAddresses {
+		a.NewAVP(avp.HostIPAddress, avp.Mbit, 0, hostAddress)
+	}
 	a.NewAVP(avp.VendorID, avp.Mbit, 0, sm.cfg.VendorID)
 	a.NewAVP(avp.ProductName, 0, 0, sm.cfg.ProductName)
 	if cer.OriginStateID != nil {

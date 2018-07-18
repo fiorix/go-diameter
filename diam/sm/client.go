@@ -172,17 +172,18 @@ func (cli *Client) validate() error {
 }
 
 func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
-	var ipAddress datatype.Address
-	if len(cli.Handler.cfg.HostIPAddress) > 0 {
-		ipAddress = cli.Handler.cfg.HostIPAddress
+	var hostAddresses []datatype.Address
+	if len(cli.Handler.cfg.HostIPAddresses) > 0 {
+		hostAddresses = cli.Handler.cfg.HostIPAddresses
 	} else {
-		ip, _, err := net.SplitHostPort(c.LocalAddr().String())
+		hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
 		}
-		ipAddress = datatype.Address(net.ParseIP(ip))
+		hostAddresses = []datatype.Address{datatype.Address(net.ParseIP(hostIP))}
 	}
-	m := cli.makeCER(ipAddress)
+
+	m := cli.makeCER(hostAddresses)
 	// Ignore CER, but not DWR.
 	cerClientHandler := func(c diam.Conn, m *diam.Message) {}
 	cli.Handler.mux.HandleIdx(baseCERIdx, diam.HandlerFunc(cerClientHandler))
@@ -218,11 +219,13 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	return nil, ErrHandshakeTimeout
 }
 
-func (cli *Client) makeCER(ip datatype.Address) *diam.Message {
+func (cli *Client) makeCER(hostIPAddresses []datatype.Address) *diam.Message {
 	m := diam.NewRequest(diam.CapabilitiesExchange, 0, cli.Dict)
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cli.Handler.cfg.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cli.Handler.cfg.OriginRealm)
-	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, ip)
+	for _, hostIPAddress := range hostIPAddresses {
+		m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, hostIPAddress)
+	}
 	m.NewAVP(avp.VendorID, avp.Mbit, 0, cli.Handler.cfg.VendorID)
 	m.NewAVP(avp.ProductName, 0, 0, cli.Handler.cfg.ProductName)
 	if cli.Handler.cfg.OriginStateID != 0 {

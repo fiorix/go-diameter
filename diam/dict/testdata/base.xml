@@ -7,7 +7,7 @@
 			<request>
 				<rule avp="Origin-Host" required="true" max="1"/>
 				<rule avp="Origin-Realm" required="true" max="1"/>
-				<rule avp="Host-IP-Address" required="true" max="1"/>
+				<rule avp="Host-IP-Address" required="true" min="1"/>
 				<rule avp="Vendor-Id" required="true" max="1"/>
 				<rule avp="Product-Name" required="true" max="1"/>
 				<rule avp="Origin-State-Id" required="false" max="1"/>
@@ -22,7 +22,7 @@
 				<rule avp="Result-Code" required="true" max="1"/>
 				<rule avp="Origin-Host" required="true" max="1"/>
 				<rule avp="Origin-Realm" required="true" max="1"/>
-				<rule avp="Host-IP-Address" required="true" max="1"/>
+				<rule avp="Host-IP-Address" required="true" min="1"/>
 				<rule avp="Vendor-Id" required="true" max="1"/>
 				<rule avp="Product-Name" required="true" max="1"/>
 				<rule avp="Origin-State-Id" required="false" max="1"/>

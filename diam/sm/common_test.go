@@ -51,7 +51,7 @@ var (
 		ProductName:      "go-diameter",
 		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
-		HostIPAddress:    localhostAddress,
+		HostIPAddresses:  []datatype.Address{localhostAddress},
 	}
 
 	clientSettings = &Settings{
@@ -70,6 +70,6 @@ var (
 		ProductName:      "go-diameter",
 		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
-		HostIPAddress:    localhostAddress,
+		HostIPAddresses:  []datatype.Address{localhostAddress},
 	}
 )

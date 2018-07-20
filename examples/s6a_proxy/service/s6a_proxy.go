@@ -47,7 +47,9 @@ func NewS6aProxy(cfg *S6aProxyConfig) (*s6aProxy, error) {
 		ProductName:      PRODUCT_NAME,
 		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
-		HostIPAddress:    datatype.Address(net.ParseIP("127.0.0.1")),
+		HostIPAddresses: []datatype.Address{
+			datatype.Address(net.ParseIP("127.0.0.1")),
+		},
 	})
 
 	mux.HandleFunc("ALL", func(diam.Conn, *diam.Message) {}) // Catch all.

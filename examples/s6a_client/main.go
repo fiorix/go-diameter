@@ -81,7 +81,9 @@ func main() {
 		ProductName:      "go-diameter-s6a",
 		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
 		FirmwareRevision: 1,
-		HostIPAddress:    datatype.Address(net.ParseIP("127.0.0.1")),
+		HostIPAddresses: []datatype.Address{
+			datatype.Address(net.ParseIP("127.0.0.1")),
+		},
 	}
 
 	// Create the state machine (it's a diam.ServeMux) and client.

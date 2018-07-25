@@ -20,12 +20,17 @@ import (
 // If dict is nil, dict.Default is used.
 func DialNetwork(network, addr string, handler Handler, dp *dict.Parser) (Conn, error) {
 	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
-	return dial(srv, 0)
+	return dial(srv, "", 0)
+}
+
+func DialNetworkBind(network, laddr, raddr string, handler Handler, dp *dict.Parser) (Conn, error) {
+	srv := &Server{Network: network, Addr: raddr, Handler: handler, Dict: dp}
+	return dial(srv, laddr, 0)
 }
 
 func DialNetworkTimeout(network, addr string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
 	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
-	return dial(srv, timeout)
+	return dial(srv, "", timeout)
 }
 
 // Dial connects to the peer pointed to by addr and returns the Conn that
@@ -41,7 +46,7 @@ func DialTimeout(addr string, handler Handler, dp *dict.Parser, timeout time.Dur
 }
 
 // dial network wrapper
-func dial(srv *Server, timeout time.Duration) (Conn, error) {
+func dial(srv *Server, laddr string, timeout time.Duration) (Conn, error) {
 	network := srv.Network
 	if len(network) == 0 {
 		network = "tcp"
@@ -52,7 +57,7 @@ func dial(srv *Server, timeout time.Duration) (Conn, error) {
 	}
 	var rw net.Conn
 	var err error
-	dialer := getDialer(network, timeout)
+	dialer := getDialer(network, laddr, timeout)
 	rw, err = dialer.Dial(network, addr)
 	if err != nil {
 		return nil, err
@@ -109,7 +114,7 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 	}
 
 	var rw net.Conn
-	dialer := getDialer(network, timeout)
+	dialer := getDialer(network, "", timeout)
 	rw, err = dialer.Dial(network, addr)
 	if err != nil {
 		return nil, err

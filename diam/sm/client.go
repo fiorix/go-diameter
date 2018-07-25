@@ -73,6 +73,14 @@ func (cli *Client) DialNetwork(network, addr string) (diam.Conn, error) {
 	})
 }
 
+// DialNetworkBind calls the network address set as ip:port, performs a handshake and optionally
+// start a watchdog goroutine in background.
+func (cli *Client) DialNetworkBind(network, laddr, raddr string) (diam.Conn, error) {
+	return cli.dial(func() (diam.Conn, error) {
+		return diam.DialNetworkBind(network, laddr, raddr, cli.Handler, cli.Dict)
+	})
+}
+
 // DialTimeout is like Dial, but with timeout
 func (cli *Client) DialTimeout(addr string, timeout time.Duration) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {

@@ -277,7 +277,7 @@
 			<data type="Unsigned32"/>
 		</avp>
 
-		<avp name="Redirect-Address-Type " code="433" must="M" may="P" must-not="V" may-encrypt="Y">
+		<avp name="Redirect-Address-Type" code="433" must="M" may="P" must-not="V" may-encrypt="Y">
 			<!-- http://tools.ietf.org/html/rfc4006#section-8.38 -->
 			<data type="Enumerated">
 				<item code="0" name="IPv4 Address"/>

@@ -42,7 +42,6 @@ type Conn interface {
 	Context() context.Context       // Returns the internal context
 	SetContext(ctx context.Context) // Stores a new context
 	Connection() net.Conn           // Returns network connection
-
 }
 
 // The CloseNotifier interface is implemented by Conns which
@@ -506,6 +505,7 @@ type Server struct {
 	ReadTimeout  time.Duration // maximum duration before timing out read of the request
 	WriteTimeout time.Duration // maximum duration before timing out write of the response
 	TLSConfig    *tls.Config   // optional TLS config, used by ListenAndServeTLS
+	LocalAddr    net.Addr      // optional Local Address to bind dailer's (Dail...) socket to
 }
 
 // serverHandler delegates to either the server's Handler or DefaultServeMux.

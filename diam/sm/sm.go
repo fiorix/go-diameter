@@ -63,7 +63,11 @@ type Settings struct {
 	// This property may be set when the IP address of the host sending/receiving
 	// the request is different from the configured allowed IPs in the other end,
 	// for example when using a VPN or a gateway.
+	//
 	HostIPAddresses []datatype.Address
+	//
+	// Deprecated: HostIPAddress is depreciated, use HostIPAddresses instead
+	HostIPAddress datatype.Address
 }
 
 var (
@@ -86,6 +90,9 @@ type StateMachine struct {
 
 // New creates and initializes a new StateMachine for clients or servers.
 func New(settings *Settings) *StateMachine {
+	if len(settings.HostIPAddresses) == 0 && len(settings.HostIPAddress) > 0 {
+		settings.HostIPAddresses = []datatype.Address{settings.HostIPAddress}
+	}
 	sm := &StateMachine{
 		cfg:           settings,
 		mux:           diam.NewServeMux(),

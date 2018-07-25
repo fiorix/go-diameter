@@ -19,6 +19,7 @@ func init() {
 	var dictionaries = []struct{ name, xml string }{
 		{"Base", baseXML},
 		{"Credit Control", creditcontrolXML},
+		{"Gx Charging Control", gxcreditcontrolXML},
 		{"Network Access Server", networkaccessserverXML},
 		{"TGPP", tgpprorfXML},
 		{"TGPP_S6a", tgpps6aXML},
@@ -45,7 +46,7 @@ var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<request>
 				<rule avp="Origin-Host" required="true" max="1"/>
 				<rule avp="Origin-Realm" required="true" max="1"/>
-				<rule avp="Host-IP-Address" required="true" max="1"/>
+				<rule avp="Host-IP-Address" required="true" min="1"/>
 				<rule avp="Vendor-Id" required="true" max="1"/>
 				<rule avp="Product-Name" required="true" max="1"/>
 				<rule avp="Origin-State-Id" required="false" max="1"/>
@@ -60,7 +61,7 @@ var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="Result-Code" required="true" max="1"/>
 				<rule avp="Origin-Host" required="true" max="1"/>
 				<rule avp="Origin-Realm" required="true" max="1"/>
-				<rule avp="Host-IP-Address" required="true" max="1"/>
+				<rule avp="Host-IP-Address" required="true" min="1"/>
 				<rule avp="Vendor-Id" required="true" max="1"/>
 				<rule avp="Product-Name" required="true" max="1"/>
 				<rule avp="Origin-State-Id" required="false" max="1"/>
@@ -497,6 +498,70 @@ var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
 			</data>
 		</avp>
 
+		<!-- IETF RFC 7683 - https://tools.ietf.org/html/rfc7683 -->
+		<avp name="OC-Supported-Features" code="621" must-not="V">
+			<data type="Grouped">
+				<rule avp="OC-Feature-Vector" required="false"/>
+				<rule avp="AVP" required="false"/>
+			</data>
+		</avp>
+
+		<avp name="OC-Feature-Vector" code="622" must-not="V">
+			<data type="Unsigned64"/>
+		</avp>
+
+		<avp name="OC-OLR" code="623" must-not="V">
+			<data type="Grouped">
+				<rule avp="OC-Sequence-Number" required="true" max="1"/>
+				<rule avp="OC-Report-Type" required="true" max="1"/>
+				<rule avp="OC-Reduction-Percentage" required="false" max="1"/>
+				<rule avp="OC-Validity-Duration" required="false" max="1"/>
+				<rule avp="AVP" required="false"/>
+			</data>
+		</avp>
+
+		<avp name="OC-Sequence-Number" code="624" must-not="V">
+			<data type="Unsigned64"/>
+		</avp>
+
+		<avp name="OC-Validity-Duration" code="625" must-not="V">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="OC-Report-Type" code="626" must-not="V">
+			<data type="Enumerated">
+				<item code="0" name="HOST_REPORT"/>
+				<item code="1" name="REALM_REPORT"/>
+			</data>
+		</avp>
+
+		<avp name="OC-Reduction-Percentage" code="627" must-not="V">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<!-- IETF RFC 7944 - https://tools.ietf.org/html/rfc7944 -->
+		<avp name="DRMP" code="301" must-not="V">
+			<data type="Enumerated">
+				<item code="0" name="PRIORITY_0"/>
+				<item code="1" name="PRIORITY_1"/>
+				<item code="2" name="PRIORITY_2"/>
+				<item code="3" name="PRIORITY_3"/>
+				<item code="4" name="PRIORITY_4"/>
+				<item code="5" name="PRIORITY_5"/>
+				<item code="6" name="PRIORITY_6"/>
+				<item code="7" name="PRIORITY_7"/>
+				<item code="8" name="PRIORITY_8"/>
+				<item code="9" name="PRIORITY_9"/>
+				<item code="10" name="PRIORITY_10"/>
+				<item code="11" name="PRIORITY_11"/>
+				<item code="12" name="PRIORITY_12"/>
+				<item code="13" name="PRIORITY_13"/>
+				<item code="14" name="PRIORITY_14"/>
+				<item code="15" name="PRIORITY_15"/>
+			</data>
+		</avp>
+
+
 	</application>
 	<application id="3" type="acct" name="Base Accounting"> <!-- Diameter Base Accounting Messages -->
 	</application>
@@ -781,7 +846,7 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<data type="Unsigned32"/>
 		</avp>
 
-		<avp name="Redirect-Address-Type " code="433" must="M" may="P" must-not="V" may-encrypt="Y">
+		<avp name="Redirect-Address-Type" code="433" must="M" may="P" must-not="V" may-encrypt="Y">
 			<!-- http://tools.ietf.org/html/rfc4006#section-8.38 -->
 			<data type="Enumerated">
 				<item code="0" name="IPv4 Address"/>
@@ -952,6 +1017,204 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<data type="Unsigned32"/>
 		</avp>
 	</application>
+</diameter>`
+
+var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+
+    <application id="16777238" type="auth" name="Gx Charging Control">
+        <!-- Diameter Gx Credit Control Application -->
+        <!-- 3GPP 29.212 -->
+
+        <vendor id="10415" name="TGPP"/>
+        <command code="272" short="CC" name="Credit-Control">
+            <request>
+                <!-- 3GPP 29.212 Section 5.6.2 -->
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="Auth-Application-Id" required="true" max="1"/>
+                <rule avp="CC-Request-Type" required="true" max="1"/>
+                <rule avp="CC-Request-Number" required="true" max="1"/>
+                <rule avp="Destination-Host" required="false" max="1"/>
+                <rule avp="Origin-State-Id" required="false" max="1"/>
+                <rule avp="Subscription-Id" required="false" max="1"/>
+                <rule avp="Termination-Cause" required="false" max="1"/>
+                <rule avp="User-Equipment-Info" required="false" max="1"/>
+                <rule avp="Proxy-Info" required="false" max="1"/>
+                <rule avp="Route-Record" required="false" max="1"/>
+                <rule avp="Framed-IP-Address" required="false" max="1"/>
+                <rule avp="IP-CAN-Type" required="false" max="1"/>
+                <rule avp="Called-Station-Id" required="false" max="1"/>
+                <rule avp="RAT-Type" required="false" max="1"/>
+            </request>
+            <answer>
+                <!-- 3GPP 29.212 Section 5.6.3 -->
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="Result-Code" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="CC-Request-Type" required="true" max="1"/>
+                <rule avp="CC-Request-Number" required="true" max="1"/>
+                <rule avp="Origin-State-Id" required="false" max="1"/>
+                <rule avp="Proxy-Info" required="false" max="1"/>
+                <rule avp="Route-Record" required="false" max="1"/>
+                <rule avp="Failed-AVP" required="false" max="1"/>
+                <rule avp="Charging-Rule-Install" required="false"/>
+                <rule avp="Usage-Monitoring-Information" required="false"/>
+                <rule avp="Event-Trigger" required="false"/>
+            </answer>
+        </command>
+
+        <avp name="Flow-Description" code="507" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="IPFilterRule"/>
+        </avp>
+
+
+        <avp name="Charging-Rule-Install" code="1001" must="M,V" may="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.2 -->
+            <data type="Grouped">
+                <rule avp="Charging-Rule-Name" required="false"/>
+                <rule avp="Charging-Rule-Base-Name" required="false"/>
+                <rule avp="Charging-Rule-Definition" required="false"/>
+                <rule avp="Rule-Activation-Time" required="false"/>
+                <rule avp="Rule-Deactivation-Time" required="false"/>
+                <!-- *[ AVP ]-->
+            </data>
+        </avp>
+
+        <avp name="Charging-Rule-Definition" code="1003" must="M,V" may="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Grouped">
+                <rule avp="Charging-Rule-Name" required="true" max="1"/>
+                <rule avp="Rating-Group" required="false" max="1"/>
+                <rule avp="Flow-Description" required="false"/>
+                <rule avp="Precedence" required="false" max="1"/>
+                <rule avp="Monitoring-Key" required="false" max="1"/>
+                <rule avp="Redirect-Information" required="false" max="1"/>
+                <!-- *[ AVP ]-->
+            </data>
+        </avp>
+
+        <avp name="Charging-Rule-Base-Name" code="1004" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.6 -->
+            <data type="UTF8String"/>
+        </avp>
+
+        <avp name="Charging-Rule-Name" code="1005" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.6 -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Event-Trigger" code="1006" must="M,V" map="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.7 -->
+            <data type="Enumerated">
+                <item code="0" name="SGSN_CHANGE"/>
+                <item code="1" name="QOS_CHANGE"/>
+                <item code="2" name="RAT_CHANGE"/>
+                <item code="3" name="TFT_CHANGE"/>
+                <item code="4" name="PLMN_CHANGE"/>
+                <item code="5" name="LOSS_OF_BEARER"/>
+                <item code="6" name="RECOVERY_OF_BEARER"/>
+                <item code="7" name="IP-CAN_CHANGE"/>
+                <item code="11" name="QOS_CHANGE_EXCEEDING_AUTHORIZATION"/>
+                <item code="12" name="RAI_CHANGE"/>
+                <item code="13" name="USER_LOCATION_CHANGE"/>
+                <item code="14" name="NO_EVENT_TRIGGERS"/>
+                <item code="15" name="OUT_OF_CREDIT"/>
+                <item code="16" name="REALLOCATION_OF_CREDIT"/>
+                <item code="17" name="REVALIDATION_TIMEOUT"/>
+                <item code="18" name="UE_IP_ADDRESS_ALLOCATE"/>
+                <item code="19" name="UE_IP_ADDRESS_RELEASE"/>
+                <item code="20" name="DEFAULT_EPS_BEARER_QOS_CHANGE"/>
+                <item code="21" name="AN_GW_CHANGE"/>
+                <item code="22" name="SUCCESSFUL_RESOURCE_ALLOCATION"/>
+                <item code="23" name="RESOURCE_MODIFICATION_REQUEST"/>
+                <item code="24" name="PGW_TRACE_CONTROL"/>
+                <item code="25" name="UE_TIME_ZONE_CHANGE"/>
+                <item code="26" name="USAGE_REPORT"/>
+                <item code="27" name="TAI_CHANGE"/>
+                <item code="28" name="ECGI_CHANGE"/>
+                <item code="29" name="CHARGING_CORRELATION_EXCHANGE"/>
+                <item code="30" name="USER_CSG_INFORMATION_CHANGE"/>
+            </data>
+        </avp>
+
+        <avp name="Precedence" code="1010" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="IP-CAN-Type" code="1027" must="M,V" map="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.27 -->
+            <data type="Enumerated">
+                <item code="0" name="3GPP-GPRS"/>
+                <item code="1" name="DOCSIS"/>
+                <item code="2" name="xDSL"/>
+                <item code="3" name="WiMAX"/>
+                <item code="4" name="3GPP2"/>
+                <item code="5" name="3GPP-EPS"/>
+                <item code="6" name="Non-3GPP-EPS"/>
+                <item code="7" name="FBA"/>
+                <item code="8" name="3GPP-5GS"/>
+                <item code="9" name="Non-3GPP-5GS"/>
+            </data>
+        </avp>
+
+        <avp name="Rule-Activation-Time" code="1043" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Time"/>
+        </avp>
+
+        <avp name="Rule-Deactivation-Time" code="1044" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Time"/>
+        </avp>
+
+        <avp name="Monitoring-Key" code="1066" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Usage-Monitoring-Information" code="1067" must="V" may="P" must-not="M,V" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Grouped">
+              <rule avp="Monitoring-Key" required="false" max="1"/>
+              <rule avp="Granted-Service-Unit" required="false" max="2"/>
+              <rule avp="Used-Service-Unit" required="false" max="2"/>
+              <rule avp="Usage-Monitoring-Level" required="false" max="1"/>
+            </data>
+        </avp>
+
+        <avp name="Usage-Monitoring-Level" code="1068" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Enumerated">
+                <item code="0" name="SESSION_LEVEL"/>
+                <item code="1" name="PCC_RULE_LEVEL"/>
+            </data>
+        </avp>
+
+        <avp name="Redirect-Information" code="1085" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.82 -->
+            <data type="Grouped">
+                <rule avp="Redirect-Support" required="true" max="1"/>
+                <rule avp="Redirect-Address-Type" required="false" max="1"/>
+                <rule avp="Redirect-Server-Address" required="false" max="1"/>
+                <!-- *[ AVP ]-->
+            </data>
+        </avp>
+
+        <avp name="Redirect-Support" code="1086" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.83 -->
+            <data type="Enumerated">
+                <item code="0" name="REDIRECTION_DISABLED"/>
+                <item code="1" name="REDIRECTION_ENABLED"/>
+            </data>
+        </avp>
+
+    </application>
 </diameter>`
 
 var networkaccessserverXML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -4127,6 +4390,14 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 			</data>
 		</avp>
 
+		<avp name="IMEI" code="1402" must="M,V" may-encrypt="N" vendor-id="10415">
+			<data type="UTF8String" />
+		</avp>
+
+		<avp name="Software-Version" code="1403" must="M,V" may-encrypt="N" vendor-id="10415">
+			<data type="UTF8String" />
+		</avp>
+
 		<avp name="Terminating-IOI" code="840" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="UTF8String"/>
 		</avp>
@@ -4362,7 +4633,10 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 
 var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-
+    <!--
+        3GPP TS 29.272
+        See: http://www.etsi.org/deliver/etsi_ts/129200_129299/129272/12.06.00_60/ts_129272v120600p.pdf
+    -->
     <application id="16777251" type="auth" name="TGPP S6A">
         <vendor id="10415" name="TGPP"/>
         <command code="316" short="UL" name="Update-Location">
@@ -4644,6 +4918,65 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="OC-OLR" required="false" max="1" />
                 <!-- rule avp="Load" required="false" /-->
                 <rule avp="Supported-Features" required="false" />
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </answer>
+        </command>
+
+        <command code="322" short="RS" name="Reset">
+            <!--
+              < Reset-Request> ::= < Diameter Header: 322, REQ, PXY, 16777251 >
+                < Session-Id >
+                [ Vendor-Specific-Application-Id ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                { Destination-Host }
+                { Destination-Realm }
+                *[ Supported-Features ]
+                *[ User-Id ]
+                *[ AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <request>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Destination-Host" required="false" max="1" />
+                <rule avp="Destination-Realm" required="true" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="User-Id" required="false" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </request>
+            <!--
+              < Reset-Answer> ::= < Diameter Header: 322, PXY, 16777251 >
+                < Session-Id >
+                [ Vendor-Specific-Application-Id ]
+                *[ Supported-Features ]
+                [ Result-Code ]
+                [ Experimental-Result ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                *[ AVP ]
+                *[ Failed-AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <answer>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="Result-Code" required="false" max="1" />
+                <rule avp="Experimental-Result" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
                 <rule avp="Failed-AVP" required="false" max="1" />
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
@@ -5296,12 +5629,25 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </data>
         </avp>
 
-        <avp name="MIP6-Agent-Info" code="486" vendor-id="10415" must="M" may="P" must-not="V" may-encrypt="Y">
-            <data type="Grouped">
-                <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
-                <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>
-                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1"/>
-                <rule avp="AVP" required="false"/>
+        <avp name="Context-Identifier" code="1423" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="PUR-Flags" code="1635" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="PUA-Flags" code="1442" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="NOR-Flags" code="1443" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="Subscribed-VSRVCC" code="1636" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="VSRVCC_SUBSCRIBED" />
             </data>
         </avp>
 
@@ -5309,8 +5655,23 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Address"/>
         </avp>
 
-        <avp name="Context-Identifier" code="1423" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="Unsigned32"/>
+        <!-- RFC 4004 -->
+        <avp name="MIP-Home-Agent-Host" code="348" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="Destination-Host" required="true" max="1"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <!-- RFC 5447 Diameter Mobile IPv6: Support for Network Access Server to Diameter Server Interaction -->
+        <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
+                <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>
+                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+            </data>
         </avp>
 
         <avp name="Service-Selection" code="493" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
@@ -5325,45 +5686,8 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="OctetString"/>
         </avp>
 
-        <avp code="1402" name="IMEI" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="UTF8String" />
-        </avp>
-
-        <avp code="1403" name="Software-Version" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="UTF8String" />
-        </avp>
-
-        <avp code="1443" name="NOR-Flags" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="Unsigned32" />
-        </avp>
-
-        <avp code="1636" name="Subscribed-VSRVCC" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
-            <data type="Enumerated">
-                <item code="0" name="VSRVCC_SUBSCRIBED" />
-            </data>
-        </avp>
-
-        <!-- RFC 4004 -->
-        <avp name="MIP-Home-Agent-Host" code="348" must="M" may="P" must-not="V" may-encrypt="Y">
-            <data type="Grouped">
-                <rule avp="Destination-Realm" required="true" max="1"/>
-                <rule avp="Destination-Host" required="true" max="1"/>
-                <rule avp="AVP" required="false"/>
-            </data>
-        </avp>
-
-        <!-- RFC 5447 Diameter Mobile IPv6: Support for Network Access Server to Diameter Server Interaction -->
-        <avp code="486" name="MIP6-Agent-Info" must="M" may="P" must-not="V" may-encrypt="Y">
-            <data type="Grouped">
-                <rule avp="MIP-Home-Agent-Address" required="false" max="2" />
-                <rule avp="MIP-Home-Agent-Host" required="false" max="1" />
-                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1" />
-            </data>
-        </avp>
-
-        <!-- RFC 5778 Diameter Mobile IPv6: Support for Home Agent to Diameter Server Interaction -->
-        <avp code="493" name="Service-Selection" must="M" may="P" must-not="V" may-encrypt="Y">
-            <data type="UTF8String" />
+        <avp name="User-Id" code="1444" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String"/>
         </avp>
 
     </application>

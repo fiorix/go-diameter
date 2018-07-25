@@ -19,6 +19,8 @@ import (
 // Note: care must be taken to avoid creating parent-child loops
 var parentAppIds map[uint32]uint32 = map[uint32]uint32{
 	16777251: 4,
+	16777238: 4,
+	4:        1,
 }
 
 // Apps return a list of all applications loaded in the Parser object.

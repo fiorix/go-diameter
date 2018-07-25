@@ -19,13 +19,14 @@ import (
 )
 
 var addr = flag.String("addr", "192.168.60.145:3868", "server address in form of ip:port to connect to")
+var laddr = flag.String("laddr", "", "local address in form of [ip]:port to bind Dailer to")
 var host = flag.String("diam_host", "magma-oai.openair4G.eur", "diameter identity host")
 var realm = flag.String("diam_realm", "openair4G.eur", "diameter identity realm")
 var vendorID = flag.Uint("vendor", 10415, "Vendor ID")
 var appID = flag.Uint("app", 16777251, "AuthApplicationID")
 var wait = flag.Int("wait", 10, "Time to wait for completion")
 
-var sctpLAdds *sctp.SCTPAddr
+var sctpLAdds, localAddr *sctp.SCTPAddr
 var originStateID = datatype.Unsigned32(time.Now().Unix())
 
 func main() {
@@ -41,8 +42,15 @@ func main() {
 	cmux.Handle("CEA", handleCEA(errc))
 	cmux.Handle("DWR", handleDWR(errc))
 
+	var err error
+	if len(*laddr) > 0 {
+		localAddr, err = sctp.ResolveSCTPAddr("sctp", *laddr)
+		if err != nil {
+			log.Fatalf("Invalid Local Address '%s': %v", *laddr, err)
+		}
+	}
 	log.Printf("Connecting to SCTP server at %s", *addr)
-	cli, err := diam.DialNetwork("sctp", *addr, cmux, nil)
+	cli, err := diam.DialExt("sctp", *addr, cmux, nil, 0, localAddr)
 	if err != nil {
 		log.Fatal(err)
 		return

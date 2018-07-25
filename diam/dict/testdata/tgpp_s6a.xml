@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-
+    <!--
+        3GPP TS 29.272
+        See: http://www.etsi.org/deliver/etsi_ts/129200_129299/129272/12.06.00_60/ts_129272v120600p.pdf
+    -->
     <application id="16777251" type="auth" name="TGPP S6A">
         <vendor id="10415" name="TGPP"/>
         <command code="316" short="UL" name="Update-Location">
@@ -282,6 +285,65 @@
                 <rule avp="OC-OLR" required="false" max="1" />
                 <!-- rule avp="Load" required="false" /-->
                 <rule avp="Supported-Features" required="false" />
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </answer>
+        </command>
+
+        <command code="322" short="RS" name="Reset">
+            <!--
+              < Reset-Request> ::= < Diameter Header: 322, REQ, PXY, 16777251 >
+                < Session-Id >
+                [ Vendor-Specific-Application-Id ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                { Destination-Host }
+                { Destination-Realm }
+                *[ Supported-Features ]
+                *[ User-Id ]
+                *[ AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <request>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Destination-Host" required="false" max="1" />
+                <rule avp="Destination-Realm" required="true" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="User-Id" required="false" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </request>
+            <!--
+              < Reset-Answer> ::= < Diameter Header: 322, PXY, 16777251 >
+                < Session-Id >
+                [ Vendor-Specific-Application-Id ]
+                *[ Supported-Features ]
+                [ Result-Code ]
+                [ Experimental-Result ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                *[ AVP ]
+                *[ Failed-AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <answer>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="Result-Code" required="false" max="1" />
+                <rule avp="Experimental-Result" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
                 <rule avp="Failed-AVP" required="false" max="1" />
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
@@ -934,12 +996,25 @@
             </data>
         </avp>
 
-        <avp name="MIP6-Agent-Info" code="486" vendor-id="10415" must="M" may="P" must-not="V" may-encrypt="Y">
-            <data type="Grouped">
-                <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
-                <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>
-                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1"/>
-                <rule avp="AVP" required="false"/>
+        <avp name="Context-Identifier" code="1423" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="PUR-Flags" code="1635" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="PUA-Flags" code="1442" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="NOR-Flags" code="1443" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="Subscribed-VSRVCC" code="1636" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="VSRVCC_SUBSCRIBED" />
             </data>
         </avp>
 
@@ -947,8 +1022,23 @@
             <data type="Address"/>
         </avp>
 
-        <avp name="Context-Identifier" code="1423" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="Unsigned32"/>
+        <!-- RFC 4004 -->
+        <avp name="MIP-Home-Agent-Host" code="348" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="Destination-Host" required="true" max="1"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <!-- RFC 5447 Diameter Mobile IPv6: Support for Network Access Server to Diameter Server Interaction -->
+        <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
+                <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>
+                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+            </data>
         </avp>
 
         <avp name="Service-Selection" code="493" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
@@ -963,45 +1053,8 @@
             <data type="OctetString"/>
         </avp>
 
-        <avp code="1402" name="IMEI" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="UTF8String" />
-        </avp>
-
-        <avp code="1403" name="Software-Version" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="UTF8String" />
-        </avp>
-
-        <avp code="1443" name="NOR-Flags" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="Unsigned32" />
-        </avp>
-
-        <avp code="1636" name="Subscribed-VSRVCC" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
-            <data type="Enumerated">
-                <item code="0" name="VSRVCC_SUBSCRIBED" />
-            </data>
-        </avp>
-
-        <!-- RFC 4004 -->
-        <avp name="MIP-Home-Agent-Host" code="348" must="M" may="P" must-not="V" may-encrypt="Y">
-            <data type="Grouped">
-                <rule avp="Destination-Realm" required="true" max="1"/>
-                <rule avp="Destination-Host" required="true" max="1"/>
-                <rule avp="AVP" required="false"/>
-            </data>
-        </avp>
-
-        <!-- RFC 5447 Diameter Mobile IPv6: Support for Network Access Server to Diameter Server Interaction -->
-        <avp code="486" name="MIP6-Agent-Info" must="M" may="P" must-not="V" may-encrypt="Y">
-            <data type="Grouped">
-                <rule avp="MIP-Home-Agent-Address" required="false" max="2" />
-                <rule avp="MIP-Home-Agent-Host" required="false" max="1" />
-                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1" />
-            </data>
-        </avp>
-
-        <!-- RFC 5778 Diameter Mobile IPv6: Support for Home Agent to Diameter Server Interaction -->
-        <avp code="493" name="Service-Selection" must="M" may="P" must-not="V" may-encrypt="Y">
-            <data type="UTF8String" />
+        <avp name="User-Id" code="1444" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String"/>
         </avp>
 
     </application>

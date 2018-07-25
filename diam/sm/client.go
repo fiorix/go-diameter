@@ -60,17 +60,13 @@ type Client struct {
 // Dial calls the address set as ip:port, performs a handshake and optionally
 // start a watchdog goroutine in background.
 func (cli *Client) Dial(addr string) (diam.Conn, error) {
-	return cli.dial(func() (diam.Conn, error) {
-		return diam.Dial(addr, cli.Handler, cli.Dict)
-	})
+	return cli.DialExt("tcp", addr, 0, nil)
 }
 
 // DialNetwork calls the network address set as ip:port, performs a handshake and optionally
 // start a watchdog goroutine in background.
 func (cli *Client) DialNetwork(network, addr string) (diam.Conn, error) {
-	return cli.dial(func() (diam.Conn, error) {
-		return diam.DialNetwork(network, addr, cli.Handler, cli.Dict)
-	})
+	return cli.DialExt(network, addr, 0, nil)
 }
 
 // DialNetworkBind calls the network address set as ip:port, performs a handshake and optionally
@@ -83,30 +79,40 @@ func (cli *Client) DialNetworkBind(network, laddr, raddr string) (diam.Conn, err
 
 // DialTimeout is like Dial, but with timeout
 func (cli *Client) DialTimeout(addr string, timeout time.Duration) (diam.Conn, error) {
-	return cli.dial(func() (diam.Conn, error) {
-		return diam.DialTimeout(addr, cli.Handler, cli.Dict, timeout)
-	})
+	return cli.DialExt("tcp", addr, timeout, nil)
 }
 
 // DialTLS is like Dial, but using TLS.
 func (cli *Client) DialTLS(addr, certFile, keyFile string) (diam.Conn, error) {
-	return cli.dial(func() (diam.Conn, error) {
-		return diam.DialTLS(addr, certFile, keyFile, cli.Handler, cli.Dict)
-	})
+	return cli.DialTLSExt("tcp", addr, certFile, keyFile, 0, nil)
 }
 
 // DialTLSTimeout is like DialTimeout, but using TLS.
 func (cli *Client) DialTLSTimeout(addr, certFile, keyFile string, timeout time.Duration) (diam.Conn, error) {
-	return cli.dial(func() (diam.Conn, error) {
-		return diam.DialTLSTimeout(addr, certFile, keyFile, cli.Handler, cli.Dict, timeout)
-	})
+	return cli.DialTLSExt("tcp", addr, certFile, keyFile, timeout, nil)
 }
 
 // DialNetworkTLS calls the network address set as ip:port, performs a handshake and optionally
 // start a watchdog goroutine in background.
-func (cli *Client) DialNetworkTLS(network, addr, certFile, keyFile string) (diam.Conn, error) {
+func (cli *Client) DialNetworkTLS(network, addr, certFile, keyFile string, laddr net.Addr) (diam.Conn, error) {
+	return cli.DialTLSExt(network, addr, certFile, keyFile, 0, nil)
+}
+
+// DialExt - Optionally binds client to laddr, calls the network address set as ip:port,
+// performs a handshake and optionally start a watchdog goroutine in background.
+func (cli *Client) DialExt(network, addr string, timeout time.Duration, laddr net.Addr) (diam.Conn, error) {
 	return cli.dial(func() (diam.Conn, error) {
-		return diam.DialNetworkTLS(network, addr, certFile, keyFile, cli.Handler, cli.Dict)
+		return diam.DialExt(network, addr, cli.Handler, cli.Dict, timeout, laddr)
+	})
+}
+
+// DialTLSExt - Optionally binds client to laddr, calls the network address set as ip:port, performs a
+// handshake and optionally start a watchdog goroutine in background.
+func (cli *Client) DialTLSExt(
+	network, addr, certFile, keyFile string, timeout time.Duration, laddr net.Addr) (diam.Conn, error) {
+
+	return cli.dial(func() (diam.Conn, error) {
+		return diam.DialTLSExt(network, addr, certFile, keyFile, cli.Handler, cli.Dict, timeout, laddr)
 	})
 }
 

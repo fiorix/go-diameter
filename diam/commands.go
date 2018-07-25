@@ -20,6 +20,7 @@ const (
 	Notify                    = 323
 	PurgeUE                   = 321
 	ReAuth                    = 258
+	Reset                     = 322
 	SessionTermination        = 275
 	UpdateLocation            = 316
 )
@@ -50,6 +51,8 @@ const (
 	PUR = "PUR"
 	RAA = "RAA"
 	RAR = "RAR"
+	RSA = "RSA"
+	RSR = "RSR"
 	STA = "STA"
 	STR = "STR"
 	ULA = "ULA"

@@ -459,6 +459,70 @@
 			</data>
 		</avp>
 
+		<!-- IETF RFC 7683 - https://tools.ietf.org/html/rfc7683 -->
+		<avp name="OC-Supported-Features" code="621" must-not="V">
+			<data type="Grouped">
+				<rule avp="OC-Feature-Vector" required="false"/>
+				<rule avp="AVP" required="false"/>
+			</data>
+		</avp>
+
+		<avp name="OC-Feature-Vector" code="622" must-not="V">
+			<data type="Unsigned64"/>
+		</avp>
+
+		<avp name="OC-OLR" code="623" must-not="V">
+			<data type="Grouped">
+				<rule avp="OC-Sequence-Number" required="true" max="1"/>
+				<rule avp="OC-Report-Type" required="true" max="1"/>
+				<rule avp="OC-Reduction-Percentage" required="false" max="1"/>
+				<rule avp="OC-Validity-Duration" required="false" max="1"/>
+				<rule avp="AVP" required="false"/>
+			</data>
+		</avp>
+
+		<avp name="OC-Sequence-Number" code="624" must-not="V">
+			<data type="Unsigned64"/>
+		</avp>
+
+		<avp name="OC-Validity-Duration" code="625" must-not="V">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="OC-Report-Type" code="626" must-not="V">
+			<data type="Enumerated">
+				<item code="0" name="HOST_REPORT"/>
+				<item code="1" name="REALM_REPORT"/>
+			</data>
+		</avp>
+
+		<avp name="OC-Reduction-Percentage" code="627" must-not="V">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<!-- IETF RFC 7944 - https://tools.ietf.org/html/rfc7944 -->
+		<avp name="DRMP" code="301" must-not="V">
+			<data type="Enumerated">
+				<item code="0" name="PRIORITY_0"/>
+				<item code="1" name="PRIORITY_1"/>
+				<item code="2" name="PRIORITY_2"/>
+				<item code="3" name="PRIORITY_3"/>
+				<item code="4" name="PRIORITY_4"/>
+				<item code="5" name="PRIORITY_5"/>
+				<item code="6" name="PRIORITY_6"/>
+				<item code="7" name="PRIORITY_7"/>
+				<item code="8" name="PRIORITY_8"/>
+				<item code="9" name="PRIORITY_9"/>
+				<item code="10" name="PRIORITY_10"/>
+				<item code="11" name="PRIORITY_11"/>
+				<item code="12" name="PRIORITY_12"/>
+				<item code="13" name="PRIORITY_13"/>
+				<item code="14" name="PRIORITY_14"/>
+				<item code="15" name="PRIORITY_15"/>
+			</data>
+		</avp>
+
+
 	</application>
 	<application id="3" type="acct" name="Base Accounting"> <!-- Diameter Base Accounting Messages -->
 	</application>

@@ -7,7 +7,6 @@
 #
 # Run `sh autogen.sh` to re-generate these files after changing
 # dictionary XML files.
-
 os="$(uname -s)"
 
 if [ -z "$SED" ]; then
@@ -105,7 +104,7 @@ cat $dict | "$SED" \
 	-e 's/-Id\([-"s]\)/-ID\1/g' \
 	-e 's/-//g' \
 	-ne 's/.*avp name="\(.*\)" code="\([0-9]*\)".*/\1 = \2/p' \
-	| LC_COLLATE=C sort -u "$SORT_FLAG_IGNORE_CASE" >> $src
+	| LC_COLLATE=C sort -u $SORT_FLAG_IGNORE_CASE >> $src
 
 echo ')\n' >> $src
 
@@ -137,6 +136,7 @@ func init() {
 	var dictionaries = []struct{ name, xml string }{
 		{"Base", baseXML},
 		{"Credit Control", creditcontrolXML},
+		{"Gx Charging Control", gxcreditcontrolXML},
 		{"Network Access Server", networkaccessserverXML},
 		{"TGPP", tgpprorfXML},
 		{"TGPP_S6a", tgpps6aXML},

@@ -12,13 +12,14 @@ import (
 	"github.com/fiorix/go-diameter/diam/dict"
 	"github.com/fiorix/go-diameter/diam/sm/smpeer"
 	"github.com/fiorix/go-diameter/examples/s6a_proxy/protos"
+	"github.com/golang/glog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // sendAIR - sends AIR with given Session ID (sid)
 func (s *s6aProxy) sendAIR(sid string, req *protos.AuthenticationInformationRequest) error {
-
+	glog.V(4).Infof("Got into sendAIR request from gateway: %v\n", req)
 	c := s.conn
 	meta, ok := smpeer.FromContext(c.Context())
 	if !ok {
@@ -65,6 +66,7 @@ func (s *s6aProxy) sendAIR(sid string, req *protos.AuthenticationInformationRequ
 // S6a AIA
 func handleAIA(s *s6aProxy) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
+		glog.V(4).Infof("Got into handleAIA, diam msg: %v\n", m)
 		var aia AIA
 		err := m.Unmarshal(&aia)
 		if err != nil {
@@ -88,7 +90,7 @@ func handleAIA(s *s6aProxy) diam.HandlerFunc {
 // waits (blocks) for AIA & returns its RPC representation
 func (s *s6aProxy) AuthenticationInformationImpl(
 	req *protos.AuthenticationInformationRequest) (*protos.AuthenticationInformationAnswer, error) {
-
+	glog.V(4).Infof("Got AI request from gateway\n")
 	res := &protos.AuthenticationInformationAnswer{}
 	if req == nil {
 		return res, Errorf(codes.InvalidArgument, "Nil AI Request")
@@ -112,7 +114,6 @@ func (s *s6aProxy) AuthenticationInformationImpl(
 			return res, Error(codes.Unavailable, err)
 		}
 		err = s.sendAIR(sid, req)
-
 		s.releaseConnection() // we can unlock reader after send
 		if err != nil {
 			log.Printf("Error sending AIR with SID %s: %v", sid, err)

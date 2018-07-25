@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+
+    <application id="16777238" type="auth" name="Gx Charging Control">
+        <!-- Diameter Gx Credit Control Application -->
+        <!-- 3GPP 29.212 -->
+
+        <vendor id="10415" name="TGPP"/>
+        <command code="272" short="CC" name="Credit-Control">
+            <request>
+                <!-- 3GPP 29.212 Section 5.6.2 -->
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="Auth-Application-Id" required="true" max="1"/>
+                <rule avp="CC-Request-Type" required="true" max="1"/>
+                <rule avp="CC-Request-Number" required="true" max="1"/>
+                <rule avp="Destination-Host" required="false" max="1"/>
+                <rule avp="Origin-State-Id" required="false" max="1"/>
+                <rule avp="Subscription-Id" required="false" max="1"/>
+                <rule avp="Termination-Cause" required="false" max="1"/>
+                <rule avp="User-Equipment-Info" required="false" max="1"/>
+                <rule avp="Proxy-Info" required="false" max="1"/>
+                <rule avp="Route-Record" required="false" max="1"/>
+                <rule avp="Framed-IP-Address" required="false" max="1"/>
+                <rule avp="IP-CAN-Type" required="false" max="1"/>
+                <rule avp="Called-Station-Id" required="false" max="1"/>
+                <rule avp="RAT-Type" required="false" max="1"/>
+            </request>
+            <answer>
+                <!-- 3GPP 29.212 Section 5.6.3 -->
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="Result-Code" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="CC-Request-Type" required="true" max="1"/>
+                <rule avp="CC-Request-Number" required="true" max="1"/>
+                <rule avp="Origin-State-Id" required="false" max="1"/>
+                <rule avp="Proxy-Info" required="false" max="1"/>
+                <rule avp="Route-Record" required="false" max="1"/>
+                <rule avp="Failed-AVP" required="false" max="1"/>
+                <rule avp="Charging-Rule-Install" required="false"/>
+                <rule avp="Usage-Monitoring-Information" required="false"/>
+                <rule avp="Event-Trigger" required="false"/>
+            </answer>
+        </command>
+
+        <avp name="Flow-Description" code="507" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="IPFilterRule"/>
+        </avp>
+
+
+        <avp name="Charging-Rule-Install" code="1001" must="M,V" may="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.2 -->
+            <data type="Grouped">
+                <rule avp="Charging-Rule-Name" required="false"/>
+                <rule avp="Charging-Rule-Base-Name" required="false"/>
+                <rule avp="Charging-Rule-Definition" required="false"/>
+                <rule avp="Rule-Activation-Time" required="false"/>
+                <rule avp="Rule-Deactivation-Time" required="false"/>
+                <!-- *[ AVP ]-->
+            </data>
+        </avp>
+
+        <avp name="Charging-Rule-Definition" code="1003" must="M,V" may="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Grouped">
+                <rule avp="Charging-Rule-Name" required="true" max="1"/>
+                <rule avp="Rating-Group" required="false" max="1"/>
+                <rule avp="Flow-Description" required="false"/>
+                <rule avp="Precedence" required="false" max="1"/>
+                <rule avp="Monitoring-Key" required="false" max="1"/>
+                <rule avp="Redirect-Information" required="false" max="1"/>
+                <!-- *[ AVP ]-->
+            </data>
+        </avp>
+
+        <avp name="Charging-Rule-Base-Name" code="1004" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.6 -->
+            <data type="UTF8String"/>
+        </avp>
+
+        <avp name="Charging-Rule-Name" code="1005" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.6 -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Event-Trigger" code="1006" must="M,V" map="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.7 -->
+            <data type="Enumerated">
+                <item code="0" name="SGSN_CHANGE"/>
+                <item code="1" name="QOS_CHANGE"/>
+                <item code="2" name="RAT_CHANGE"/>
+                <item code="3" name="TFT_CHANGE"/>
+                <item code="4" name="PLMN_CHANGE"/>
+                <item code="5" name="LOSS_OF_BEARER"/>
+                <item code="6" name="RECOVERY_OF_BEARER"/>
+                <item code="7" name="IP-CAN_CHANGE"/>
+                <item code="11" name="QOS_CHANGE_EXCEEDING_AUTHORIZATION"/>
+                <item code="12" name="RAI_CHANGE"/>
+                <item code="13" name="USER_LOCATION_CHANGE"/>
+                <item code="14" name="NO_EVENT_TRIGGERS"/>
+                <item code="15" name="OUT_OF_CREDIT"/>
+                <item code="16" name="REALLOCATION_OF_CREDIT"/>
+                <item code="17" name="REVALIDATION_TIMEOUT"/>
+                <item code="18" name="UE_IP_ADDRESS_ALLOCATE"/>
+                <item code="19" name="UE_IP_ADDRESS_RELEASE"/>
+                <item code="20" name="DEFAULT_EPS_BEARER_QOS_CHANGE"/>
+                <item code="21" name="AN_GW_CHANGE"/>
+                <item code="22" name="SUCCESSFUL_RESOURCE_ALLOCATION"/>
+                <item code="23" name="RESOURCE_MODIFICATION_REQUEST"/>
+                <item code="24" name="PGW_TRACE_CONTROL"/>
+                <item code="25" name="UE_TIME_ZONE_CHANGE"/>
+                <item code="26" name="USAGE_REPORT"/>
+                <item code="27" name="TAI_CHANGE"/>
+                <item code="28" name="ECGI_CHANGE"/>
+                <item code="29" name="CHARGING_CORRELATION_EXCHANGE"/>
+                <item code="30" name="USER_CSG_INFORMATION_CHANGE"/>
+            </data>
+        </avp>
+
+        <avp name="Precedence" code="1010" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="IP-CAN-Type" code="1027" must="M,V" map="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.27 -->
+            <data type="Enumerated">
+                <item code="0" name="3GPP-GPRS"/>
+                <item code="1" name="DOCSIS"/>
+                <item code="2" name="xDSL"/>
+                <item code="3" name="WiMAX"/>
+                <item code="4" name="3GPP2"/>
+                <item code="5" name="3GPP-EPS"/>
+                <item code="6" name="Non-3GPP-EPS"/>
+                <item code="7" name="FBA"/>
+                <item code="8" name="3GPP-5GS"/>
+                <item code="9" name="Non-3GPP-5GS"/>
+            </data>
+        </avp>
+
+        <avp name="Rule-Activation-Time" code="1043" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Time"/>
+        </avp>
+
+        <avp name="Rule-Deactivation-Time" code="1044" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Time"/>
+        </avp>
+
+        <avp name="Monitoring-Key" code="1066" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Usage-Monitoring-Information" code="1067" must="V" may="P" must-not="M,V" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Grouped">
+              <rule avp="Monitoring-Key" required="false" max="1"/>
+              <rule avp="Granted-Service-Unit" required="false" max="2"/>
+              <rule avp="Used-Service-Unit" required="false" max="2"/>
+              <rule avp="Usage-Monitoring-Level" required="false" max="1"/>
+            </data>
+        </avp>
+
+        <avp name="Usage-Monitoring-Level" code="1068" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Enumerated">
+                <item code="0" name="SESSION_LEVEL"/>
+                <item code="1" name="PCC_RULE_LEVEL"/>
+            </data>
+        </avp>
+
+        <avp name="Redirect-Information" code="1085" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.82 -->
+            <data type="Grouped">
+                <rule avp="Redirect-Support" required="true" max="1"/>
+                <rule avp="Redirect-Address-Type" required="false" max="1"/>
+                <rule avp="Redirect-Server-Address" required="false" max="1"/>
+                <!-- *[ AVP ]-->
+            </data>
+        </avp>
+
+        <avp name="Redirect-Support" code="1086" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.83 -->
+            <data type="Enumerated">
+                <item code="0" name="REDIRECTION_DISABLED"/>
+                <item code="1" name="REDIRECTION_ENABLED"/>
+            </data>
+        </avp>
+
+    </application>
+</diameter>

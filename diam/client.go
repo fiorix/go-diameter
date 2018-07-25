@@ -19,18 +19,26 @@ import (
 // by the handler, which is typically nil and DefaultServeMux is used.
 // If dict is nil, dict.Default is used.
 func DialNetwork(network, addr string, handler Handler, dp *dict.Parser) (Conn, error) {
-	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
-	return dial(srv, "", 0)
+	return DialExt(network, addr, handler, dp, 0, nil)
 }
 
 func DialNetworkBind(network, laddr, raddr string, handler Handler, dp *dict.Parser) (Conn, error) {
-	srv := &Server{Network: network, Addr: raddr, Handler: handler, Dict: dp}
-	return dial(srv, laddr, 0)
+	var (
+		err     error
+		netAddr net.Addr
+	)
+
+	if laddr != "" {
+		netAddr, err = resolveAddress(network, laddr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return DialExt(network, raddr, handler, dp, 0, netAddr)
 }
 
 func DialNetworkTimeout(network, addr string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
-	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
-	return dial(srv, "", timeout)
+	return DialExt(network, addr, handler, dp, timeout, nil)
 }
 
 // Dial connects to the peer pointed to by addr and returns the Conn that
@@ -45,8 +53,20 @@ func DialTimeout(addr string, handler Handler, dp *dict.Parser, timeout time.Dur
 	return DialNetworkTimeout("tcp", addr, handler, dp, timeout)
 }
 
+// DialExt - extended dial API connects to the peer pointed to by network &
+// addr and returns the Conn that can be used to send diameter messages.
+// Incoming messages are handled by the handler, which is typically nil and
+// DefaultServeMux is used. Allows binding dailer socket to given laddr.
+// If dict is nil, dict.Default is used.
+func DialExt(
+	network, addr string, handler Handler, dp *dict.Parser, timeout time.Duration, laddr net.Addr) (Conn, error) {
+
+	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp, LocalAddr: laddr}
+	return dial(srv, timeout)
+}
+
 // dial network wrapper
-func dial(srv *Server, laddr string, timeout time.Duration) (Conn, error) {
+func dial(srv *Server, timeout time.Duration) (Conn, error) {
 	network := srv.Network
 	if len(network) == 0 {
 		network = "tcp"
@@ -57,7 +77,7 @@ func dial(srv *Server, laddr string, timeout time.Duration) (Conn, error) {
 	}
 	var rw net.Conn
 	var err error
-	dialer := getDialer(network, laddr, timeout)
+	dialer := getDialer(network, timeout, srv.LocalAddr)
 	rw, err = dialer.Dial(network, addr)
 	if err != nil {
 		return nil, err
@@ -72,20 +92,32 @@ func dial(srv *Server, laddr string, timeout time.Duration) (Conn, error) {
 
 // DialTLS is the same as Dial, but for TLS.
 func DialTLS(addr, certFile, keyFile string, handler Handler, dp *dict.Parser) (Conn, error) {
-	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return dialTLS(srv, certFile, keyFile, 0)
+	return DialTLSExt("tcp", addr, certFile, keyFile, handler, dp, 0, nil)
 }
 
 // DialTLSTimeout is the same as DialTimeout, but for TLS.
 func DialTLSTimeout(addr, certFile, keyFile string, handler Handler, dp *dict.Parser, timeout time.Duration) (Conn, error) {
-	srv := &Server{Addr: addr, Handler: handler, Dict: dp}
-	return dialTLS(srv, certFile, keyFile, timeout)
+	return DialTLSExt("tcp", addr, certFile, keyFile, handler, dp, timeout, nil)
 }
 
 // DialNetworkTLS is the same as DialNetwork, but for TLS.
 func DialNetworkTLS(network, addr, certFile, keyFile string, handler Handler, dp *dict.Parser) (Conn, error) {
-	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp}
-	return dialTLS(srv, certFile, keyFile, 0)
+	return DialTLSExt(network, addr, certFile, keyFile, handler, dp, 0, nil)
+}
+
+// DialTLSExt is the same as DialExt, but for TLS.
+func DialTLSExt(
+	network,
+	addr,
+	certFile,
+	keyFile string,
+	handler Handler,
+	dp *dict.Parser,
+	timeout time.Duration,
+	laddr net.Addr) (Conn, error) {
+
+	srv := &Server{Network: network, Addr: addr, Handler: handler, Dict: dp, LocalAddr: laddr}
+	return dialTLS(srv, certFile, keyFile, timeout)
 }
 
 // dialTLS net TCP wrapper
@@ -114,7 +146,7 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 	}
 
 	var rw net.Conn
-	dialer := getDialer(network, "", timeout)
+	dialer := getDialer(network, timeout, srv.LocalAddr)
 	rw, err = dialer.Dial(network, addr)
 	if err != nil {
 		return nil, err

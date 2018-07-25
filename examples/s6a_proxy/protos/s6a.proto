@@ -18,6 +18,9 @@ service S6aProxy {
 
     // Purge-UE (Code 321)
     rpc PurgeUE (PurgeUERequest) returns (PurgeUEAnswer) {}
+
+    // Reset (Code 322)
+    rpc Reset(ResetRequest) returns (ResetAnswer) {}
 }
 
 // ErrorCode reflects Experimental-Result values which are 3GPP failures
@@ -166,6 +169,18 @@ message PurgeUERequest {
 
 // Purge UE Answer (Section 7.2.15)
 message PurgeUEAnswer {
+    // EPC error code on failure
+    ErrorCode error_code = 1;
+}
+
+// Reset Request (3GPP TS 29.272 Section 7.2.15)
+message ResetRequest {
+    // Subscriber identifier
+    repeated string user_id = 1;
+}
+
+// Reset Answer (3GPP TS 29.272 Section 7.2.16)
+message ResetAnswer {
     // EPC error code on failure
     ErrorCode error_code = 1;
 }

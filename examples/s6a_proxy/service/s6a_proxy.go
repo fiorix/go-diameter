@@ -100,7 +100,7 @@ func (s *s6aProxy) AuthenticationInformation(
 }
 
 // UpdateLocation sends ULR (Code 316) over diameter connection,
-// waits (blocks) for ULAA & returns its RPC representation
+// waits (blocks) for ULA & returns its RPC representation
 func (s *s6aProxy) UpdateLocation(
 	ctx context.Context, req *protos.UpdateLocationRequest) (*protos.UpdateLocationAnswer, error,
 ) {
@@ -117,8 +117,12 @@ func (s *s6aProxy) CancelLocation(
 
 // PurgeUE sends PUR (Code 321) over diameter connection,
 // Not implemented
-func (s *s6aProxy) PurgeUE(
-	ctx context.Context, req *protos.PurgeUERequest) (*protos.PurgeUEAnswer, error,
-) {
+func (s *s6aProxy) PurgeUE(ctx context.Context, req *protos.PurgeUERequest) (*protos.PurgeUEAnswer, error) {
+	panic("Not implemented")
+}
+
+// Reset (Code 322) over diameter connection,
+// Not implemented
+func (s *s6aProxy) Reset(ctx context.Context, in *protos.ResetRequest) (*protos.ResetAnswer, error) {
 	panic("Not implemented")
 }

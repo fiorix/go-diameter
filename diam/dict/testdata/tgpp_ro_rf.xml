@@ -2207,6 +2207,14 @@
 			</data>
 		</avp>
 
+		<avp name="IMEI" code="1402" must="M,V" may-encrypt="N" vendor-id="10415">
+			<data type="UTF8String" />
+		</avp>
+
+		<avp name="Software-Version" code="1403" must="M,V" may-encrypt="N" vendor-id="10415">
+			<data type="UTF8String" />
+		</avp>
+
 		<avp name="Terminating-IOI" code="840" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="UTF8String"/>
 		</avp>

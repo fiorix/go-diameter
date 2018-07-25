@@ -169,7 +169,7 @@ func printErrors(ec <-chan *diam.ErrorReport) {
 
 func dial(cli *sm.Client, addr, cert, key string, ssl bool, networkType string) (diam.Conn, error) {
 	if ssl {
-		return cli.DialNetworkTLS(networkType, addr, cert, key)
+		return cli.DialNetworkTLS(networkType, addr, cert, key, nil)
 	}
 	return cli.DialNetwork(networkType, addr)
 }

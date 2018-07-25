@@ -11,8 +11,8 @@ import (
 
 func TestApps(t *testing.T) {
 	apps := Default.Apps()
-	if len(apps) != 6 {
-		t.Fatalf("Unexpected # of apps. Want 6, have %d", len(apps))
+	if len(apps) != 7 {
+		t.Fatalf("Unexpected # of apps. Want 7, have %d", len(apps))
 	}
 	// Base protocol.
 	if apps[0].ID != 0 {
@@ -26,13 +26,17 @@ func TestApps(t *testing.T) {
 	if apps[2].ID != 4 {
 		t.Fatalf("Unexpected app.ID. Want 4, have %d", apps[2].ID)
 	}
+	// 3GPP Gx Charging Control applications
+	if apps[3].ID != 16777238 {
+		t.Fatalf("Unexpected app.ID. Want 16777238, have %d", apps[3].ID)
+	}
 	// NASREQ applications
-	if apps[3].ID != 1 {
-		t.Fatalf("Unexpected app.ID. Want 1, have %d", apps[3].ID)
+	if apps[4].ID != 1 {
+		t.Fatalf("Unexpected app.ID. Want 1, have %d", apps[4].ID)
 	}
 	// 3GPP S6a applications
-	if apps[5].ID != 16777251 {
-		t.Fatalf("Unexpected app.ID. Want 16777251, have %d", apps[5].ID)
+	if apps[6].ID != 16777251 {
+		t.Fatalf("Unexpected app.ID. Want 16777251, have %d", apps[6].ID)
 	}
 }
 
@@ -60,7 +64,7 @@ func findAVPCodeTest(t *testing.T, app uint32, codeStr string, vendor, expectedC
 func TestFindAVPWithVendor(t *testing.T) {
 	var nokiaXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-  <application id="4">
+  <application id="43">
     <vendor id="94" name="Nokia" />
     <avp name="Session-Start-Indicator" code="5105" must="V" may="P,M" must-not="-" may-encrypt="N" vendor-id="94">
       <data type="UTF8String" />
@@ -72,8 +76,8 @@ func TestFindAVPWithVendor(t *testing.T) {
 		t.Error("Should get not found")
 	}
 	findAVPCodeTest(t, 4, "Session-Id", UndefinedVendorID, 263)
-	findAVPCodeTest(t, 4, "Session-Start-Indicator", 94, 5105)
-	findAVPCodeTest(t, 4, "Session-Start-Indicator", UndefinedVendorID, 5105)
+	findAVPCodeTest(t, 43, "Session-Start-Indicator", 94, 5105)
+	findAVPCodeTest(t, 43, "Session-Start-Indicator", UndefinedVendorID, 5105)
 
 	if _, err := Default.FindAVPWithVendor(4, "Session-Start-Indicator", 0); err == nil {
 		t.Error("Should get not found")
@@ -83,10 +87,12 @@ func TestFindAVPWithVendor(t *testing.T) {
 	// Test 'parent' AVP find - S6a app ID, tgpp_ro_rf dictionary
 	findAVPCodeTest(t, 16777251, "GMLC-Address", UndefinedVendorID, 2405)
 
-	if _, err := Default.FindAVPWithVendor(16777251, "User-Password", UndefinedVendorID); err == nil {
-		t.Error("User-Password Should not be found for app 16777251")
+	if _, err := Default.FindAVPWithVendor(43, "User-Password", UndefinedVendorID); err == nil {
+		t.Error("User-Password Should not be found for app 43")
 	}
 	findAVPCodeTest(t, 1, "User-Password", UndefinedVendorID, 2)
+	findAVPCodeTest(t, 4, "User-Password", UndefinedVendorID, 2)
+	findAVPCodeTest(t, 16777251, "User-Password", UndefinedVendorID, 2)
 }
 
 func TestFindAVP(t *testing.T) {

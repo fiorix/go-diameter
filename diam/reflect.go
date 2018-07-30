@@ -255,8 +255,8 @@ BASIC_TYPE:
 		}
 	}
 
-	var avpFlags uint8 = 0
-	if fieldAVP.Must == "M" {
+	var avpFlags uint8
+	if strings.Contains(fieldAVP.Must, "M") {
 		avpFlags = avp.Mbit
 	}
 	if fieldAVP.VendorID > 0 {

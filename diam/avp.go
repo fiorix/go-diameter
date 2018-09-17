@@ -66,6 +66,12 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	var hdrLength int
 	var payload []byte
 	// Read VendorId when required.
+	dl = len(data)
+	if dl < 12 {
+		return fmt.Errorf("Not enough data to decode AVP: %d bytes",
+			dl)
+	}
+
 	if a.Flags&avp.Vbit == avp.Vbit {
 		a.VendorID = binary.BigEndian.Uint32(data[8:12])
 		payload = data[12:]

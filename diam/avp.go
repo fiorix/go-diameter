@@ -58,7 +58,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	a.Code = binary.BigEndian.Uint32(data[0:4])
 	a.Flags = data[4]
 	a.Length = int(uint24to32(data[5:8]))
-	if dl < int(a.Length) {
+	if dl < a.Length || a.Length < 12 {
 		return fmt.Errorf("Not enough data to decode AVP: %d != %d",
 			dl, a.Length)
 	}

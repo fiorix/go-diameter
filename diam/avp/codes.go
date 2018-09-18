@@ -12,6 +12,7 @@ const (
 	AFChargingIdentifier                       = 505
 	AFCorrelationInformation                   = 1276
 	AMBR                                       = 1435
+	ANGWAddress                                = 1050
 	APNConfiguration                           = 1430
 	APNConfigurationProfile                    = 1429
 	APNOIReplacement                           = 1427
@@ -22,6 +23,8 @@ const (
 	ARAPSecurityData                           = 74
 	ARAPZoneAccess                             = 72
 	AUTN                                       = 1449
+	AccessNetworkChargingAddress               = 501
+	AccessNetworkChargingIdentifierGx          = 1022
 	AccessNetworkChargingIdentifierValue       = 503
 	AccessNetworkInformation                   = 1263
 	AccessRestrictionData                      = 1426
@@ -90,6 +93,7 @@ const (
 	BasicServiceCode                           = 3411
 	BearerCapability                           = 3412
 	BearerService                              = 854
+	BearerUsage                                = 1000
 	CCCorrelationID                            = 411
 	CCInputOctets                              = 412
 	CCMoney                                    = 413
@@ -162,6 +166,7 @@ const (
 	DRMContent                                 = 1221
 	DRMP                                       = 301
 	DataCodingScheme                           = 2001
+	DefaultEPSBearerQoS                        = 1049
 	DeferredLocationEventType                  = 1230
 	DeliveryReportRequested                    = 1216
 	DeliveryStatus                             = 2104
@@ -207,6 +212,9 @@ const (
 	FirmwareRevision                           = 267
 	FixedUserLocationInfo                      = 2825
 	FlowDescription                            = 507
+	FlowDirection                              = 1080
+	FlowInformation                            = 1058
+	FlowLabel                                  = 1057
 	Flows                                      = 510
 	ForwardingPending                          = 3415
 	FramedAppletalkLink                        = 37
@@ -352,6 +360,7 @@ const (
 	NeighbourNodeAddress                       = 2705
 	NetworkAccessMode                          = 1417
 	NetworkCallReferenceNumber                 = 3418
+	NetworkRequestSupport                      = 1024
 	NextTariff                                 = 2057
 	NodeFunctionality                          = 862
 	NodeID                                     = 2064
@@ -373,7 +382,9 @@ const (
 	OCSupportedFeatures                        = 621
 	OCValidityDuration                         = 625
 	OMCID                                      = 1466
+	Offline                                    = 1008
 	OfflineCharging                            = 1278
+	Online                                     = 1009
 	OnlineChargingFlag                         = 2303
 	OperatorDeterminedBarring                  = 1425
 	OptionalCapability                         = 605
@@ -404,6 +415,8 @@ const (
 	PSInformation                              = 874
 	PUAFlags                                   = 1442
 	PURFlags                                   = 1635
+	PacketFilterIdentifier                     = 1060
+	PacketFilterUsage                          = 1072
 	ParticipantAccessPriority                  = 1259
 	ParticipantActionType                      = 2049
 	ParticipantGroup                           = 1260
@@ -533,6 +546,7 @@ const (
 	SSStatus                                   = 1477
 	STNSR                                      = 1433
 	ScaleFactor                                = 2059
+	SecurityParameterIndex                     = 1056
 	ServedPartyIPAddress                       = 848
 	ServerCapabilities                         = 603
 	ServerName                                 = 602
@@ -582,6 +596,7 @@ const (
 	TDFIPAddress                               = 1091
 	TGPPChargingCharacteristics                = 13
 	TGPPChargingID                             = 2
+	TGPPGGSNAddress                            = 7
 	TGPPGGSNMCCMNC                             = 9
 	TGPPIMSI                                   = 1
 	TGPPIMSIMCCMNC                             = 8
@@ -589,6 +604,7 @@ const (
 	TGPPNSAPI                                  = 10
 	TGPPPDPType                                = 3
 	TGPPRATType                                = 21
+	TGPPSGSNAddress                            = 6
 	TGPPSGSNMCCMNC                             = 18
 	TGPPSelectionMode                          = 12
 	TGPPServiceType                            = 1483
@@ -616,6 +632,7 @@ const (
 	TimeQuotaType                              = 1271
 	TimeStamps                                 = 833
 	TimeUsage                                  = 2045
+	ToSTrafficClass                            = 1014
 	TokenText                                  = 1215
 	TotalNumberOfMessagesExploded              = 2113
 	TotalNumberOfMessagesSent                  = 2114

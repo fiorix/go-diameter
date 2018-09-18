@@ -604,6 +604,7 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="User-Equipment-Info" required="false" max="1"/>
 				<rule avp="Proxy-Info" required="false" max="1"/>
 				<rule avp="Route-Record" required="false" max="1"/>
+				<rule avp="Service-Information" required="false" max="1"/>
 			</request>
 			<answer>
 				<!-- http://tools.ietf.org/html/rfc4006#section-3.2 -->
@@ -1048,6 +1049,22 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="IP-CAN-Type" required="false" max="1"/>
                 <rule avp="Called-Station-Id" required="false" max="1"/>
                 <rule avp="RAT-Type" required="false" max="1"/>
+                <rule avp="Network-Request-Support" required="false" max="1"/>
+                <rule avp="Default-EPS-Bearer-QoS" required="false" max="1"/>
+                <rule avp="AN-GW-Address" required="false" max="2"/>
+                <rule avp="Bearer-Usage" required="false" max="1"/>
+                <rule avp="Online" required="false" max="1"/>
+                <rule avp="Offline" required="false" max="1"/>
+                <rule avp="Access-Network-Charging-Identifier-Gx" required="false"/>
+                <rule avp="TGPP-SGSN-Address" required="false" max="1"/>
+                <rule avp="TGPP-GGSN-Address" required="false" max="1"/>
+                <rule avp="Supported-Features" required="false"/>
+                <rule avp="Access-Network-Charging-Address" required="false" max="1"/>
+                <rule avp="TGPP-MS-TimeZone" required="false" max="1"/>
+                <rule avp="TGPP-Selection-Mode" required="false" max="1"/>
+                <rule avp="QoS-Information" required="false" max="1"/>
+                <rule avp="TGPP-SGSN-MCC-MNC" required="false" max="1"/>
+                <rule avp="TGPP-User-Location-Info" required="false" max="1"/> 
             </request>
             <answer>
                 <!-- 3GPP 29.212 Section 5.6.3 -->
@@ -1090,6 +1107,7 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Grouped">
                 <rule avp="Charging-Rule-Name" required="true" max="1"/>
                 <rule avp="Rating-Group" required="false" max="1"/>
+                <rule avp="Flow-Information" required="false"/>
                 <rule avp="Flow-Description" required="false"/>
                 <rule avp="Precedence" required="false" max="1"/>
                 <rule avp="Monitoring-Key" required="false" max="1"/>
@@ -1147,6 +1165,11 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Unsigned32"/>
         </avp>
 
+        <avp name="ToS-Traffic-Class" code="1014" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.15 -->
+            <data type="Unsigned32"/>
+        </avp>
+
         <avp name="IP-CAN-Type" code="1027" must="M,V" map="P" may-encrypt="Y" vendor-id="10415">
             <!-- 3GPP 29.212 Section 5.3.27 -->
             <data type="Enumerated">
@@ -1173,6 +1196,34 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Time"/>
         </avp>
 
+        <avp name="Security-Parameter-Index" code="1056" must="V" must-not="M" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.51 -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Flow-Label" code="1057" must="V" must-not="M" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.52 -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Flow-Information" code="1058" must="V" must-not="M" may="P" may-encryp="y" vendor-id="10415">
+          <!-- 3GPP 29.212 Section 5.3.53 -->
+          <data type="Grouped">
+            <rule avp="Flow-Description" required="false" max="1"/>
+            <rule avp="Packet-Filter-Identifier" required="false" max="1"/>
+            <rule avp="Packet-Filter-Usage" required="false" max="1"/>
+            <rule avp="ToS-Traffic-Class" required="false" max="1"/>
+            <rule avp="Security-Parameter-Index" required="false" max="1"/>
+            <rule avp="Flow-Label" required="false" max="1"/>
+            <rule avp="Flow-Direction" required="false" max="1"/>
+          </data>
+        </avp>
+
+        <avp name="Packet-Filter-Identifier" code="1060" must="V" must-not="M" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.55 -->
+            <data type="OctetString"/>
+        </avp>
+
         <avp name="Monitoring-Key" code="1066" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
             <!-- 3GPP 29.212 -->
             <data type="OctetString"/>
@@ -1196,6 +1247,23 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
             </data>
         </avp>
 
+        <avp name="Packet-Filter-Usage" code="1072" must="V" must-not="M" map="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.66 -->
+            <data type="Enumerated">
+                <item code="1" name="SEND_TO_UE"/>
+            </data>
+        </avp>
+
+        <avp name="Flow-Direction" code="1080" must="V" must-not="M" map="P" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.65 -->
+            <data type="Enumerated">
+                <item code="0" name="UNSPECIFIED"/>
+                <item code="1" name="DOWNLINK"/>
+                <item code="2" name="UPLINK"/>
+                <item code="3" name="BIDIRECTIONAL"/>
+            </data>
+        </avp>
+
         <avp name="Redirect-Information" code="1085" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             <!-- 3GPP 29.212 Section 5.3.82 -->
             <data type="Grouped">
@@ -1212,6 +1280,82 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <item code="0" name="REDIRECTION_DISABLED"/>
                 <item code="1" name="REDIRECTION_ENABLED"/>
             </data>
+        </avp>
+
+        <avp name="Network-Request-Support" code="1024" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.24 -->
+            <data type="Enumerated">
+                <item code="0" name="NETWORK_REQUEST_NOT_SUPPORTED"/>
+                <item code="1" name="NETWORK_REQUEST_SUPPORTED"/>
+            </data>
+        </avp>
+
+        <avp name="Offline" code="1008" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.9 -->
+            <data type="Enumerated">
+                <item code="0" name="DISABLE_OFFLINE"/>
+                <item code="1" name="ENABLE_OFFLINE"/>
+            </data>
+        </avp>
+
+        <avp name="Online" code="1009" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.10 -->
+            <data type="Enumerated">
+                <item code="0" name="DISABLE_ONLINE"/>
+                <item code="1" name="ENABLE_ONLINE"/>
+            </data>
+        </avp>
+
+        <avp name="Default-EPS-Bearer-QoS" code="1049" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.48 -->
+            <data type="Grouped">
+                <rule avp="QoS-Class-Identifier" required="false" max="1"/>
+                <rule avp="Allocation-Retention-Priority" required="false" max="1"/>
+                <!-- *[ AVP ]-->
+            </data>
+        </avp>
+
+        <avp name="AN-GW-Address" code="1050" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.49 -->
+            <data type="Address"/>
+        </avp>
+
+        <avp name="Bearer-Usage" code="1000" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.1 -->
+            <data type="Enumerated">
+                <item code="0" name="GENERAL"/>
+                <item code="1" name="IMS_SIGNALLING"/>
+            </data>
+        </avp>
+
+        <avp name="Access-Network-Charging-Identifier-Gx" code="1022" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.22 -->
+            <data type="Grouped">
+                <rule avp="Access-Network-Charging-Identifier-Value" required="true" max="1"/>
+                <rule avp="Charging-Rule-Base-Name" required="false"/>
+                <rule avp="Charging-Rule-Name" required="false"/>
+                <!-- *[ AVP ]-->
+            </data>
+        </avp>
+
+        <avp name="TGPP-SGSN-Address" code="6" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.061 Table 9a -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="TGPP-GGSN-Address" code="7" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.061 Table 9a -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Access-Network-Charging-Address" code="501" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP TS 29.214 Section 5.3.2 -->
+            <data type="Address"/>
+        </avp>
+
+        <avp name="TGPP-MS-TimeZone" code="23" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.061 Table 9a -->
+            <data type="OctetString"/>
         </avp>
 
     </application>
@@ -4628,6 +4772,22 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<data type="Address"/>
 		</avp>
 
+    <avp name="Supported-Features" code="628" vendor-id="10415" must="V" may="M" may-encrypt="N">
+      <data type="Grouped">
+        <rule avp="Vendor-Id" required="true" max="1"/>
+        <rule avp="Feature-List-ID" required="true" max="1"/>
+        <rule avp="Feature-List" required="true" max="1"/>
+      </data>
+    </avp>
+
+    <avp name="Feature-List-ID" code="629" must="V" must_not="M" may-encrypt="N" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="Feature-List" code="630" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
 	</application>
 </diameter>`
 
@@ -4982,14 +5142,6 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Route-Record" required="false" />
             </answer>
         </command>
-
-        <avp name="Supported-Features" code="628" vendor-id="10415" must="V" may="M" may-encrypt="N">
-            <data type="Grouped">
-                <rule avp="Vendor-Id" required="true" max="1"/>
-                <rule avp="Feature-List-ID" required="true" max="1"/>
-                <rule avp="Feature-List" required="true" max="1"/>
-            </data>
-        </avp>
 
         <avp name="Subscription-Data" code="1400" vendor-id="10415" must="M,V" may-encrypt="N">
             <data type="Grouped">
@@ -5451,14 +5603,6 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <item code="0" name="CONSENT_NOT_GIVEN"/>
                 <item code="1" name="CONSENT_GIVEN"/>
             </data>
-        </avp>
-
-        <avp name="Feature-List-ID" code="629" must="V" must_not="M" may-encrypt="N" vendor-id="10415">
-            <data type="Unsigned32"/>
-        </avp>
-
-        <avp name="Feature-List" code="630" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
-            <data type="Unsigned32"/>
         </avp>
 
         <avp name="Requested-EUTRAN-Authentication-Info" code="1408" must="M,V" may-encrypt="N" vendor-id="10415">

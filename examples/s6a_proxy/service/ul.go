@@ -4,6 +4,7 @@ package service
 
 import (
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/fiorix/go-diameter/diam"
@@ -36,7 +37,11 @@ func (s *s6aProxy) sendULR(sid string, req *protos.UpdateLocationRequest) error 
 	m.NewAVP(avp.ULRFlags, avp.Vbit|avp.Mbit, VENDOR_3GPP, datatype.Unsigned32(ULR_FLAGS))
 	m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, VENDOR_3GPP, datatype.OctetString(req.VisitedPlmn))
 
-	_, err := m.WriteTo(c)
+	// randomize stream of first message and append it to SID to test SCTP multi-streaming support
+	stream := uint(rand.Int31n(diam.MaxOutboundSCTPStreams - 2))
+	s.airSendLocks[stream].Lock()
+	defer s.airSendLocks[stream].Unlock()
+	_, err := m.WriteToStream(c, stream)
 	if err != nil {
 		err = Error(codes.DataLoss, err)
 	}

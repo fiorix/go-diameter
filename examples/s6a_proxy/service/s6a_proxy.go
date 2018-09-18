@@ -31,6 +31,9 @@ type s6aProxy struct {
 	conn       diam.Conn
 	sessionsMu sync.Mutex
 	sessions   map[string]chan interface{}
+
+	// test related fields
+	airSendLocks [diam.MaxOutboundSCTPStreams]sync.Mutex
 }
 
 func NewS6aProxy(cfg *S6aProxyConfig) (*s6aProxy, error) {
@@ -60,9 +63,11 @@ func NewS6aProxy(cfg *S6aProxyConfig) (*s6aProxy, error) {
 			Dict:               dict.Default,
 			Handler:            mux,
 			MaxRetransmits:     cfg.Retransmits,
-			RetransmitInterval: time.Second,
+			RetransmitInterval: time.Second * 3,
 			EnableWatchdog:     true,
-			WatchdogInterval:   time.Second * time.Duration(cfg.WatchdogInterval),
+			// WatchdogInterval:   time.Second * time.Duration(cfg.WatchdogInterval),
+			WatchdogInterval: time.Millisecond * 20,
+			WatchdogStream:   diam.MaxOutboundSCTPStreams - 1,
 			SupportedVendorID: []*diam.AVP{
 				diam.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(VENDOR_3GPP)),
 			},

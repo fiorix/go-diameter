@@ -32,6 +32,7 @@ type Message struct {
 
 	// dictionary parser object used to encode and decode AVPs.
 	dictionary *dict.Parser
+	stream     uint // the stream this message was received on (if any)
 }
 
 var readerBufferPool sync.Pool
@@ -64,38 +65,60 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	buf := newReaderBuffer()
 	defer putReaderBuffer(buf)
 	m := &Message{dictionary: dictionary}
-	cmd, err := m.readHeader(reader, buf)
+	cmd, stream, err := m.readHeader(reader, buf)
 	if err != nil {
 		return nil, err
 	}
-	if err = m.readBody(reader, buf, cmd); err != nil {
+	m.stream = stream
+	if err = m.readBody(reader, buf, cmd, stream); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command, err error) {
+// MessageStream returns the stream #, the message was received on (when applicable)
+func (m *Message) MessageStream() uint {
+	return m.stream
+}
+
+func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command, stream uint, err error) {
 	b := buf.Bytes()[:HeaderLength]
-	if _, err := io.ReadFull(r, b); err != nil {
-		return nil, err
+	msr, isMulti := r.(MultistreamReader)
+	if isMulti {
+		_, stream, err = msr.ReadAtLeast(b, HeaderLength, InvalidStreamID)
+		if err == nil {
+			msr.SetCurrentStream(stream)
+		}
+	} else {
+		_, err = io.ReadFull(r, b)
+	}
+	if err != nil {
+		return nil, stream, err
 	}
 	m.Header, err = DecodeHeader(b)
 	if err != nil {
-		return nil, err
+		return nil, stream, err
 	}
 	cmd, err = m.Dictionary().FindCommand(
 		m.Header.ApplicationID,
 		m.Header.CommandCode,
 	)
 	if err != nil {
-		return nil, err
+		return nil, stream, err
 	}
-	return cmd, nil
+	return cmd, stream, nil
 }
 
-func (m *Message) readBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command) error {
+func (m *Message) readBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, stream uint) error {
+	var err error
+	var n int
 	b := readerBufferSlice(buf, int(m.Header.MessageLength-HeaderLength))
-	n, err := io.ReadFull(r, b)
+	msr, isMulti := r.(MultistreamReader)
+	if isMulti {
+		n, _, err = msr.ReadAtLeast(b, len(b), stream)
+	} else {
+		n, err = io.ReadFull(r, b)
+	}
 	if err != nil {
 		return fmt.Errorf("readBody Error: %v, %d bytes read", err, n)
 	}
@@ -154,6 +177,7 @@ func NewMessage(cmd uint32, flags uint8, appid, hopbyhop, endtoend uint32, dicti
 			EndToEndID:    endtoend,
 		},
 		dictionary: dictionary,
+		stream:     InvalidStreamID,
 	}
 }
 
@@ -231,6 +255,16 @@ func putWriterBuffer(b *bytes.Buffer) {
 
 // WriteTo serializes the Message and writes into the writer.
 func (m *Message) WriteTo(writer io.Writer) (int64, error) {
+	n, err := m.WriteToStream(writer, m.stream)
+	if err != nil {
+		return 0, err
+	}
+	return int64(n), err
+}
+
+// WriteToStream serializes the Message and writes into the writer
+// If writer implements MultistreamWriter, writes the message into specified stream
+func (m *Message) WriteToStream(writer io.Writer, stream uint) (n int, err error) {
 	l := m.Len()
 	buf := newWriterBuffer(l)
 	defer putWriterBuffer(buf)
@@ -238,11 +272,12 @@ func (m *Message) WriteTo(writer io.Writer) (int64, error) {
 	if err := m.SerializeTo(b); err != nil {
 		return 0, err
 	}
-	n, err := writer.Write(b)
-	if err != nil {
-		return 0, err
+	switch w := writer.(type) {
+	case MultistreamWriter:
+		return w.WriteStream(b, stream)
+	default:
+		return writer.Write(b)
 	}
-	return int64(n), err
 }
 
 // Serialize returns the serialized bytes of the Message.
@@ -409,6 +444,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Dictionary(),
 	)
 	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
+	nm.stream = m.stream
 	return nm
 }
 

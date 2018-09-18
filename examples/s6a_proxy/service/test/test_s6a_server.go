@@ -61,7 +61,7 @@ func StartTestS6aServer(network, addr string) error {
 	if err != nil {
 		return err
 	}
-	time.Sleep(time.Millisecond * 20)
+	time.Sleep(time.Millisecond * 10)
 	return nil
 }
 
@@ -113,8 +113,7 @@ func testHandleAIR(settings *sm.Settings) diam.HandlerFunc {
 	}
 }
 
-func testSendAIA(w io.Writer, m *diam.Message, vectors int) (n int64, err error) {
-
+func testSendAIA(w io.Writer, m *diam.Message, vectors int) (int64, error) {
 	if vectors < 0 {
 		vectors = 1
 	}
@@ -135,7 +134,8 @@ func testSendAIA(w io.Writer, m *diam.Message, vectors int) (n int64, err error)
 			},
 		})
 	}
-	return m.WriteTo(w)
+	n, err := m.WriteToStream(w.(diam.MultistreamWriter), m.MessageStream())
+	return int64(n), err
 }
 
 // S6a UL
@@ -177,7 +177,7 @@ func testHandleULR(settings *sm.Settings) diam.HandlerFunc {
 	}
 }
 
-func testSendULA(settings *sm.Settings, w io.Writer, m *diam.Message) (n int64, err error) {
+func testSendULA(settings *sm.Settings, w io.Writer, m *diam.Message) (int64, error) {
 	m.NewAVP(avp.ULAFlags, avp.Mbit|avp.Vbit, service.VENDOR_3GPP, datatype.Unsigned32(1))
 	m.NewAVP(avp.SubscriptionData, avp.Mbit, service.VENDOR_3GPP, &diam.GroupedAVP{
 		AVP: []*diam.AVP{
@@ -228,7 +228,8 @@ func testSendULA(settings *sm.Settings, w io.Writer, m *diam.Message) (n int64, 
 		},
 	})
 
-	return m.WriteTo(w)
+	n, err := m.WriteToStream(w.(diam.MultistreamWriter), m.MessageStream())
+	return int64(n), err
 }
 
 func testPrintErrors(ec <-chan *diam.ErrorReport) {

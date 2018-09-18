@@ -1,3 +1,6 @@
+// +build go1.8
+// +build linux,!386
+
 package test
 
 import (
@@ -5,12 +8,12 @@ import (
 	"math/rand"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/fiorix/go-diameter/examples/s6a_proxy/protos"
 	"github.com/fiorix/go-diameter/examples/s6a_proxy/service"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"time"
 )
 
 const TEST_LOOPS = 33
@@ -53,6 +56,7 @@ func TestS6aProxyService(t *testing.T) {
 			return
 		}
 	}()
+
 	addr := lis.Addr()
 	t.Logf("Started S6a GRPC Proxy on %s", addr.String())
 
@@ -72,12 +76,13 @@ func TestS6aProxyService(t *testing.T) {
 		ImmediateResponsePreferred: true,
 	}
 	complChan := make(chan error, TEST_LOOPS+1)
-	testLoopF := func() {
+	testLoopF := func(id int) {
+		t.Logf("Test Routine ID: %d", id)
 		// AIR
 		r, err := c.AuthenticationInformation(context.Background(), req)
 		if err != nil {
-			t.Fatalf("GRPC AIR Error: %v", err)
 			complChan <- err
+			t.Logf("GRPC AIR Error: %v", err)
 			return
 		}
 		t.Logf("GRPC AIA: %#+v", *r)
@@ -96,8 +101,8 @@ func TestS6aProxyService(t *testing.T) {
 		// ULR
 		ulResp, err := c.UpdateLocation(context.Background(), ulReq)
 		if err != nil {
-			t.Fatalf("GRPC ULR Error: %v", err)
 			complChan <- err
+			t.Fatalf("GRPC ULR Error: %v", err)
 			return
 		}
 		t.Logf("GRPC ULA: %#+v", *ulResp)
@@ -105,8 +110,9 @@ func TestS6aProxyService(t *testing.T) {
 			t.Errorf("Unexpected AIA Error Code: %d", r.ErrorCode)
 		}
 		complChan <- nil
+		t.Logf("Test Routine ID: %d -- END", id)
 	}
-	go testLoopF()
+	go testLoopF(-1)
 
 	select {
 	case testErr := <-complChan:
@@ -121,13 +127,17 @@ func TestS6aProxyService(t *testing.T) {
 	// return
 
 	for round := 0; round < TEST_LOOPS; round++ {
-		go testLoopF()
+		go testLoopF(round)
 	}
 	for round := 0; round < TEST_LOOPS; round++ {
-		testErr := <-complChan
-		if testErr != nil {
-			t.Fatal(err)
-			return
+		select {
+		case testErr := <-complChan:
+			if testErr != nil {
+				t.Fatal(err)
+				return
+			}
+		case <-time.After(time.Second * 20):
+			t.Fatalf("TestS6aProxyService Timed out @ round %d", round)
 		}
 	}
 }

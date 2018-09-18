@@ -68,7 +68,7 @@ func newLocalListener(network string) net.Listener {
 	if len(network) == 0 {
 		network = "tcp"
 	}
-	l, err := diam.Listen(network, "127.0.0.1:0")
+	l, err := diam.MultistreamListen(network, "127.0.0.1:0")
 	if err != nil {
 		switch network {
 		case "sctp":
@@ -78,7 +78,7 @@ func newLocalListener(network string) net.Listener {
 		default:
 			panic(fmt.Sprintf("diamtest: failed to listen on network %s: %v", network, err))
 		}
-		if l, err = diam.Listen(network, "[::1]:0"); err != nil {
+		if l, err = diam.MultistreamListen(network, "[::1]:0"); err != nil {
 			panic(fmt.Sprintf("diamtest: failed to listen on a port: %v", err))
 		}
 	}

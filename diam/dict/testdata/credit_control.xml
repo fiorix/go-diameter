@@ -35,6 +35,7 @@
 				<rule avp="User-Equipment-Info" required="false" max="1"/>
 				<rule avp="Proxy-Info" required="false" max="1"/>
 				<rule avp="Route-Record" required="false" max="1"/>
+				<rule avp="Service-Information" required="false" max="1"/>
 			</request>
 			<answer>
 				<!-- http://tools.ietf.org/html/rfc4006#section-3.2 -->

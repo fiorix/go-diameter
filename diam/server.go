@@ -33,15 +33,16 @@ type Handler interface {
 
 // Conn interface is used by a handler to send diameter messages.
 type Conn interface {
-	Write(b []byte) (int, error)    // Writes a msg to the connection
-	Close()                         // Close the connection
-	LocalAddr() net.Addr            // Returns the local IP
-	RemoteAddr() net.Addr           // Returns the remote IP
-	TLS() *tls.ConnectionState      // TLS or nil when not using TLS
-	Dictionary() *dict.Parser       // Dictionary parser of the connection
-	Context() context.Context       // Returns the internal context
-	SetContext(ctx context.Context) // Stores a new context
-	Connection() net.Conn           // Returns network connection
+	Write(b []byte) (int, error)                    // Writes a msg to the connection
+	WriteStream(b []byte, stream uint) (int, error) // Writes a msg to the connection's stream
+	Close()                                         // Close the connection
+	LocalAddr() net.Addr                            // Returns the local IP
+	RemoteAddr() net.Addr                           // Returns the remote IP
+	TLS() *tls.ConnectionState                      // TLS or nil when not using TLS
+	Dictionary() *dict.Parser                       // Dictionary parser of the connection
+	Context() context.Context                       // Returns the internal context
+	SetContext(ctx context.Context)                 // Stores a new context
+	Connection() net.Conn                           // Returns network connection
 }
 
 // The CloseNotifier interface is implemented by Conns which
@@ -96,24 +97,33 @@ func (c *conn) closeNotify() <-chan struct{} {
 	defer c.mu.Unlock()
 	if c.closeNotifyc == nil {
 		c.closeNotifyc = make(chan struct{})
-		pr, pw := io.Pipe()
-		c.sr.Lock()
-		readSource := c.sr.r
-		c.sr.pr = pr
-		// Create closeNotifier pipe copy routine, but do not start it here
-		// If we start it immediately, pipe Write can block indefinitely if we are already in
-		// liveSwitchReader.Read() with original sr.r since Pipe.Write blocks in absence of corresponding
-		// pipe reader
-		// We should only swap the reader outside of r.Read call
-		c.sr.pipeCopyF = func() {
-			_, err := io.Copy(pw, readSource)
-			if err == nil {
-				err = io.EOF
+
+		if msc, isMulti := c.rwc.(MultistreamConn); isMulti {
+			// MultistreamConn provides it's own error handler
+			msc.SetErrorHandler(func(mc MultistreamConn, err error) {
+				mc.Close()
+				c.notifyClientGone()
+			})
+		} else {
+			pr, pw := io.Pipe()
+			c.sr.Lock()
+			readSource := c.sr.r
+			c.sr.pr = pr
+			// Create closeNotifier pipe copy routine, but do not start it here
+			// If we start it immediately, pipe Write can block indefinitely if we are already in
+			// liveSwitchReader.Read() with original sr.r since Pipe.Write blocks in absence of corresponding
+			// pipe reader
+			// We should only swap the reader outside of r.Read call
+			c.sr.pipeCopyF = func() {
+				_, err := io.Copy(pw, readSource)
+				if err == nil {
+					err = io.EOF
+				}
+				pw.CloseWithError(err)
+				c.notifyClientGone()
 			}
-			pw.CloseWithError(err)
-			c.notifyClientGone()
+			c.sr.Unlock()
 		}
-		c.sr.Unlock()
 	}
 	return c.closeNotifyc
 }
@@ -129,22 +139,36 @@ func (c *conn) notifyClientGone() {
 
 // Create new connection from rwc.
 func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
-	c = &conn{
-		server: srv,
-		rwc:    rwc,
-		sr:     liveSwitchReader{r: rwc},
+	msc, isMulti := rwc.(MultistreamConn)
+	if isMulti {
+		c = &conn{
+			server: srv,
+			rwc:    msc,
+		}
+	} else {
+		c = &conn{
+			server: srv,
+			rwc:    rwc,
+			sr:     liveSwitchReader{r: rwc},
+		}
+		c.buf = bufio.NewReadWriter(bufio.NewReader(&c.sr), bufio.NewWriter(rwc))
 	}
-	c.buf = bufio.NewReadWriter(bufio.NewReader(&c.sr), bufio.NewWriter(rwc))
 	c.writer = &response{conn: c}
 	return c, nil
 }
 
 // Read next message from connection.
-func (c *conn) readMessage() (*Message, error) {
+func (c *conn) readMessage() (m *Message, err error) {
 	if c.server.ReadTimeout > 0 {
 		c.rwc.SetReadDeadline(time.Now().Add(c.server.ReadTimeout))
 	}
-	m, err := ReadMessage(c.buf.Reader, c.dictionary())
+	if msc, isMulti := c.rwc.(MultistreamConn); isMulti {
+		// If it's a multi-stream association - reset the stream to "undefined" prior to reading next message
+		msc.ResetCurrentStream()
+		m, err = ReadMessage(msc, c.dictionary()) // MultistreamConn has it's own buffering
+	} else {
+		m, err = ReadMessage(c.buf.Reader, c.dictionary())
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -215,6 +239,10 @@ func (w *response) Write(b []byte) (int, error) {
 	if w.conn.server.WriteTimeout > 0 {
 		w.conn.rwc.SetWriteDeadline(time.Now().Add(w.conn.server.WriteTimeout))
 	}
+	msc, isMulti := w.conn.rwc.(MultistreamConn) // Note - SetWriteDeadline is not currently supported for SCTP
+	if isMulti {                                 // don't use buffered writer for muti-streamming writes it'll mix up streams
+		return msc.Write(b)
+	}
 	n, err := w.conn.buf.Writer.Write(b)
 	if err != nil {
 		return 0, err
@@ -223,6 +251,39 @@ func (w *response) Write(b []byte) (int, error) {
 		return 0, err
 	}
 	return n, nil
+}
+
+// WriteStream of MultistreamWriter interface
+func (w *response) WriteStream(b []byte, stream uint) (int, error) {
+	// TODO - SetWriteDeadline is not currently supported
+	if msc, isMulti := w.conn.rwc.(MultistreamConn); isMulti {
+		// don't use buffered writer for muti-streamming writes it'll mix up streams
+		return msc.WriteStream(b, stream)
+	}
+	return w.Write(b)
+}
+
+// CurrentWriterStream of MultistreamWriter interface
+func (w *response) CurrentWriterStream() uint {
+	if msc, isMulti := w.conn.rwc.(MultistreamConn); isMulti {
+		return msc.CurrentWriterStream()
+	}
+	return 0
+}
+
+// ResetWriterStream of MultistreamWriter interface
+func (w *response) ResetWriterStream() {
+	if msc, isMulti := w.conn.rwc.(MultistreamConn); isMulti {
+		msc.CurrentWriterStream()
+	}
+}
+
+// SetWriterStream of MultistreamWriter interface
+func (w *response) SetWriterStream(stream uint) uint {
+	if msc, isMulti := w.conn.rwc.(MultistreamConn); isMulti {
+		return msc.SetWriterStream(stream)
+	}
+	return 0
 }
 
 // Close closes the connection.
@@ -535,7 +596,7 @@ func (srv *Server) ListenAndServe() error {
 	if len(addr) == 0 {
 		addr = ":3868"
 	}
-	l, e := Listen(network, addr)
+	l, e := MultistreamListen(network, addr)
 	if e != nil {
 		return e
 	}

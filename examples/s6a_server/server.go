@@ -108,7 +108,7 @@ func handleAIR(settings sm.Settings) diam.HandlerFunc {
 		RequestedEUTRANAuthInfo RequestedEUTRANAuthInfo   `avp:"Requested-EUTRAN-Authentication-Info"`
 	}
 	return func(c diam.Conn, m *diam.Message) {
-		var err error = nil
+		var err error
 		var req AIR
 		var code uint32
 

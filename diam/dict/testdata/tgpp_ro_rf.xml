@@ -2445,5 +2445,21 @@
 			<data type="Address"/>
 		</avp>
 
+    <avp name="Supported-Features" code="628" vendor-id="10415" must="V" may="M" may-encrypt="N">
+      <data type="Grouped">
+        <rule avp="Vendor-Id" required="true" max="1"/>
+        <rule avp="Feature-List-ID" required="true" max="1"/>
+        <rule avp="Feature-List" required="true" max="1"/>
+      </data>
+    </avp>
+
+    <avp name="Feature-List-ID" code="629" must="V" must_not="M" may-encrypt="N" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="Feature-List" code="630" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
 	</application>
 </diameter>

@@ -3,7 +3,10 @@
 package service
 
 import (
+	"fmt"
 	"log"
+	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/fiorix/go-diameter/diam"
@@ -28,6 +31,12 @@ func (s *s6aProxy) sendAIR(sid string, req *protos.AuthenticationInformationRequ
 	var irp uint32
 	if req.ImmediateResponsePreferred {
 		irp = 1
+	}
+	// randomize stream of first message and append it to SID to test SCTP multi-streaming support
+	stream := uint(rand.Int31n(diam.MaxOutboundSCTPStreams - 2))
+	sid = fmt.Sprintf("%s;stream:%d", sid, stream)
+	for i := stream; i > 0; i-- {
+		sid += " " // variable len
 	}
 	m := diam.NewRequest(diam.AuthenticationInformation, diam.TGPP_S6A_APP_ID, dict.Default)
 	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
@@ -56,11 +65,31 @@ func (s *s6aProxy) sendAIR(sid string, req *protos.AuthenticationInformationRequ
 	}
 	m.NewAVP(avp.RequestedEUTRANAuthenticationInfo, avp.Vbit|avp.Mbit, VENDOR_3GPP, authInfo)
 
-	_, err := m.WriteTo(c)
-	if err != nil {
-		err = Error(codes.DataLoss, err)
+	writer, isMulti := c.Connection().(diam.MultistreamWriter)
+	if !isMulti {
+		panic("Must be *diam.SCTPConn...")
 	}
-	return err
+	// randomize stream of first message to test SCTP multistreaming support
+	// and send the AIR in two pieces to simulate message fragmentation
+	mBytes, err := m.Serialize()
+	if err != err {
+		return Error(codes.DataLoss, err)
+	}
+	l2 := len(mBytes) / 2
+	// Don't allow simultaneous sends on the same stream, take stream scoped lock
+	s.airSendLocks[stream].Lock()
+	defer s.airSendLocks[stream].Unlock()
+
+	_, err = writer.WriteStream(mBytes[:l2], stream)
+	if err != nil {
+		return Error(codes.DataLoss, err)
+	}
+	time.Sleep(time.Millisecond * 3)
+	_, err = writer.WriteStream(mBytes[l2:], stream)
+	if err != nil {
+		return Error(codes.DataLoss, err)
+	}
+	return nil
 }
 
 // S6a AIA
@@ -74,14 +103,31 @@ func handleAIA(s *s6aProxy) diam.HandlerFunc {
 			return
 		}
 		s.sessionsMu.Lock()
-		ch, ok := s.sessions[aia.SessionID]
+
+		var msgStream uint
+		idx := strings.LastIndex(aia.SessionID, ";stream:")
+		sid := aia.SessionID[0:idx]
+		if _, err = fmt.Sscanf(aia.SessionID[idx:], ";stream:%d", &msgStream); err != nil {
+			panic(err)
+		}
+		ch, ok := s.sessions[sid]
 		if ok {
-			delete(s.sessions, aia.SessionID)
+			msc := c.Connection().(diam.MultistreamConn)
+			stream := msc.CurrentStream()
+			// Current diam.Server implementation reads & handles messages from a single thread/routine,
+			// so - the receiver stream should not change until the message is handled. The test server should also
+			// send responses on the the requests' streams
+			if stream != msgStream {
+				panic(
+					fmt.Sprintf("STREAM %d From SessionID %q != conn stream %d; Conn: %+v\n",
+						msgStream, aia.SessionID, stream, msc))
+			}
+			delete(s.sessions, sid)
 			s.sessionsMu.Unlock()
 			ch <- &aia
 		} else {
 			s.sessionsMu.Unlock()
-			log.Printf("AIA SessionID %s not found. Message: %s, Remote: %s", aia.SessionID, m, c.RemoteAddr())
+			log.Printf("AIA SessionID %q (%q) not found. Message: %q, Remote: %q", aia.SessionID, sid, m, c.RemoteAddr())
 		}
 	}
 }

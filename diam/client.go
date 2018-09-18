@@ -77,7 +77,7 @@ func dial(srv *Server, timeout time.Duration) (Conn, error) {
 	}
 	var rw net.Conn
 	var err error
-	dialer := getDialer(network, timeout, srv.LocalAddr)
+	dialer := getMultistreamDialer(network, timeout, srv.LocalAddr)
 	rw, err = dialer.Dial(network, addr)
 	if err != nil {
 		return nil, err

@@ -51,6 +51,7 @@ type Client struct {
 	RetransmitInterval          time.Duration // Interval between retransmissions (default 1s)
 	EnableWatchdog              bool          // Enable automatic DWR
 	WatchdogInterval            time.Duration // Interval between DWRs (default 5s)
+	WatchdogStream              uint          // Stream to send DWR on (for multistreaming protocols), default is 0
 	SupportedVendorID           []*diam.AVP   // Supported vendor ID
 	AcctApplicationID           []*diam.AVP   // Acct applications
 	AuthApplicationID           []*diam.AVP   // Auth applications
@@ -290,7 +291,7 @@ func (cli *Client) watchdog(c diam.Conn, dwac chan struct{}) {
 func (cli *Client) dwr(c diam.Conn, osid uint32, dwac chan struct{}) {
 	m := cli.makeDWR(osid)
 	for i := 0; i < (int(cli.MaxRetransmits) + 1); i++ {
-		_, err := m.WriteTo(c)
+		_, err := m.WriteToStream(c, cli.WatchdogStream)
 		if err != nil {
 			return
 		}

@@ -1085,6 +1085,13 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
             </data>
         </avp>
 
+		<avp name="Charging-Rule-Remove" code="1002" must="V,M" may="P" must-not="-" may-encrypt="Y" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="Charging-Rule-Name" required="false"/>
+                <rule avp="Charging-Rule-Base-Name" required="false"/>
+            </data>
+        </avp>
+
         <avp name="Charging-Rule-Definition" code="1003" must="M,V" may="P" may-encrypt="Y" vendor-id="10415">
             <!-- 3GPP 29.212 -->
             <data type="Grouped">
@@ -2177,7 +2184,7 @@ var networkaccessserverXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<!-- http://tools.ietf.org/html/rfc7155#section-4.6.11 -->
 			<data type="Unsigned32"/>
 		</avp>
-		
+
 	</application>
 </diameter>`
 

@@ -51,18 +51,21 @@ func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, 
 // DecodeFromBytes decodes the bytes of a Diameter AVP.
 // It uses the given application id and dictionary for decoding the bytes.
 func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.Parser) error {
-	dl := len(data)
-	if dl < 8 {
-		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", dl)
+	if len(data) < 8 {
+		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", len(data))
 	}
 	a.Code = binary.BigEndian.Uint32(data[0:4])
 	a.Flags = data[4]
 	a.Length = int(uint24to32(data[5:8]))
-	if dl < a.Length || a.Length < 12 {
+	if len(data) < a.Length {
 		return fmt.Errorf("Not enough data to decode AVP: %d != %d",
-			dl, a.Length)
+			len(data), a.Length)
 	}
 	data = data[:a.Length] // this cuts padded bytes off
+	if len(data) < 8 {
+		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", len(data))
+	}
+
 	var hdrLength int
 	var payload []byte
 	// Read VendorId when required.

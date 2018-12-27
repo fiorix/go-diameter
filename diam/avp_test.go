@@ -55,9 +55,9 @@ var testAVP = [][]byte{ // Body of a CER message
 
 func TestNewAVP(t *testing.T) {
 	a := NewAVP(
-		avp.OriginHost, // Code
-		avp.Mbit,       // Flags
-		0,              // Vendor
+		avp.OriginHost,                      // Code
+		avp.Mbit,                            // Flags
+		0,                                   // Vendor
 		datatype.DiameterIdentity("foobar"), // Data
 	)
 	if a.Length != 14 { // Length in the AVP header

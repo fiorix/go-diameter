@@ -5,9 +5,6 @@
 package sm
 
 import (
-	"fmt"
-	"net"
-
 	"github.com/fiorix/go-diameter/diam"
 	"github.com/fiorix/go-diameter/diam/avp"
 	"github.com/fiorix/go-diameter/diam/datatype"
@@ -66,15 +63,17 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 // an unsupported (acct/auth) application, and includes the AVP that
 // caused the failure in the message.
 func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, errMessage error) error {
-	var hostAddresses []datatype.Address
+	var (
+		hostAddresses []datatype.Address
+		err           error
+	)
 	if len(sm.cfg.HostIPAddresses) > 0 {
 		hostAddresses = sm.cfg.HostIPAddresses
 	} else {
-		hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
+		hostAddresses, err = getLocalAddresses(c)
 		if err != nil {
-			return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
+			return err
 		}
-		hostAddresses = []datatype.Address{datatype.Address(net.ParseIP(hostIP))}
 	}
 
 	var a *diam.Message
@@ -100,22 +99,24 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
 	}
-	_, err := a.WriteTo(c)
+	_, err = a.WriteTo(c)
 	return err
 }
 
 // successCEA sends a success answer indicating that the CER was successfully
 // parsed and accepted by the server.
 func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER) error {
-	var hostAddresses []datatype.Address
+	var (
+		hostAddresses []datatype.Address
+		err           error
+	)
 	if len(sm.cfg.HostIPAddresses) > 0 {
 		hostAddresses = sm.cfg.HostIPAddresses
 	} else {
-		hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
+		hostAddresses, err = getLocalAddresses(c)
 		if err != nil {
-			return fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
+			return err
 		}
-		hostAddresses = []datatype.Address{datatype.Address(net.ParseIP(hostIP))}
 	}
 
 	a := m.Answer(diam.Success)
@@ -152,6 +153,6 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
 	}
-	_, err := a.WriteTo(c)
+	_, err = a.WriteTo(c)
 	return err
 }

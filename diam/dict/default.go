@@ -1064,7 +1064,7 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="TGPP-Selection-Mode" required="false" max="1"/>
                 <rule avp="QoS-Information" required="false" max="1"/>
                 <rule avp="TGPP-SGSN-MCC-MNC" required="false" max="1"/>
-                <rule avp="TGPP-User-Location-Info" required="false" max="1"/> 
+                <rule avp="TGPP-User-Location-Info" required="false" max="1"/>
             </request>
             <answer>
                 <!-- 3GPP 29.212 Section 5.6.3 -->
@@ -1079,6 +1079,7 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Route-Record" required="false" max="1"/>
                 <rule avp="Failed-AVP" required="false" max="1"/>
                 <rule avp="Charging-Rule-Install" required="false"/>
+                <rule avp="Charging-Rule-Remove" required="false"/>
                 <rule avp="Usage-Monitoring-Information" required="false"/>
                 <rule avp="Event-Trigger" required="false"/>
             </answer>
@@ -1103,9 +1104,11 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
         </avp>
 
 		<avp name="Charging-Rule-Remove" code="1002" must="V,M" may="P" must-not="-" may-encrypt="Y" vendor-id="10415">
+            <!-- 3GPP 29.212 Section 5.3.3 -->
             <data type="Grouped">
                 <rule avp="Charging-Rule-Name" required="false"/>
                 <rule avp="Charging-Rule-Base-Name" required="false"/>
+                <!-- *[ AVP ]-->
             </data>
         </avp>
 
@@ -1159,11 +1162,12 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <item code="23" name="RESOURCE_MODIFICATION_REQUEST"/>
                 <item code="24" name="PGW_TRACE_CONTROL"/>
                 <item code="25" name="UE_TIME_ZONE_CHANGE"/>
-                <item code="26" name="USAGE_REPORT"/>
-                <item code="27" name="TAI_CHANGE"/>
-                <item code="28" name="ECGI_CHANGE"/>
-                <item code="29" name="CHARGING_CORRELATION_EXCHANGE"/>
+                <item code="26" name="TAI_CHANGE"/>
+                <item code="27" name="ECGI_CHANGE"/>
+                <item code="28" name="CHARGING_CORRELATION_EXCHANGE"/>
+                <item code="29" name="APN-AMBR_MODIFICATION_FAILURE"/>
                 <item code="30" name="USER_CSG_INFORMATION_CHANGE"/>
+                <item code="33" name="USAGE_REPORT"/>
             </data>
         </avp>
 
@@ -3927,6 +3931,8 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<item code="66" name="QCI_66"/>
 				<item code="69" name="QCI_69"/>
 				<item code="70" name="QCI_70"/>
+				<item code="75" name="QCI_75"/>
+				<item code="79" name="QCI_79"/>
 			</data>
 		</avp>
 
@@ -4792,6 +4798,14 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
     </avp>
 
     <avp name="Feature-List" code="630" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="APN-Aggregate-Max-Bitrate-DL" code="1040" must="V" must-not="M" may-encrypt="Y" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="APN-Aggregate-Max-Bitrate-UL" code="1041" must="V" must-not="M" may-encrypt="Y" vendor-id="10415">
       <data type="Unsigned32"/>
     </avp>
 

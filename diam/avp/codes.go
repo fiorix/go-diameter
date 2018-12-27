@@ -13,6 +13,8 @@ const (
 	AFCorrelationInformation                   = 1276
 	AMBR                                       = 1435
 	ANGWAddress                                = 1050
+	APNAggregateMaxBitrateDL                   = 1040
+	APNAggregateMaxBitrateUL                   = 1041
 	APNConfiguration                           = 1430
 	APNConfigurationProfile                    = 1429
 	APNOIReplacement                           = 1427
@@ -140,6 +142,7 @@ const (
 	ChargingRuleDefinition                     = 1003
 	ChargingRuleInstall                        = 1001
 	ChargingRuleName                           = 1005
+	ChargingRuleRemove                         = 1002
 	CheckBalanceResult                         = 422
 	Class                                      = 25
 	ClassIdentifier                            = 1214

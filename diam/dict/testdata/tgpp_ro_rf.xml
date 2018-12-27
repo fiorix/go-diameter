@@ -1593,6 +1593,8 @@
 				<item code="66" name="QCI_66"/>
 				<item code="69" name="QCI_69"/>
 				<item code="70" name="QCI_70"/>
+				<item code="75" name="QCI_75"/>
+				<item code="79" name="QCI_79"/>
 			</data>
 		</avp>
 
@@ -2458,6 +2460,14 @@
     </avp>
 
     <avp name="Feature-List" code="630" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="APN-Aggregate-Max-Bitrate-DL" code="1040" must="V" must-not="M" may-encrypt="Y" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="APN-Aggregate-Max-Bitrate-UL" code="1041" must="V" must-not="M" may-encrypt="Y" vendor-id="10415">
       <data type="Unsigned32"/>
     </avp>
 

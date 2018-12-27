@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/fiorix/go-diameter/diam"
@@ -187,15 +188,17 @@ func (cli *Client) validate() error {
 }
 
 func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
-	var hostAddresses []datatype.Address
+	var (
+		hostAddresses []datatype.Address
+		err           error
+	)
 	if len(cli.Handler.cfg.HostIPAddresses) > 0 {
 		hostAddresses = cli.Handler.cfg.HostIPAddresses
 	} else {
-		hostIP, _, err := net.SplitHostPort(c.LocalAddr().String())
+		hostAddresses, err = getLocalAddresses(c)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse own ip %q: %s", c.LocalAddr(), err)
+			return nil, err
 		}
-		hostAddresses = []datatype.Address{datatype.Address(net.ParseIP(hostIP))}
 	}
 
 	m := cli.makeCER(hostAddresses)
@@ -216,12 +219,14 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 	for i := 0; i < (int(cli.MaxRetransmits) + 1); i++ {
 		_, err := m.WriteTo(c)
 		if err != nil {
+			c.Close()
 			return nil, err
 		}
 		select {
-		case err := <-errc: // Wait for CEA.
-			if err != nil {
+		case err, ok := <-errc: // Wait for CEA.
+			if ok && err != nil {
 				close(errc)
+				c.Close()
 				return nil, err
 			}
 			if cli.EnableWatchdog {
@@ -311,4 +316,20 @@ func (cli *Client) makeDWR(osid uint32) *diam.Message {
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cli.Handler.cfg.OriginRealm)
 	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(osid))
 	return m
+}
+
+func getLocalAddresses(c diam.Conn) ([]datatype.Address, error) {
+	addr, _, err := net.SplitHostPort(c.LocalAddr().String())
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse local ip %q: %s", c.LocalAddr(), err)
+	}
+	hostIPs := strings.Split(addr, "/")
+	addresses := make([]datatype.Address, 0, len(hostIPs))
+	for _, ipStr := range hostIPs {
+		ip := net.ParseIP(ipStr)
+		if ip != nil {
+			addresses = append(addresses, datatype.Address(ip))
+		}
+	}
+	return addresses, nil
 }

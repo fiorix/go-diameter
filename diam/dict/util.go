@@ -20,7 +20,7 @@ import (
 var parentAppIds map[uint32]uint32 = map[uint32]uint32{
 	4:        1,
 	16777251: 4,         // S6 -> Cc
-	16777236: 16777228,  // Rx -> Gx
+	16777236: 16777238,  // Rx -> Gx
 	16777238: 16777222,  // Gx -> Gq
 	16777222: 4,         // Gq -> Cc
 }

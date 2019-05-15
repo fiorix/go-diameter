@@ -218,6 +218,9 @@ const (
 	FlowDirection                              = 1080
 	FlowInformation                            = 1058
 	FlowLabel                                  = 1057
+	FlowNumber                                 = 509
+	FlowStatus                                 = 511
+	FlowUsage                                  = 512
 	Flows                                      = 510
 	ForwardingPending                          = 3415
 	FramedAppletalkLink                        = 37
@@ -246,6 +249,7 @@ const (
 	GSUPoolIdentifier                          = 453
 	GSUPoolReference                           = 457
 	GrantedServiceUnit                         = 431
+	GuaranteedBitrateDL                        = 1025
 	GuaranteedBitrateUL                        = 1026
 	HPLMNODB                                   = 1418
 	HomogeneousSupportofIMSVoiceOverPSSessions = 1493
@@ -322,6 +326,8 @@ const (
 	MBMSUserServiceType                        = 1225
 	MDTConfiguration                           = 1622
 	MDTUserConsent                             = 1634
+	MediaComponentDescription                  = 517
+	MediaSubComponent                          = 519
 	MIP6AgentInfo                              = 486
 	MIP6HomeLinkPrefix                         = 125
 	MIPHomeAgentAddress                        = 334

@@ -2959,6 +2959,10 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<data type="Address"/>
 		</avp>
 
+		<avp name="Guaranteed-Bitrate-DL" code="1025" must="V,M" may="P" must-not="-" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
 		<avp name="Guaranteed-Bitrate-UL" code="1026" must="V,M" may="P" must-not="-" may-encrypt="Y" vendor-id="10415">
 			<data type="Unsigned32"/>
 		</avp>

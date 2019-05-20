@@ -9,6 +9,7 @@ package avp
 // Diameter AVP types.
 const (
 	ADCRuleBaseName                            = 1095
+	AFApplicationIdentifier                    = 504
 	AFChargingIdentifier                       = 505
 	AFCorrelationInformation                   = 1276
 	AMBR                                       = 1435

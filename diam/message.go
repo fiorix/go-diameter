@@ -482,6 +482,25 @@ func (m *Message) FindAVPsWithPath(path []interface{}, vendorID uint32) ([]*AVP,
 // Answer creates an answer for the current Message with an embedded
 // Result-Code AVP.
 func (m *Message) Answer(resultCode uint32) *Message {
+	nm := m.answer()
+	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
+	return nm
+}
+
+// ExperimentalAnswer creates an answer for the current Message with
+// the Experimental-Result grouped AVP instead of the Result-Code AVP.
+func (m *Message) ExperimentalAnswer(resultCode, vendorID uint32) *Message {
+	nm := m.answer()
+	nm.NewAVP(avp.ExperimentalResult, avp.Mbit, 0, &GroupedAVP{
+		AVP: []*AVP{
+			NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(vendorID)),
+			NewAVP(avp.ExperimentalResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode)),
+		},
+	})
+	return nm
+}
+
+func (m *Message) answer() *Message {
 	nm := NewMessage(
 		m.Header.CommandCode,
 		m.Header.CommandFlags&^RequestFlag, // Reset the Request bit.
@@ -490,7 +509,6 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.EndToEndID,
 		m.Dictionary(),
 	)
-	nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
 	nm.stream = m.stream
 	return nm
 }

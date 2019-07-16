@@ -480,7 +480,7 @@ func (m *Message) FindAVPsWithPath(path []interface{}, vendorID uint32) ([]*AVP,
 }
 
 // Answer creates an answer for the current Message
-// with optinal ResultCode
+// with optinal ResultCode AVP
 func (m *Message) Answer(resultCode uint32) *Message {
 	nm := NewMessage(
 		m.Header.CommandCode,

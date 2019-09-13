@@ -31,6 +31,8 @@ type Message struct {
 	Header *Header
 	AVP    []*AVP // AVPs in this message.
 
+	Bytes	[]byte  // Bytes in the message
+
 	// dictionary parser object used to encode and decode AVPs.
 	dictionary *dict.Parser
 	stream     uint // the stream this message was received on (if any)
@@ -107,6 +109,7 @@ func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command,
 	if err != nil {
 		return nil, stream, err
 	}
+	m.Bytes = append(m.Bytes, b...)
 	return cmd, stream, nil
 }
 
@@ -135,6 +138,7 @@ func (m *Message) readBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, st
 	if err = m.decodeAVPs(b); err != nil {
 		return err
 	}
+	m.Bytes = append(m.Bytes, b...)
 	return nil
 }
 

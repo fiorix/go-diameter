@@ -25,6 +25,8 @@ const (
 	ServerAssignment          = 301
 	SessionTermination        = 275
 	UpdateLocation            = 316
+	InsertSubscriberData      = 319
+	DeleteSubscriberData      = 320
 )
 
 // Short Command Names
@@ -63,4 +65,8 @@ const (
 	STR = "STR"
 	ULA = "ULA"
 	ULR = "ULR"
+	ISR = "ISR"
+	ISA = "ISA"
+	DSR = "DSR"
+	DSA = "DSA"
 )

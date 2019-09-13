@@ -11,8 +11,8 @@ import (
 
 func TestApps(t *testing.T) {
 	apps := Default.Apps()
-	if len(apps) != 7 {
-		t.Fatalf("Unexpected # of apps. Want 7, have %d", len(apps))
+	if len(apps) != 8 {
+		t.Fatalf("Unexpected # of apps. Want 8, have %d", len(apps))
 	}
 	// Base protocol.
 	if apps[0].ID != 0 {
@@ -37,6 +37,9 @@ func TestApps(t *testing.T) {
 	// 3GPP S6a applications
 	if apps[6].ID != 16777251 {
 		t.Fatalf("Unexpected app.ID. Want 16777251, have %d", apps[6].ID)
+	}
+	if apps[7].ID != 16777265 {
+		t.Fatalf("Unexpected app.ID. Want 16777265, have %d", apps[7].ID)
 	}
 }
 

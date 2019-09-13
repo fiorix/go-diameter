@@ -14,6 +14,7 @@ const (
 	AFCorrelationInformation                   = 1276
 	AMBR                                       = 1435
 	ANGWAddress                                = 1050
+	ANID                                       = 1504
 	APNAggregateMaxBitrateDL                   = 1040
 	APNAggregateMaxBitrateUL                   = 1041
 	APNConfiguration                           = 1430
@@ -330,6 +331,7 @@ const (
 	MediaComponentDescription                  = 517
 	MediaSubComponent                          = 519
 	MIP6AgentInfo                              = 486
+	MIP6FeatureVector                          = 124
 	MIP6HomeLinkPrefix                         = 125
 	MIPHomeAgentAddress                        = 334
 	MIPHomeAgentHost                           = 348
@@ -374,6 +376,9 @@ const (
 	NextTariff                                 = 2057
 	NodeFunctionality                          = 862
 	NodeID                                     = 2064
+	Non3GPPIPAccess                            = 1501
+	Non3GPPIPAccessAPN                         = 1502
+	Non3GPPUserData                            = 1500
 	NotificationToUEUser                       = 1478
 	NumberOfDiversions                         = 2034
 	NumberOfMessagesSent                       = 2019
@@ -513,6 +518,7 @@ const (
 	RestrictionFilterRule                      = 438
 	ResultCode                                 = 268
 	ResynchronizationInfo                      = 1411
+	RevalidationTime                           = 1042
 	RoamingRestrictedDueToUnsupportedFeature   = 1457
 	RoleOfNode                                 = 829
 	RouteHeaderReceived                        = 3403
@@ -532,7 +538,13 @@ const (
 	SGSNNumber                                 = 1489
 	SGWAddress                                 = 2067
 	SGWChange                                  = 2065
+	SIPAuthDataItem                            = 612
+	SIPAuthenticate                            = 609
+	SIPAuthenticationScheme                    = 608
+	SIPAuthorization                           = 610
+	SIPItemNumber                              = 613
 	SIPMethod                                  = 824
+	SIPNumberAuthItems                         = 607
 	SIPRequestTimestamp                        = 834
 	SIPRequestTimestampFraction                = 2301
 	SIPResponseTimestamp                       = 835
@@ -558,6 +570,7 @@ const (
 	ScaleFactor                                = 2059
 	SecurityParameterIndex                     = 1056
 	ServedPartyIPAddress                       = 848
+	ServerAssignmentType                       = 614
 	ServerCapabilities                         = 603
 	ServerName                                 = 602
 	ServiceContextID                           = 461
@@ -604,6 +617,9 @@ const (
 	SupportedVendorID                          = 265
 	TADIdentifier                              = 2717
 	TDFIPAddress                               = 1091
+	TFTFilter                                  = 1012
+	TFTPacketFilterInformation                 = 1013
+	TGPPAAAServerName                          = 318
 	TGPPChargingCharacteristics                = 13
 	TGPPChargingID                             = 2
 	TGPPGGSNAddress                            = 7
@@ -650,6 +666,7 @@ const (
 	TraceData                                  = 1458
 	TraceDepth                                 = 1462
 	TraceEventList                             = 1465
+	TraceInfo                                  = 1505
 	TraceInterfaceList                         = 1464
 	TraceNETypeList                            = 1463
 	TraceReference                             = 1459

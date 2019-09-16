@@ -19,12 +19,12 @@ func init() {
 	var dictionaries = []struct{ name, xml string }{
 		{"Base", baseXML},
 		{"Credit Control", creditcontrolXML},
-		{"Accounting Control", accountingcontrolXML},
 		{"Gx Charging Control", gxcreditcontrolXML},
 		{"Network Access Server", networkaccessserverXML},
 		{"TGPP", tgpprorfXML},
 		{"TGPP_S6a", tgpps6aXML},
 		{"TGPP_Swx", tgppswxXML},
+		{"Accounting Control", accountingcontrolXML},
 	}
 	var err error
 	Default, err = NewParser()

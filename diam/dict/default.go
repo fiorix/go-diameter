@@ -6107,7 +6107,7 @@ var tgppswxXML = `<?xml version="1.0" encoding="UTF-8"?>
         </avp>
 
         <!-- RFC 5447 Diameter Mobile IPv6: Support for Network Access Server to Diameter Server Interaction -->
-        <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
+        <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="0">
             <data type="Grouped">
                 <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
                 <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>

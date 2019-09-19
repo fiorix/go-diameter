@@ -5874,7 +5874,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </data>
         </avp>
 
-        <avp name="MIP-Home-Agent-Address" code="334" must="M" must-not="V" vendor-id="10415">
+        <avp name="MIP-Home-Agent-Address" code="334" must="M" must-not="V" vendor-id="0">
             <data type="Address"/>
         </avp>
 

@@ -58,12 +58,12 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	a.Flags = data[4]
 	a.Length = int(uint24to32(data[5:8]))
 	if len(data) < a.Length {
-		return fmt.Errorf("Not enough data to decode AVP: %d != %d",
-			len(data), a.Length)
+ 		return fmt.Errorf("Not enough data to decode AVP(%d): %d != %d",
+ 			a.Code, len(data), a.Length)
 	}
 	data = data[:a.Length] // this cuts padded bytes off
 	if len(data) < 8 {
-		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", len(data))
+		return fmt.Errorf("Not enough data to decode AVP(%d) header: %d bytes", a.Code, len(data))
 	}
 
 	var hdrLength int

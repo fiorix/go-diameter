@@ -480,7 +480,7 @@ func (m *Message) FindAVPsWithPath(path []interface{}, vendorID uint32) ([]*AVP,
 }
 
 // Answer creates an answer for the current Message
-// with optinal ResultCode AVP
+// with mandatory ResultCode AVP
 func (m *Message) Answer(resultCode uint32) *Message {
 	nm := NewMessage(
 		m.Header.CommandCode,
@@ -490,9 +490,9 @@ func (m *Message) Answer(resultCode uint32) *Message {
 		m.Header.EndToEndID,
 		m.Dictionary(),
 	)
-	if resultCode != 0 {
+//	if resultCode != 0 {
 		nm.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode))
-	}
+//	}
 	nm.stream = m.stream
 	return nm
 }
@@ -527,7 +527,8 @@ func (m *Message) String() string {
 		); err != nil {
 			fmt.Fprintf(&b, "\tUnknown %s (%s)\n", a, err)
 		} else if a.Data.Type() == GroupedAVPType {
-			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, a, 1))
+//			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, a, 1))
+ 			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, printGrouped("\t", m, a, 2)) // level 2 for first grouped
 		} else {
 			fmt.Fprintf(&b, "\t%s %s\n", dictAVP.Name, a)
 		}
@@ -556,9 +557,11 @@ func printGrouped(prefix string, m *Message, a *AVP, indent int) string {
 			}
 		} else {
 			if ga.Data.Type() == GroupedAVPType {
-				indent++
+//				indent++
+ 				//	indent++  -- increase ident only for next level
 				tabs := indentTabs(indent)
-				fmt.Fprintf(&b, "%s%s %s\n", tabs, dictAVP.Name, printGrouped(tabs, m, ga, indent))
+//				fmt.Fprintf(&b, "%s%s %s\n", tabs, dictAVP.Name, printGrouped(tabs, m, ga, indent))
+ 				fmt.Fprintf(&b, "%s%s %s\n", tabs, dictAVP.Name, printGrouped(tabs, m, ga, indent+1))
 			} else {
 				fmt.Fprintf(&b, "%s\t%s %s,\n", prefix, dictAVP.Name, ga)
 			}

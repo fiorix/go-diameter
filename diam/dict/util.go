@@ -19,10 +19,11 @@ import (
 // Note: care must be taken to avoid creating parent-child loops
 var parentAppIds map[uint32]uint32 = map[uint32]uint32{
 	4:        1,
-	16777251: 4,         // S6 -> Cc
-	16777236: 16777238,  // Rx -> Gx
-	16777238: 16777222,  // Gx -> Gq
-	16777222: 4,         // Gq -> Cc
+	16777251: 4,         // S6  -> Cc
+	16777236: 16777223,  // Rx  -> Gmb
+	16777223: 16777238,  // Gmb -> Gx
+	16777238: 16777222,  // Gx  -> Gq
+	16777222: 4,         // Gq  -> Cc
 }
 
 // Apps return a list of all applications loaded in the Parser object.

@@ -7,10 +7,10 @@ package smparser
 import (
 	"testing"
 
-	"github.com/fiorix/go-diameter/v4/diam"
-	"github.com/fiorix/go-diameter/v4/diam/avp"
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
-	"github.com/fiorix/go-diameter/v4/diam/dict"
+	"github.com/omnicate/go-diameter/v4/diam"
+	"github.com/omnicate/go-diameter/v4/diam/avp"
+	"github.com/omnicate/go-diameter/v4/diam/datatype"
+	"github.com/omnicate/go-diameter/v4/diam/dict"
 )
 
 func TestUnexpectedAVP_BadCode(t *testing.T) {

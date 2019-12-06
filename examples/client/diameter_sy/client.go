@@ -35,12 +35,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fiorix/go-diameter/diam"
-	"github.com/fiorix/go-diameter/diam/avp"
-	"github.com/fiorix/go-diameter/diam/datatype"
-	"github.com/fiorix/go-diameter/diam/dict"
-	"github.com/fiorix/go-diameter/diam/sm"
-	"github.com/fiorix/go-diameter/diam/sm/smpeer"
+	"github.com/omnicate/go-diameter/diam"
+	"github.com/omnicate/go-diameter/diam/avp"
+	"github.com/omnicate/go-diameter/diam/datatype"
+	"github.com/omnicate/go-diameter/diam/dict"
+	"github.com/omnicate/go-diameter/diam/sm"
+	"github.com/omnicate/go-diameter/diam/sm/smpeer"
 )
 
 func init() {

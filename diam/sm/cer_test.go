@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fiorix/go-diameter/v4/diam"
-	"github.com/fiorix/go-diameter/v4/diam/avp"
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
-	"github.com/fiorix/go-diameter/v4/diam/diamtest"
-	"github.com/fiorix/go-diameter/v4/diam/dict"
-	"github.com/fiorix/go-diameter/v4/diam/sm/smpeer"
+	"github.com/omnicate/go-diameter/v4/diam"
+	"github.com/omnicate/go-diameter/v4/diam/avp"
+	"github.com/omnicate/go-diameter/v4/diam/datatype"
+	"github.com/omnicate/go-diameter/v4/diam/diamtest"
+	"github.com/omnicate/go-diameter/v4/diam/dict"
+	"github.com/omnicate/go-diameter/v4/diam/sm/smpeer"
 )
 
 // These tests use dictionary, settings and functions from sm_test.go.

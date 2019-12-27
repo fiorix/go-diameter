@@ -95,6 +95,7 @@ const (
 	BaseTimeInterval                           = 1265
 	BasicServiceCode                           = 3411
 	BearerCapability                           = 3412
+	BearerIdentifier                           = 1020
 	BearerService                              = 854
 	BearerUsage                                = 1000
 	CCCorrelationID                            = 411
@@ -174,6 +175,7 @@ const (
 	DeferredLocationEventType                  = 1230
 	DeliveryReportRequested                    = 1216
 	DeliveryStatus                             = 2104
+	DeregistrationReason                       = 615
 	DestinationHost                            = 293
 	DestinationInterface                       = 2002
 	DestinationRealm                           = 283
@@ -475,7 +477,9 @@ const (
 	ReAuthRequestType                          = 285
 	ReadReplyReportRequested                   = 1222
 	RealTimeTariffInformation                  = 2305
+	ReasonCode                                 = 616
 	ReasonHeader                               = 3401
+	ReasonInfo                                 = 617
 	ReceivedTalkBurstTime                      = 1284
 	ReceivedTalkBurstVolume                    = 1285
 	RecipientAddress                           = 1201
@@ -543,6 +547,7 @@ const (
 	SIPResponseTimestamp                       = 835
 	SIPResponseTimestampFraction               = 2302
 	SIPTOPermission                            = 1613
+	SLRequestType                              = 2904
 	SMDeviceTriggerIndicator                   = 3407
 	SMDeviceTriggerInformation                 = 3405
 	SMDischargeTime                            = 2012

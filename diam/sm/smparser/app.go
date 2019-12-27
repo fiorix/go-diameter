@@ -41,10 +41,13 @@ func (app *Application) Parse(d *dict.Parser, localRole Role) (failedAVP *diam.A
 	}
 	if app.VendorSpecificApplicationID != nil {
 		for _, vs := range app.VendorSpecificApplicationID {
-			failedAVP, err := app.handleGroup(d, vs)
-			if err != nil {
-				return failedAVP, err
+			failedAVP, err = app.handleGroup(d, vs)
+			if err == nil {
+				break
 			}
+		}
+		if err != nil {
+			return failedAVP, err
 		}
 	}
 	if app.ID() == nil {

@@ -40,14 +40,23 @@ func (app *Application) Parse(d *dict.Parser, localRole Role) (failedAVP *diam.A
 		return failedAVP, err
 	}
 	if app.VendorSpecificApplicationID != nil {
+		var (
+			success           bool
+			firstFailedAVP    *diam.AVP
+			firstFailedAVPErr error
+		)
 		for _, vs := range app.VendorSpecificApplicationID {
 			failedAVP, err = app.handleGroup(d, vs)
 			if err == nil {
-				break
+				success = true // mark a successfull match, but keep iterating through vendor App IDs to update app.id
+			} else {
+				if firstFailedAVPErr == nil {
+					firstFailedAVP, firstFailedAVPErr = failedAVP, err
+				}
 			}
 		}
-		if err != nil {
-			return failedAVP, err
+		if !success {
+			return firstFailedAVP, firstFailedAVPErr // return the first err, we encountered
 		}
 	}
 	if app.ID() == nil {

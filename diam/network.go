@@ -3,6 +3,7 @@ package diam
 import (
 	"io"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/ishidawataru/sctp"
@@ -113,7 +114,13 @@ func getMultistreamDialer(network string, timeout time.Duration, laddr net.Addr)
 		la, _ := laddr.(*sctp.SCTPAddr)
 		return sctpDialer{LocalAddr: la}
 	default:
-		return &net.Dialer{Timeout: timeout, LocalAddr: laddr}
+		dialer := &net.Dialer{Timeout: timeout, LocalAddr: laddr}
+		if laddr != nil && len(laddr.String()) > 0 &&
+			(strings.HasPrefix(network, "tcp") || strings.HasPrefix(laddr.Network(), "tcp")) {
+
+			dialer.Control = setReuseTcpAddr
+		}
+		return dialer
 	}
 }
 

@@ -5,3 +5,4 @@ examples/bare/bare
 examples/client/client
 examples/server/server
 examples/snoop/snoop
+.idea

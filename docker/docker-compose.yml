@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  go-diameter:
+    container_name: go-diameter
+    image: golang:buster
+    network_mode: host
+    volumes:
+      - ../:/go/go-diameter
+    command:
+      - /bin/bash
+      - -c
+      - |
+        tail -f /dev/null

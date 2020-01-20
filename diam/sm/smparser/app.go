@@ -120,7 +120,7 @@ func (app *Application) validate(d *dict.Parser, appType uint32, appAVP *diam.AV
 	if err != nil {
 		//TODO Log informational message to console?
 	} else if len(avp.Type) > 0 && avp.Type != typ {
-		return nil, ErrNoCommonApplication
+		//TODO Log informational message to console?
 	} else {
 		app.id = append(app.id, id)
 	}

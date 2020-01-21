@@ -28,7 +28,7 @@ type Application struct {
 	id                          []uint32 // List of supported application IDs.
 }
 
-// Parse ensures all acct or auth applications in the CE
+// Parse ensures at least one common acct or auth applications in the CE
 // exist in this server's dictionary.
 func (app *Application) Parse(d *dict.Parser, localRole Role) (failedAVP *diam.AVP, err error) {
 	failedAVP, err = app.validateAll(d, avp.AcctApplicationID, app.AcctApplicationID)
@@ -88,16 +88,31 @@ func (app *Application) handleGroup(d *dict.Parser, gavp *diam.AVP) (failedAVP *
 }
 
 // validateAll is a convenience method to test a slice of application IDs.
+// according to https://tools.ietf.org/html/rfc6733#page-60:
+//   A receiver of a Capabilities-Exchange-Request (CER) message that does
+//   not have any applications in common with the sender MUST return a
+//   Capabilities-Exchange-Answer (CEA) with the Result-Code AVP set to
+//   DIAMETER_NO_COMMON_APPLICATION and SHOULD disconnect the transport
+//   layer connection.
+// so, we need to find at least one App ID in common
 func (app *Application) validateAll(d *dict.Parser, appType uint32, appAVPs []*diam.AVP) (failedAVP *diam.AVP, err error) {
+	var commonAppFound bool
 	if appAVPs != nil {
 		for _, a := range appAVPs {
-			failedAVP, err = app.validate(d, appType, a)
-			if err != nil {
-				return failedAVP, err
+			currentFailedAVP, currentErr := app.validate(d, appType, a)
+			if currentErr != nil {
+				if err == nil {
+					failedAVP, err = currentFailedAVP, currentErr
+				}
+			} else {
+				commonAppFound = true
 			}
 		}
+		if commonAppFound {
+			return nil, nil
+		}
 	}
-	return nil, nil
+	return failedAVP, err
 }
 
 // validate ensures the given acct or auth application ID exists in

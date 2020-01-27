@@ -406,10 +406,6 @@ func TestHandleCER_VS_AuthTCP(t *testing.T) {
 	testHandleCER_VS_Auth(t, "tcp")
 }
 
-func TestHandleCER_VS_AuthSCTP(t *testing.T) {
-	testHandleCER_VS_Auth(t, "sctp")
-}
-
 func testHandleCER_VS_Auth(t *testing.T, network string) {
 	sm := New(serverSettings)
 	srv := diamtest.NewServerNetwork(network, sm, dict.Default)

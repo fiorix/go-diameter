@@ -16,8 +16,3 @@ func TestNewServerTLS(t *testing.T) {
 	srv.StartTLS()
 	srv.Close()
 }
-
-func TestNewServerSCTP(t *testing.T) {
-	srv := NewServerNetwork("sctp", nil, nil)
-	srv.Close()
-}

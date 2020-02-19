@@ -538,6 +538,7 @@ const (
 	SDPSessionDescription                      = 842
 	SDPTimeStamps                              = 1273
 	SDPType                                    = 2036
+	SessionReleaseCause                        = 1045
 	SGSNAddress                                = 1228
 	SGSNNumber                                 = 1489
 	SGWAddress                                 = 2067

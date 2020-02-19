@@ -1135,6 +1135,7 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Usage-Monitoring-Information" required="false"/>
                 <rule avp="Event-Trigger" required="false"/>
                 <rule avp="Revalidation-Time" required="false"/>
+                <rule avp="Session-Release-Cause" required="false" max="1"/>
             </answer>
         </command>
 
@@ -1147,6 +1148,7 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Destination-Host" required="true" max="1"/>
                 <rule avp="Auth-Application-Id" required="true" max="1"/>
                 <rule avp="Re-Auth-Request-Type" required="true" max="1"/>
+                <rule avp="Session-Release-Cause" required="false" max="1"/>
                 <rule avp="QoS-Information" required="false" max="1"/>
                 <rule avp="Origin-State-Id" required="false" max="1"/>
                 <rule avp="Proxy-Info" required="false"/>
@@ -1257,6 +1259,17 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
         <avp name="Revalidation-Time" code="1042" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
             <!-- 3GPP 29.212  Section 5.3.41 -->
             <data type="Time"/>
+        </avp>
+
+        <avp name="Session-Release-Cause" code="1045" must="M,V" may="P" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212  Section 5.3.44 -->
+            <data type="Enumerated">
+                <item code="0" name="UNSPECIFIED_REASON"/>
+                <item code="1" name="UE_SUBSCRIPTION_REASON"/>
+                <item code="2" name="INSUFFICIENT_SERVER_RESOURCES"/>
+                <item code="3" name="IP_CAN_SESSION_TERMINATION"/>
+                <item code="4" name="UE_IP_ADDRESS_RELEASE"/>
+            </data>
         </avp>
 
         <avp name="Precedence" code="1010" must="M,V" may="P" may-encrypt="y" vendor-id="10415">

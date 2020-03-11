@@ -2764,6 +2764,15 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<data type="OctetString"/>
 		</avp>
 
+		<avp name="Bearer-Control-Mode" code="1023" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<!-- 3GPP TS 29.212 section 5.3.23 -->
+			<data type="Enumerated">
+				<item code="0" name="UE_ONLY"/>
+				<item code="1" name="RESERVER"/>
+				<item code="2" name="UE_NW"/>
+			</data>
+		</avp>
+
 		<avp name="Bearer-Service" code="854" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="OctetString"/>
 		</avp>

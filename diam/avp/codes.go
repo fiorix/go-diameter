@@ -96,6 +96,7 @@ const (
 	BaseTimeInterval                           = 1265
 	BasicServiceCode                           = 3411
 	BearerCapability                           = 3412
+	BearerControlMode                          = 1023
 	BearerIdentifier                           = 1020
 	BearerService                              = 854
 	BearerUsage                                = 1000

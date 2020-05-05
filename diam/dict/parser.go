@@ -32,12 +32,13 @@ const (
 //
 // The Parser element has an index to make pre-loaded AVPs searcheable per App.
 type Parser struct {
-	file    []*File              // Dict supports multiple XML dictionaries
-	appcode map[uint32]*App      // Application index by code
-	avpname map[nameIdx]*AVP     // AVP index by name
-	avpcode map[codeIdx]*AVP     // AVP index by code
-	command map[codeIdx]*Command // Command index
-	mu      sync.Mutex           // Protects all maps
+	file    []*File               // Dict supports multiple XML dictionaries
+	appcode map[uint32]*App       // Application index by code
+	apptype map[appIdTypeIdx]*App // Application index by code and type
+	avpname map[nameIdx]*AVP      // AVP index by name
+	avpcode map[codeIdx]*AVP      // AVP index by code
+	command map[codeIdx]*Command  // Command index
+	mu      sync.Mutex            // Protects all maps
 	once    sync.Once
 }
 
@@ -51,6 +52,11 @@ type nameIdx struct {
 	appID    uint32
 	name     string
 	vendorID uint32
+}
+
+type appIdTypeIdx struct {
+	appID uint32
+	typ   string
 }
 
 // NewParser allocates a new Parser optionally loading dictionary XML files.
@@ -81,6 +87,7 @@ func (p *Parser) Load(r io.Reader) error {
 	defer p.mu.Unlock()
 	p.once.Do(func() {
 		p.appcode = make(map[uint32]*App)
+		p.apptype = make(map[appIdTypeIdx]*App)
 		p.avpname = make(map[nameIdx]*AVP)
 		p.avpcode = make(map[codeIdx]*AVP)
 		p.command = make(map[codeIdx]*Command)
@@ -94,6 +101,7 @@ func (p *Parser) Load(r io.Reader) error {
 	for _, app := range f.App {
 		// Cache supported applications by ID.
 		p.appcode[app.ID] = app
+		p.apptype[appIdTypeIdx{app.ID, app.Type}] = app
 		// Cache commands.
 		for _, cmd := range app.Command {
 			idx := codeIdx{app.ID, cmd.Code, UndefinedVendorID}

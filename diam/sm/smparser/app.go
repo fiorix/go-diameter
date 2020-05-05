@@ -31,42 +31,35 @@ type Application struct {
 // Parse ensures at least one common acct or auth applications in the CE
 // exist in this server's dictionary.
 func (app *Application) Parse(d *dict.Parser, localRole Role) (failedAVP *diam.AVP, err error) {
-	failedAVP, err = app.validateAll(d, avp.AcctApplicationID, app.AcctApplicationID)
-	if err != nil {
-		return failedAVP, err
+	failedAVP, err = app.validateAll(d, avp.AcctApplicationID, app.AcctApplicationID, localRole)
+	oneFound := err == nil
+	a, e := app.validateAll(d, avp.AuthApplicationID, app.AuthApplicationID, localRole)
+	failedAVP, err, oneFound = chooseErr(failedAVP, err, oneFound, a, e)
+	for _, vs := range app.VendorSpecificApplicationID {
+		a, e = app.handleGroup(d, vs)
+		failedAVP, err, oneFound = chooseErr(failedAVP, err, oneFound, a, e)
 	}
-	failedAVP, err = app.validateAll(d, avp.AuthApplicationID, app.AuthApplicationID)
-	if err != nil {
+	if !oneFound {
 		return failedAVP, err
-	}
-	if app.VendorSpecificApplicationID != nil {
-		var (
-			success           bool
-			firstFailedAVP    *diam.AVP
-			firstFailedAVPErr error
-		)
-		for _, vs := range app.VendorSpecificApplicationID {
-			failedAVP, err = app.handleGroup(d, vs)
-			if err == nil {
-				success = true // mark a successfull match, but keep iterating through vendor App IDs to update app.id
-			} else {
-				if firstFailedAVPErr == nil {
-					firstFailedAVP, firstFailedAVPErr = failedAVP, err
-				}
-			}
-		}
-		if !success {
-			return firstFailedAVP, firstFailedAVPErr // return the first err, we encountered
-		}
 	}
 	if app.ID() == nil {
 		if localRole == Client {
-			return nil, ErrMissingApplication
+			return failedAVP, ErrMissingApplication
 		}
-		return nil, ErrNoCommonApplication
+		return failedAVP, ErrNoCommonApplication
 
 	}
 	return nil, nil
+}
+
+func chooseErr(curAVP *diam.AVP, curErr error, oneFound bool, newAvp *diam.AVP, newErr error) (*diam.AVP, error, bool) {
+	if newErr == nil {
+		return curAVP, curErr, true
+	}
+	if (curErr == nil) || (curAVP == nil && newAvp != nil) {
+		return newAvp, newErr, oneFound
+	}
+	return curAVP, curErr, oneFound
 }
 
 // handleGroup handles the VendorSpecificApplicationID grouped AVP and
@@ -76,6 +69,7 @@ func (app *Application) handleGroup(d *dict.Parser, gavp *diam.AVP) (failedAVP *
 	if !ok {
 		return gavp, &ErrUnexpectedAVP{gavp}
 	}
+	var success bool
 	for _, a := range group.AVP {
 		switch a.Code {
 		case avp.AcctApplicationID:
@@ -83,6 +77,10 @@ func (app *Application) handleGroup(d *dict.Parser, gavp *diam.AVP) (failedAVP *
 		case avp.AuthApplicationID:
 			failedAVP, err = app.validate(d, a.Code, a)
 		}
+		success = success || (err == nil)
+	}
+	if success {
+		return nil, nil
 	}
 	return failedAVP, err
 }
@@ -95,24 +93,24 @@ func (app *Application) handleGroup(d *dict.Parser, gavp *diam.AVP) (failedAVP *
 //   DIAMETER_NO_COMMON_APPLICATION and SHOULD disconnect the transport
 //   layer connection.
 // so, we need to find at least one App ID in common
-func (app *Application) validateAll(d *dict.Parser, appType uint32, appAVPs []*diam.AVP) (failedAVP *diam.AVP, err error) {
-	var commonAppFound bool
-	if appAVPs != nil {
+func (app *Application) validateAll(
+	d *dict.Parser, appType uint32, appAVPs []*diam.AVP, localRole Role) (failedAVP *diam.AVP, err error) {
+
+	if len(appAVPs) > 0 {
+		var oneFound bool
 		for _, a := range appAVPs {
-			currentFailedAVP, currentErr := app.validate(d, appType, a)
-			if currentErr != nil {
-				if err == nil {
-					failedAVP, err = currentFailedAVP, currentErr
-				}
-			} else {
-				commonAppFound = true
-			}
+			a, e := app.validate(d, appType, a)
+			failedAVP, err, oneFound = chooseErr(failedAVP, err, oneFound, a, e)
 		}
-		if commonAppFound {
+		if oneFound {
 			return nil, nil
 		}
+		return
 	}
-	return failedAVP, err
+	if localRole == Client {
+		return nil, ErrMissingApplication
+	}
+	return nil, ErrNoCommonApplication
 }
 
 // validate ensures the given acct or auth application ID exists in
@@ -140,14 +138,11 @@ func (app *Application) validate(d *dict.Parser, appType uint32, appAVP *diam.AV
 		app.id = append(app.id, id)
 		return nil, nil
 	}
-	avp, err := d.App(id)
+	_, err = d.App(id, typ)
 	if err != nil {
-		//TODO Log informational message to console?
-	} else if len(avp.Type) > 0 && avp.Type != typ {
-		return nil, ErrNoCommonApplication
-	} else {
-		app.id = append(app.id, id)
+		return appAVP, ErrNoCommonApplication
 	}
+	app.id = append(app.id, id)
 	return nil, nil
 }
 

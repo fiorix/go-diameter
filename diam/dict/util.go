@@ -39,12 +39,19 @@ func (p *Parser) Apps() []*App {
 
 // App returns a dictionary application for the given application code
 // if exists. App must never be called concurrently with LoadFile or Load.
-func (p *Parser) App(code uint32) (*App, error) {
-	app := p.appcode[code]
-	if app == nil {
-		return nil, ErrApplicationUnsupported
+func (p *Parser) App(code uint32, typ ...string) (*App, error) {
+	var app *App
+	if len(typ) > 0 {
+		app = p.apptype[appIdTypeIdx{code, typ[0]}]
 	}
-	return app, nil
+	if app != nil {
+		return app, nil
+	}
+	app = p.appcode[code]
+	if app != nil && (len(app.Type) == 0 || len(typ) == 0 || app.Type == typ[0]) {
+		return app, nil
+	}
+	return nil, ErrApplicationUnsupported
 }
 
 // ErrApplicationUnsupported indicates that the application requested

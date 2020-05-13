@@ -491,7 +491,7 @@ func (m *Message) Answer(resultCode uint32) *Message {
 
 // ExperimentalAnswer creates an answer for the current Message with
 // the Experimental-Result grouped AVP instead of the Result-Code AVP.
-func (m *Message) ExperimentalAnswer(resultCode, vendorID uint32) *Message {
+func (m *Message) ExperimentalAnswer(resultCode, vendorID uint32, avps ...*AVP) *Message {
 	nm := m.answer()
 	nm.NewAVP(avp.ExperimentalResult, avp.Mbit, 0, &GroupedAVP{
 		AVP: []*AVP{
@@ -499,6 +499,9 @@ func (m *Message) ExperimentalAnswer(resultCode, vendorID uint32) *Message {
 			NewAVP(avp.ExperimentalResultCode, avp.Mbit, 0, datatype.Unsigned32(resultCode)),
 		},
 	})
+	for _, avp := range avps {
+		AddAVP(avp)
+	}
 	return nm
 }
 

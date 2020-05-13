@@ -500,7 +500,7 @@ func (m *Message) ExperimentalAnswer(resultCode, vendorID uint32, avps ...*AVP) 
 		},
 	})
 	for _, avp := range avps {
-		AddAVP(avp)
+		nm.AddAVP(avp)
 	}
 	return nm
 }

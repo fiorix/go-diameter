@@ -696,6 +696,8 @@ const (
 	UnitValue                                  = 445
 	UsageMonitoringInformation                 = 1067
 	UsageMonitoringLevel                       = 1068
+	UsageMonitoringReport                      = 1069
+	UsageMonitoringSupport                     = 1070
 	UsedServiceUnit                            = 446
 	UserCSGInformation                         = 2319
 	UserData                                   = 606

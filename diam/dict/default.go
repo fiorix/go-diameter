@@ -1335,6 +1335,8 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Granted-Service-Unit" required="false" max="2"/>
                 <rule avp="Used-Service-Unit" required="false" max="2"/>
                 <rule avp="Usage-Monitoring-Level" required="false" max="1"/>
+                <rule avp="Usage-Monitoring-Report" required="false" max="1"/>
+                <rule avp="Usage-Monitoring-Support" required="false" max="1"/>
             </data>
         </avp>
 
@@ -1343,6 +1345,20 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Enumerated">
                 <item code="0" name="SESSION_LEVEL"/>
                 <item code="1" name="PCC_RULE_LEVEL"/>
+            </data>
+        </avp>
+
+        <avp name="Usage-Monitoring-Report" code="1069" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Enumerated">
+                <item code="0" name="USAGE_MONITORING_REPORT"/>
+            </data>
+        </avp>
+
+        <avp name="Usage-Monitoring-Support" code="1070" must="V" may="P" must-not="M" may-encrypt="y" vendor-id="10415">
+            <!-- 3GPP 29.212 -->
+            <data type="Enumerated">
+                <item code="0" name="USAGE_MONITORING_SUPPORT"/>
             </data>
         </avp>
 

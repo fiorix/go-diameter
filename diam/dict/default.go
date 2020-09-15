@@ -1335,8 +1335,8 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Granted-Service-Unit" required="false" max="2"/>
                 <rule avp="Used-Service-Unit" required="false" max="2"/>
                 <rule avp="Usage-Monitoring-Level" required="false" max="1"/>
-                <rule avp="Usage-Monitoring-Report" required="false" max="0"/>
-                <rule avp="Usage-Monitoring-Support" required="false" max="0"/>
+                <rule avp="Usage-Monitoring-Report" required="false" max="1"/>
+                <rule avp="Usage-Monitoring-Support" required="false" max="1"/>
             </data>
         </avp>
 

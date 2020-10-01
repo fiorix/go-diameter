@@ -23,7 +23,7 @@ func TestUnexpectedAVP_BadCode(t *testing.T) {
 		t.Fatal("Unexpected application parsed successfully")
 	}
 	if failedAVP != a {
-		t.Fatalf("Unexpected failed avp. Want %q, have %q", a, failedAVP)
+		t.Fatalf("Unexpected failed avp. Want %q, have %q, err: %v", a, failedAVP, err)
 	}
 }
 

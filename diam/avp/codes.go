@@ -595,6 +595,7 @@ const (
 	SoftwareVersion                            = 1403
 	SpecificAPNInfo                            = 1472
 	SponsorIdentity                            = 531
+	SRES                                       = 1454
 	SSCode                                     = 1476
 	SSID                                       = 1524
 	SSStatus                                   = 1477

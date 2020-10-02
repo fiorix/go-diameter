@@ -27,7 +27,8 @@ const (
 
 	// DiameterPPID - SCTP Payload Protocol Identifier for Diameter
 	// see: https://tools.ietf.org/html/rfc4960#section-14.4 and https://tools.ietf.org/html/rfc6733#page-24
-	DiameterPPID uint32 = 46
+	// Value of PPID must be in network byte order (https://tools.ietf.org/html/rfc6458 Section 5.3.2)
+	DiameterPPID uint32 = 46 << 24
 )
 
 type sctpDialer struct {

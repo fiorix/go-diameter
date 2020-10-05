@@ -5832,7 +5832,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Grouped">
                 <rule avp="Item-Number" required="false" max="1"/>
                 <rule avp="RAND" required="true" max="1"/>
-                <rule avp="XRES" required="true" max="1"/>
+                <rule avp="SRES" required="true" max="1"/>
                 <rule avp="Kc" required="true" max="1"/>
             </data>
         </avp>
@@ -5868,6 +5868,10 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
         </avp>
 
         <avp name="Kc" code="1453" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="SRES" code="1454" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="OctetString"/>
         </avp>
 

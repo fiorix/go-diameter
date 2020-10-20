@@ -85,6 +85,16 @@ func marshalStruct(m *Message, field reflect.Value) (error, []*AVP) {
 	for n := 0; n < base.NumField(); n++ {
 		f := base.Field(n)
 		bt := base.Type().Field(n)
+
+		if bt.Anonymous {
+			err, embeddedAvps := marshalStruct(m, f)
+			if err != nil {
+				return err, nil
+			}
+			avps = append(avps, embeddedAvps...)
+			continue
+		}
+
 		avpname, omitEmpty := parseAvpTag(bt.Tag)
 		if len(avpname) == 0 || (omitEmpty && isEmptyValue(f)) {
 			// TODO: check the required attribute in AVP rule?
@@ -368,6 +378,14 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 	for n := 0; n < base.NumField(); n++ {
 		f := base.Field(n)
 		bt := base.Type().Field(n)
+
+		if bt.Anonymous {
+			if err := scanStruct(m, f, avps); err != nil {
+				return err
+			}
+			continue
+		}
+
 		avpname, _ := parseAvpTag(bt.Tag)
 		if len(avpname) == 0 {
 			continue

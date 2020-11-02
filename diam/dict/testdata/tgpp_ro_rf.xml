@@ -2209,23 +2209,6 @@
 			<data type="OctetString"/>
 		</avp>
 
-		<avp name="Terminal-Information" code="1401" must="V,M"	may="-" must-not="-" may-encrypt="N" vendor-id="10415">
-			<data type="Grouped">
-				<rule avp="IMEI" required="false" max="1"/>
-				<rule avp="TGPP2-MEID" required="false" max="1"/>
-				<rule avp="Software-Version" required="false" max="1"/>
-				<rule avp="AVP" required="false"/>
-			</data>
-		</avp>
-
-		<avp name="IMEI" code="1402" must="M,V" may-encrypt="N" vendor-id="10415">
-			<data type="UTF8String" />
-		</avp>
-
-		<avp name="Software-Version" code="1403" must="M,V" may-encrypt="N" vendor-id="10415">
-			<data type="UTF8String" />
-		</avp>
-
 		<avp name="Terminating-IOI" code="840" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="UTF8String"/>
 		</avp>

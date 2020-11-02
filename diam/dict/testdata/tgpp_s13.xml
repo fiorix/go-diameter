@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+    <!--
+        3GPP TS 29.272
+        See: https://www.3gpp.org/ftp//Specs/archive/29_series/29.272/29272-g40.zip
+    -->
+    <application id="16777252" type="auth" name="TGPP S13">
+        <vendor id="10415" name="TGPP"/>
+        <command code="324" short="EC" name="ME-Identity-Check">
+            <request>
+                <!-- https://www.3gpp.org/ftp//Specs/archive/29_series/29.272/29272-g40.zip Section 7.2.19 -->
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+                <rule avp="Auth-Session-State" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Destination-Host" required="false" max="1"/>
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="Terminal-Information" required="true" max="1"/>
+                <rule avp="User-Name" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </request>
+            <answer>
+                <!-- https://www.3gpp.org/ftp//Specs/archive/29_series/29.272/29272-g40.zip Section 7.2.20 -->
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+                <rule avp="Result-Code" required="false" max="1"/>
+                <rule avp="Experimental-Result" required="false" max="1"/>
+                <rule avp="Auth-Session-State" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Equipment-Status" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+                <rule avp="Failed_AVP" required="false" max="1"/>
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </answer>
+        </command>
+    </application>
+</diameter>

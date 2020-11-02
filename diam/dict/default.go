@@ -562,6 +562,37 @@ var baseXML = `<?xml version="1.0" encoding="UTF-8"?>
 			</data>
 		</avp>
 
+		<!-- IETF RFC 8581 - https://tools.ietf.org/html/rfc8581 -->
+		<avp name="Load-Value" code="649" must-not="V">
+			<data type="Unsigned64"/>
+		</avp>
+
+		<avp name="SourceID" code="649" must-not="V">
+			<data type="DiameterIdentity"/>
+		</avp>
+
+
+		<!-- IETF RFC 8583 - https://tools.ietf.org/html/rfc8583 -->
+		<avp name="Load" code="650" must-not="V">
+			<data type="Grouped">
+				<rule avp="Load-Type" required="false" max="1"/>
+				<rule avp="Load-Value" required="false" max="1"/>
+				<rule avp="SourceID" required="false" max="1"/>
+				<rule avp="AVP" required="false"/>
+			</data>
+		</avp>
+
+		<avp name="Load-Type" code="651" must-not="V">
+			<data type="Enumerated">
+				<item code="0" name="HOST"/>
+				<item code="1" name="PEER"/>
+			</data>
+		</avp>
+
+		<avp name="Load-Value" code="652" must-not="V">
+			<data type="Unsigned64"/>
+		</avp>
+
 
 	</application>
 	<application id="3" type="acct" name="Base Accounting"> <!-- Diameter Base Accounting Messages -->
@@ -4669,23 +4700,6 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<data type="OctetString"/>
 		</avp>
 
-		<avp name="Terminal-Information" code="1401" must="V,M"	may="-" must-not="-" may-encrypt="N" vendor-id="10415">
-			<data type="Grouped">
-				<rule avp="IMEI" required="false" max="1"/>
-				<rule avp="TGPP2-MEID" required="false" max="1"/>
-				<rule avp="Software-Version" required="false" max="1"/>
-				<rule avp="AVP" required="false"/>
-			</data>
-		</avp>
-
-		<avp name="IMEI" code="1402" must="M,V" may-encrypt="N" vendor-id="10415">
-			<data type="UTF8String" />
-		</avp>
-
-		<avp name="Software-Version" code="1403" must="M,V" may-encrypt="N" vendor-id="10415">
-			<data type="UTF8String" />
-		</avp>
-
 		<avp name="Terminating-IOI" code="840" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="UTF8String"/>
 		</avp>
@@ -4943,6 +4957,51 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 	</application>
 </diameter>`
 
+var tgpps13XML = `<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+    <!--
+        3GPP TS 29.272
+        See: https://www.3gpp.org/ftp//Specs/archive/29_series/29.272/29272-g40.zip
+    -->
+    <application id="16777252" type="auth" name="TGPP S13">
+        <vendor id="10415" name="TGPP"/>
+        <command code="324" short="EC" name="ME-Identity-Check">
+            <request>
+                <!-- https://www.3gpp.org/ftp//Specs/archive/29_series/29.272/29272-g40.zip Section 7.2.19 -->
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+                <rule avp="Auth-Session-State" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Destination-Host" required="false" max="1"/>
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="Terminal-Information" required="true" max="1"/>
+                <rule avp="User-Name" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </request>
+            <answer>
+                <!-- https://www.3gpp.org/ftp//Specs/archive/29_series/29.272/29272-g40.zip Section 7.2.20 -->
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+                <rule avp="Result-Code" required="false" max="1"/>
+                <rule avp="Experimental-Result" required="false" max="1"/>
+                <rule avp="Auth-Session-State" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Equipment-Status" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+                <rule avp="Failed_AVP" required="false" max="1"/>
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </answer>
+        </command>
+    </application>
+</diameter>`
+
 var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
     <!--
@@ -4954,6 +5013,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
         <command code="316" short="UL" name="Update-Location">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
@@ -4961,6 +5021,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Destination-Host" required="false" max="1"/>
                 <rule avp="Destination-Realm" required="true" max="1"/>
                 <rule avp="User-Name" required="true" max="1"/>
+                <rule avp="OC-Supported-Features" required="false" max="1" />
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="Terminal-Information" required="false" max="1"/>
                 <rule avp="RAT-Type" required="true" max="1"/>
@@ -4971,12 +5032,19 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions" required="false" max="1"/>
                 <rule avp="GMLC-Address" required="false" max="1"/>
                 <rule avp="Active-APN" required="false"/>
+                <rule avp="Equivalent-PLMN-List" required="false" max="1"/>
+                <rule avp="MME-Number-for-MT-SMS" required="false" max="1"/>
+                <rule avp="SMS-Register-Request" required="false" max="1"/>
+                <rule avp="SGs-MME-Identity" required="false" max="1"/>
+                <rule avp="Coupled-Node-Diameter-ID" required="false" max="1"/>
+                <rule avp="Adjacent-PLMNs" required="false" max="1"/>
                 <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false"/>
                 <rule avp="Route-Record" required="false"/>
             </request>
             <answer>
                 <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Result-Code" required="false" max="1"/>
                 <rule avp="Experimental-Result" required="false" max="1"/>
@@ -4984,9 +5052,13 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
                 <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="OC-Supported-Features" required="false" max="1" />
+                <rule avp="OC-OLR" required="false" max="1" />
+                <rule avp="Load" required="false"/>
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="ULA-Flags" required="false" max="1"/>
                 <rule avp="Subscription-Data" required="false" max="1"/>
+                <rule avp="Reset-ID" required="false"/>
                 <rule avp="AVP" required="false"/>
                 <rule avp="Failed-AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false"/>
@@ -4997,6 +5069,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
         <command code="317" short="CL" name="Cancel-Location">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
@@ -5013,6 +5086,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </request>
             <answer>
                 <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="Result-Code" required="false" max="1"/>
@@ -5030,6 +5104,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
         <command code="318" short="AI" name="Authentication-Information">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
@@ -5037,16 +5112,19 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Destination-Host" required="false" max="1"/>
                 <rule avp="Destination-Realm" required="true" max="1"/>
                 <rule avp="User-Name" required="true" max="1"/>
+                <rule avp="OC-Supported-Features" required="false" max="1" />
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="Requested-EUTRAN-Authentication-Info" required="false" max="1"/>
                 <rule avp="Requested-UTRAN-GERAN-Authentication-Info" required="false" max="1"/>
                 <rule avp="Visited-PLMN-Id" required="true" max="1"/>
+                <rule avp="AIR-Flags" required="false" max="1"/>
                 <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false"/>
                 <rule avp="Route-Record" required="false"/>
             </request>
             <answer>
                 <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Result-Code" required="false" max="1"/>
                 <rule avp="Experimental-Result" required="false" max="1"/>
@@ -5054,8 +5132,12 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
                 <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="OC-Supported-Features" required="false" max="1" />
+                <rule avp="OC-OLR" required="false" max="1" />
+                <rule avp="Load" required="false" max="1" />
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="Authentication-Info" required="true" max="1"/>
+                <rule avp="UE-Usage-Type" required="true" max="1"/>
                 <rule avp="AVP" required="false"/>
                 <rule avp="Failed-AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false"/>
@@ -5064,25 +5146,6 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
         </command>
 
         <command code="321" short="PU" name="Purge-UE">
-            <!--
-                < Purge-UE-Request> ::=	< Diameter Header: 321, REQ, PXY, 16777251 >
-                < Session-Id >
-                [ DRMP ]
-                [ Vendor-Specific-Application-Id ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                [ Destination-Host ]
-                { Destination-Realm }
-                { User-Name }
-                [ OC-Supported-Features ]
-                [ PUR-Flags ]
-                *[ Supported-Features ]
-                [ EPS-Location-Information ]
-                *[ AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <request>
                 <rule avp="Session-Id" required="true" max="1" />
                 <rule avp="DRMP" required="false" max="1" />
@@ -5097,30 +5160,10 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="PUR-Flags" required="false" max="1" />
                 <rule avp="Supported-Features" required="false" />
                 <rule avp="EPS-Location-Information" required="false" max="1" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
             </request>
-
-            <!--
-                < Purge-UE-Answer> ::=	< Diameter Header: 321, PXY, 16777251 >
-                < Session-Id >
-                [ DRMP ]
-                [ Vendor-Specific-Application-Id ]
-                *[ Supported-Features ]
-                [ Result-Code ]
-                [ Experimental-Result ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                [ OC-Supported-Features ]
-                [ OC-OLR ]
-                *[ Load ]
-                [ PUA-Flags ]
-                *[ AVP ]
-                [ Failed-AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <answer>
                 <rule avp="Session-Id" required="true" max="1" />
                 <rule avp="DRMP" required="false" max="1" />
@@ -5133,8 +5176,9 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Origin-Realm" required="true" max="1" />
                 <rule avp="OC-Supported-Features" required="false" max="1" />
                 <rule avp="OC-OLR" required="false" max="1" />
-                <!-- rule avp="Load" required="false" /-->
+                <rule avp="Load" required="false"/>
                 <rule avp="PUA-Flags" required="false" max="1" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Failed-AVP" required="false" max="1" />
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
@@ -5142,35 +5186,6 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
         </command>
 
         <command code="323" short="NO" name="Notify">
-            <!--
-                < Notify-Request> ::=	< Diameter Header: 323, REQ, PXY, 16777251 >
-                < Session-Id >
-                [ Vendor-Specific-Application-Id ]
-                [ DRMP ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                [ Destination-Host ]
-                { Destination-Realm }
-                { User-Name }
-                [ OC-Supported-Features ]
-                * [ Supported-Features ]
-                [ Terminal-Information ]
-                [ MIP6-Agent-Info ]
-                [ Visited-Network-Identifier ]
-                [ Context-Identifier ]
-                [ Service-Selection ]
-                [ Alert-Reason ]
-                [ UE-SRVCC-Capability ]
-                [ NOR-Flags ]
-                [ Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ]
-                [ Maximum-UE-Availability-Time ]
-                *[ Monitoring-Event-Config-Status ]
-                [ Emergency-Services ]
-                *[ AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <request>
                 <rule avp="Session-Id" required="true" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
@@ -5195,28 +5210,10 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Maximum-UE-Availability-Type" required="false" max="1" />
                 <rule avp="Monitoring-Event-Config-Status" required="false" />
                 <rule avp="Emergency-Services" required="false" max="1" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
             </request>
-            <!--
-                < Notify-Answer> ::=	< Diameter Header: 323, PXY, 16777251 >
-                < Session-Id >
-                [ DRMP ]
-                [ Vendor-Specific-Application-Id ]
-                [ Result-Code ]
-                [ Experimental-Result ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                [ OC-Supported-Features ]
-                [ OC-OLR ]
-                *[ Load ]
-                *[ Supported-Features ]
-                *[ AVP ]
-                [ Failed-AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <answer>
                 <rule avp="Session-Id" required="true" max="1" />
                 <rule avp="DRMP" required="false" max="1" />
@@ -5228,8 +5225,9 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Origin-Realm" required="true" max="1" />
                 <rule avp="OC-Supported-Features" required="false" max="1" />
                 <rule avp="OC-OLR" required="false" max="1" />
-                <!-- rule avp="Load" required="false" /-->
+                <rule avp="Load" required="false"/>
                 <rule avp="Supported-Features" required="false" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Failed-AVP" required="false" max="1" />
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
@@ -5237,23 +5235,9 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
         </command>
 
         <command code="322" short="RS" name="Reset">
-            <!--
-              < Reset-Request> ::= < Diameter Header: 322, REQ, PXY, 16777251 >
-                < Session-Id >
-                [ Vendor-Specific-Application-Id ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                { Destination-Host }
-                { Destination-Realm }
-                *[ Supported-Features ]
-                *[ User-Id ]
-                *[ AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <request>
                 <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
                 <rule avp="Auth-Session-State" required="true" max="1" />
                 <rule avp="Origin-Host" required="true" max="1" />
@@ -5262,26 +5246,15 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Destination-Realm" required="true" max="1" />
                 <rule avp="Supported-Features" required="false" />
                 <rule avp="User-Id" required="false" />
+                <rule avp="Reset-ID" required="false" />
+                <rule avp="Subscription-Data" required="false" max="1" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
             </request>
-            <!--
-              < Reset-Answer> ::= < Diameter Header: 322, PXY, 16777251 >
-                < Session-Id >
-                [ Vendor-Specific-Application-Id ]
-                *[ Supported-Features ]
-                [ Result-Code ]
-                [ Experimental-Result ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                *[ AVP ]
-                *[ Failed-AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <answer>
                 <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
                 <rule avp="Supported-Features" required="false" />
                 <rule avp="Result-Code" required="false" max="1" />
@@ -5290,6 +5263,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Origin-Host" required="true" max="1" />
                 <rule avp="Origin-Realm" required="true" max="1" />
                 <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
             </answer>
@@ -5326,6 +5300,23 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>
+        
+		<avp name="Terminal-Information" code="1401" must="V,M"	may="-" must-not="-" may-encrypt="N" vendor-id="10415">
+			<data type="Grouped">
+				<rule avp="IMEI" required="false" max="1"/>
+				<rule avp="TGPP2-MEID" required="false" max="1"/>
+				<rule avp="Software-Version" required="false" max="1"/>
+				<rule avp="AVP" required="false"/>
+			</data>
+		</avp>
+
+		<avp name="IMEI" code="1402" must="M,V" may-encrypt="N" vendor-id="10415">
+			<data type="UTF8String" />
+		</avp>
+
+		<avp name="Software-Version" code="1403" must="M,V" may-encrypt="N" vendor-id="10415">
+			<data type="UTF8String" />
+		</avp>
 
         <avp name="Subscriber-Status" code="1424" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="Enumerated">
@@ -5789,6 +5780,19 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="OctetString"/>
         </avp>
 
+        <avp name="Equivalent-PLMN-List" code="1637" vendor-id="10415" must="V" must-not="M" may-encrypt="N">
+            <data type="Grouped">
+                <rule avp="Visited-PLMN-Id" required="true"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+
+MME-Number-for-MT-SMS	1645	7.3.159	OctetString	V			M	No
+SMS-Register-Request	1648	7.3.162	Enumerated	V			M	No
+
+
+
         <avp name="Error-Diagnostic" code="1614" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
             <data type="Enumerated">
                 <item code="0" name="GPRS_DATA_SUBSCRIBED"/>
@@ -5950,6 +5954,47 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <item code="0" name="VSRVCC_SUBSCRIBED" />
             </data>
         </avp>
+
+        <avp name="MME-Number-for-MT-SMS" code="1645" must="V"  must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="SMS-Register-Request" code="1648" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="SMS_REGISTRATION_REQUIRED"/>
+                <item code="1" name="SMS_REGISTRATION_NOT_PREFERRED"/>
+                <item code="2" name="NO_PREFERENCE"/>
+            </data>
+        </avp>
+
+        <avp name="SGs-MME-Identity" code="1664" must="V"  must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String"/>
+        </avp>
+
+        <avp name="Coupled-Node-Diameter-ID" code="1666" must="V"  must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="DiameterIdentity"/>
+        </avp>
+
+        <avp name="Reset-ID" code="1670" must="V"  must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Adjacent-PLMNs" code="1672" vendor-id="10415" must="V" must-not="M" may-encrypt="N">
+            <data type="Grouped">
+                <rule avp="Visited-PLMN-Id" required="true"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <avp name="AIR-Flags" code="1679" must="V"  must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="UE-Usage-Type" code="1680" must="V"  must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+
 
         <avp name="MIP-Home-Agent-Address" code="334" must="M" must-not="V" vendor-id="10415">
             <data type="Address"/>

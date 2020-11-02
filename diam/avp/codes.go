@@ -45,8 +45,10 @@ const (
 	AddressDomain                              = 898
 	AddresseeType                              = 1208
 	AddressType                                = 899
+	AdjacentPLMNs                              = 1672
 	AFChargingIdentifier                       = 505
 	AFCorrelationInformation                   = 1276
+	AIRFlags                                   = 1679
 	AllAPNConfigurationsIncludedIndicator      = 1428
 	AllocationRetentionPriority                = 1034
 	AlternateChargedPartyAddress               = 1280
@@ -159,6 +161,7 @@ const (
 	ContextIdentifier                          = 1423
 	CostInformation                            = 423
 	CostUnit                                   = 424
+	CoupledNodeDiameterID                      = 1666
 	CreditControl                              = 426
 	CreditControlFailureHandling               = 427
 	CSGAccessMode                              = 2317
@@ -192,6 +195,7 @@ const (
 	EnvelopeStartTime                          = 1269
 	ePDGAddress                                = 3425
 	EPSSubscribedQoSProfile                    = 1431
+	EquivalentPLMNList                         = 1637
 	ErrorDiagnostic                            = 1614
 	ErrorMessage                               = 281
 	ErrorReportingHost                         = 294
@@ -302,6 +306,9 @@ const (
 	LCSRequestorID                             = 1239
 	LCSRequestorIDString                       = 1240
 	LIPAPermission                             = 1618
+	Load                                       = 650
+	LoadType                                   = 651
+	LoadValue                                  = 652
 	LocalGWInsertedIndication                  = 2604
 	LocalSequenceNumber                        = 2063
 	LocationEstimate                           = 1242
@@ -514,6 +521,7 @@ const (
 	RequestedServiceUnit                       = 437
 	RequestedUTRANGERANAuthenticationInfo      = 1409
 	RequiredMBMSBearerCapabilities             = 901
+	ResetID                                    = 1670
 	RestrictionFilterRule                      = 438
 	ResultCode                                 = 268
 	ResynchronizationInfo                      = 1411
@@ -562,6 +570,7 @@ const (
 	SessionPriority                            = 650
 	SessionServerFailover                      = 271
 	SessionTimeout                             = 27
+	SGsMMEIdentity                             = 1664
 	SGSNAddress                                = 1228
 	SGSNNumber                                 = 1489
 	SGWAddress                                 = 2067
@@ -589,10 +598,12 @@ const (
 	SMServiceType                              = 2029
 	SMSInformation                             = 2000
 	SMSNode                                    = 2016
+	SMSRegisterRequest                         = 1648
 	SMSResult                                  = 3409
 	SMStatus                                   = 2014
 	SMUserDataHeader                           = 2015
 	SoftwareVersion                            = 1403
+	SourceID                                   = 649
 	SpecificAPNInfo                            = 1472
 	SponsorIdentity                            = 531
 	SRES                                       = 1454
@@ -690,6 +701,7 @@ const (
 	TWANUserLocationInfo                       = 2714
 	TypeNumber                                 = 1204
 	UESRVCCCapability                          = 1615
+	UEUsageType                                = 1680
 	ULAFlags                                   = 1406
 	ULRFlags                                   = 1405
 	UnitCost                                   = 2061

@@ -363,6 +363,47 @@ func TestEmbeddedStruct(t *testing.T) {
 	if readBack.OriginHost != d.OriginHost {
 		t.Fatal("name does not match when mashal/unmarshalling")
 	}
+
+
+	// Test embedded non struct values
+	type CEREmb struct {
+		Common
+		net.IP `avp:"Host-IP-Address"`
+	}
+	var e CEREmb
+	if err := msg.Unmarshal(&e); err != nil {
+		t.Fatal(err)
+	}
+	if e.OriginHost != "test" {
+		t.Fatal("Embedded struct was not unmarshalled")
+	}
+	expectedIp := net.ParseIP("10.1.0.1")
+	if e.IP.String() != expectedIp.String() {
+		t.Fatalf("Embedded IP was not unmarshalled: %v != %v", e.IP, expectedIp)
+	}
+	newMsg = Message{
+		Header: &Header{
+			ApplicationID: 0,
+		},
+		dictionary: dict.Default,
+	}
+	err = newMsg.Marshal(&e)
+	if err != nil {
+		t.Fatal("Failed to marshal struct")
+	}
+	var readBackEmb CEREmb
+	if err = newMsg.Unmarshal(&readBackEmb); err != nil {
+		t.Fatal(err)
+	}
+	if readBackEmb.OriginHost != e.OriginHost {
+		t.Fatal("name does not match when mashal/unmarshalling")
+	}
+	if readBackEmb.IP.String() != expectedIp.String() {
+		t.Fatalf("Host IP does not match when mashal/unmarshalling: %v != %v", readBackEmb.IP, expectedIp)
+	}
+
+
+
 }
 
 func BenchmarkUnmarshal(b *testing.B) {

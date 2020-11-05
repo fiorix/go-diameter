@@ -86,7 +86,7 @@ func marshalStruct(m *Message, field reflect.Value) (error, []*AVP) {
 		f := base.Field(n)
 		bt := base.Type().Field(n)
 
-		if bt.Anonymous {
+		if bt.Anonymous && bt.Type.Kind() == reflect.Struct && len(bt.Tag) == 0 {
 			err, embeddedAvps := marshalStruct(m, f)
 			if err != nil {
 				return err, nil
@@ -379,7 +379,7 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 		f := base.Field(n)
 		bt := base.Type().Field(n)
 
-		if bt.Anonymous {
+		if bt.Anonymous && bt.Type.Kind() == reflect.Struct && len(bt.Tag) == 0 {
 			if err := scanStruct(m, f, avps); err != nil {
 				return err
 			}

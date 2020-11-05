@@ -12,10 +12,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/fiorix/go-diameter/v4/diam"
-	"github.com/fiorix/go-diameter/v4/diam/avp"
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
 	"github.com/ishidawataru/sctp"
+	"github.com/nickel0/go-diameter/v4/diam"
+	"github.com/nickel0/go-diameter/v4/diam/avp"
+	"github.com/nickel0/go-diameter/v4/diam/datatype"
 )
 
 var addr = flag.String("addr", "192.168.60.145:3868", "server address in form of ip:port to connect to")

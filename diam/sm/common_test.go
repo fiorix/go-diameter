@@ -9,8 +9,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
-	"github.com/fiorix/go-diameter/v4/diam/dict"
+	"github.com/nickel0/go-diameter/v4/diam/datatype"
+	"github.com/nickel0/go-diameter/v4/diam/dict"
 )
 
 func init() {

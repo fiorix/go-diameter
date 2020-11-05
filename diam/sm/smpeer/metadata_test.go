@@ -9,8 +9,8 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
-	"github.com/fiorix/go-diameter/v4/diam/sm/smparser"
+	"github.com/nickel0/go-diameter/v4/diam/datatype"
+	"github.com/nickel0/go-diameter/v4/diam/sm/smparser"
 )
 
 func TestFromCER(t *testing.T) {

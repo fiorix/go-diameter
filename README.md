@@ -1,11 +1,11 @@
 # Diameter Base Protocol
 
-Package [go-diameter](http://godoc.org/github.com/fiorix/go-diameter) is an
+Package [go-diameter](http://godoc.org/github.com/nickel0/go-diameter) is an
 implementation of the
 Diameter Base Protocol [RFC 6733](http://tools.ietf.org/html/rfc6733)
 and a stack for the [Go programming language](http://golang.org).
 
-[![GoDoc](https://godoc.org/github.com/fiorix/go-diameter?status.svg)](https://godoc.org/github.com/fiorix/go-diameter)
+[![GoDoc](https://godoc.org/github.com/nickel0/go-diameter?status.svg)](https://godoc.org/github.com/nickel0/go-diameter)
 
 ### Status
 
@@ -13,9 +13,9 @@ The current implementation is solid and works fine for general purpose
 clients and servers. It can send and receive messages efficiently as
 well as build and parse AVPs based on dictionaries.
 
-See the API documentation at http://godoc.org/github.com/fiorix/go-diameter
+See the API documentation at http://godoc.org/github.com/nickel0/go-diameter
 
-[![Build Status](https://secure.travis-ci.org/fiorix/go-diameter.png)](http://travis-ci.org/fiorix/go-diameter)
+[![Build Status](https://secure.travis-ci.org/nickel0/go-diameter.png)](http://travis-ci.org/nickel0/go-diameter)
 
 ## Features
 
@@ -45,16 +45,16 @@ With Go 1.11 and newer (preferred), you can start the client and server already:
 
 ```
 export GO111MODULE=on
-go run github.com/fiorix/go-diameter/v4/examples/server
-go run github.com/fiorix/go-diameter/v4/examples/client -hello
+go run github.com/nickel0/go-diameter/v4/examples/server
+go run github.com/nickel0/go-diameter/v4/examples/client -hello
 ```
 
 Without modules, use standard procedure:
 
 ```
-go get github.com/fiorix/go-diameter/examples/...
-go run github.com/fiorix/go-diameter/examples/server
-go run github.com/fiorix/go-diameter/examples/client -hello
+go get github.com/nickel0/go-diameter/examples/...
+go run github.com/nickel0/go-diameter/examples/server
+go run github.com/nickel0/go-diameter/examples/client -hello
 ```
 
 Source code is your best friend. Check out other examples and test cases.

@@ -5,6 +5,9 @@
 package sm
 
 import (
+	"context"
+	"crypto/tls"
+	"net"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -300,5 +303,67 @@ func TestClient_Watchdog_Timeout(t *testing.T) {
 	case <-c.(diam.CloseNotifier).CloseNotify():
 	case <-time.After(500 * time.Millisecond):
 		t.Fatal("Timeout waiting for watchdog to disconnect client")
+	}
+}
+
+// Type matching interface: net.Addr
+type testLocalAddr struct {
+	value string
+}
+
+func (a testLocalAddr) Network() string { return "tcp" }
+func (a testLocalAddr) String() string  { return a.value }
+
+// Type matching interface: diam.Conn
+type testLocalAddrDiamConn struct {
+	localAddr *testLocalAddr
+}
+
+func (d testLocalAddrDiamConn) Write(b []byte) (int, error)                    { return 0, nil }
+func (d testLocalAddrDiamConn) WriteStream(b []byte, stream uint) (int, error) { return 0, nil }
+func (d testLocalAddrDiamConn) Close()                                         {}
+func (d testLocalAddrDiamConn) LocalAddr() net.Addr                            { return d.localAddr }
+func (d testLocalAddrDiamConn) RemoteAddr() net.Addr                           { return nil }
+func (d testLocalAddrDiamConn) TLS() *tls.ConnectionState                      { return nil }
+func (d testLocalAddrDiamConn) Dictionary() *dict.Parser                       { return nil }
+func (d testLocalAddrDiamConn) Context() context.Context                       { return context.Background() }
+func (d testLocalAddrDiamConn) SetContext(c context.Context)                   {}
+func (d testLocalAddrDiamConn) Connection() net.Conn                           { return nil }
+
+func newTestLocalAddrDiamConn(localAddrValue string) diam.Conn {
+	return testLocalAddrDiamConn{
+		localAddr: &testLocalAddr{
+			value: localAddrValue,
+		},
+	}
+}
+
+func TestClient_Conn_LocalAddresses_Loopback(t *testing.T) {
+	c := newTestLocalAddrDiamConn("127.0.0.1:3868")
+
+	addrList, err := getLocalAddresses(c)
+	if err != nil {
+		t.Fatalf("Failed to parse local addresses: %v", err)
+	}
+	if len(addrList) > 0 {
+		t.Fatal("Loopback address was not skipped")
+	}
+}
+
+func TestClient_Conn_LocalAddresses_Complex(t *testing.T) {
+	c := newTestLocalAddrDiamConn("127.0.0.1/[::1%lo]/10.0.0.3/[fe80::78ef:0efb:a57b:15b9%eth0]:3868")
+
+	addrList, err := getLocalAddresses(c)
+	if err != nil {
+		t.Fatalf("Failed to parse local addresses: %v", err)
+	}
+	if len(addrList) != 1 {
+		t.Fatal("Failed to parse valid IP address or failed to skip loopback")
+	}
+
+	actual := net.IP(addrList[0]).String()
+	expected := "10.0.0.3"
+	if actual != expected {
+		t.Fatalf("Wrong IP address found in list of local addresses, expected: %s, actual: %s", expected, actual)
 	}
 }

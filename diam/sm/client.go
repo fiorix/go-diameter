@@ -343,7 +343,7 @@ func getLocalAddresses(c diam.Conn) ([]datatype.Address, error) {
 	addresses := make([]datatype.Address, 0, len(hostIPs))
 	for _, ipStr := range hostIPs {
 		ip := net.ParseIP(ipStr)
-		if ip != nil {
+		if ip != nil && !ip.IsLoopback() {
 			addresses = append(addresses, datatype.Address(ip))
 		}
 	}

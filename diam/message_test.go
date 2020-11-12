@@ -6,9 +6,11 @@ package diam
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
 	"io/ioutil"
 	"net"
+	"reflect"
 	"testing"
 
 	"github.com/fiorix/go-diameter/v4/diam/avp"
@@ -272,6 +274,26 @@ func TestMessageWriteTo(t *testing.T) {
 	if _, err := m.WriteTo(ioutil.Discard); err != nil {
 		t.Error(err)
 	}
+}
+
+func TestMessageContext(t *testing.T) {
+	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
+	want, _ := m.Dictionary().FindCommand(
+		m.Header.ApplicationID,
+		m.Header.CommandCode,
+	)
+	type contextKey struct {
+		name string
+	}
+	key := &contextKey{"diameter-cmd"}
+	ctx1 := context.WithValue(context.Background(), key, want)
+	m.SetContext(ctx1)
+	ctx2 := m.Context()
+	got := ctx2.Value(key).(*dict.Command)
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v want %v", got, want)
+	}
+	t.Logf("%#v", got)
 }
 
 func BenchmarkReadMessage(b *testing.B) {

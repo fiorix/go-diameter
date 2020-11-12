@@ -6,6 +6,7 @@ package diam
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -34,6 +35,7 @@ type Message struct {
 	// dictionary parser object used to encode and decode AVPs.
 	dictionary *dict.Parser
 	stream     uint // the stream this message was received on (if any)
+	ctx        context.Context
 }
 
 var readerBufferPool sync.Pool
@@ -574,4 +576,18 @@ func indentTabs(n int) string {
 		s += "\t"
 	}
 	return s
+}
+
+// Context returns the message's context. To change the context, use
+// SetContext.
+func (m *Message) Context() context.Context {
+	if m.ctx != nil {
+		return m.ctx
+	}
+	return context.Background()
+}
+
+// SetContext replaces the message's context.
+func (m *Message) SetContext(ctx context.Context) {
+	m.ctx = ctx
 }

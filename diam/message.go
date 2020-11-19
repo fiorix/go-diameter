@@ -12,6 +12,7 @@ import (
 	"io"
 	"math/rand"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,9 +33,9 @@ type Message struct {
 	Header *Header
 	AVP    []*AVP // AVPs in this message.
 
-	// dictionary parser object used to encode and decode AVPs.
-	dictionary *dict.Parser
-	stream     uint // the stream this message was received on (if any)
+	DecodeErr  error        // Possible decoding error on one or more AVPs (does not halt parsing)
+	dictionary *dict.Parser // dictionary parser object used to encode and decode AVPs.
+	stream     uint         // the stream this message was received on (if any)
 	ctx        context.Context
 }
 
@@ -74,7 +75,10 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	}
 	m.stream = stream
 	if err = m.readBody(reader, buf, cmd, stream); err != nil {
-		return nil, err
+		return m, err
+	}
+	if dictionary.Strict {
+		return m, m.DecodeErr
 	}
 	return m, nil
 }
@@ -149,14 +153,23 @@ func (m *Message) maxAVPsFor(cmd *dict.Command) int {
 
 func (m *Message) decodeAVPs(b []byte) error {
 	var a *AVP
+	var decodeErrs []string
 	var err error
 	for n := 0; n < len(b); {
 		a, err = DecodeAVP(b[n:], m.Header.ApplicationID, m.Dictionary())
 		if err != nil {
-			return fmt.Errorf("Failed to decode AVP: %s", err)
+			if decodeErr, ok := err.(DecodeError); ok {
+				decodeErrs = append(decodeErrs, decodeErr.Error())
+			} else {
+				return err
+			}
 		}
 		m.AVP = append(m.AVP, a)
 		n += a.Len()
+	}
+	if len(decodeErrs) > 0 {
+		// Depending on the settings, this will be thrown by the state machine or passed to the best handler
+		m.DecodeErr = fmt.Errorf("Failed to decode one or more AVPs: {%s}", strings.Join(decodeErrs, "; "))
 	}
 	return nil
 }

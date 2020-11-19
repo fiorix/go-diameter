@@ -169,10 +169,7 @@ func (c *conn) readMessage() (m *Message, err error) {
 	} else {
 		m, err = ReadMessage(c.buf.Reader, c.dictionary())
 	}
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
+	return m, err
 }
 
 // Serve a new connection.

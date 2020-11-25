@@ -156,11 +156,6 @@ const (
 	// bytes of a request.
 	// After the request is handled, the state
 	// transitions to StateClosed, or StateIdle.
-	// For HTTP/2, StateActive fires on the transition from zero
-	// to one active request, and only transitions away once all
-	// active requests are complete. That means that ConnState
-	// cannot be used to do per-request work; ConnState only notes
-	// the overall state of the connection.
 	StateActive
 
 	// StateIdle represents a connection that has finished

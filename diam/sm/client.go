@@ -331,7 +331,10 @@ func getHostsWithoutPort(hosts string) (string, error) {
 }
 
 func getLocalAddresses(c diam.Conn) ([]datatype.Address, error) {
-	var addrStr string
+	var (
+		addrStr  string
+		loopback IP
+	)
 	if c.LocalAddr() != nil {
 		addrStr = c.LocalAddr().String()
 	}
@@ -343,9 +346,16 @@ func getLocalAddresses(c diam.Conn) ([]datatype.Address, error) {
 	addresses := make([]datatype.Address, 0, len(hostIPs))
 	for _, ipStr := range hostIPs {
 		ip := net.ParseIP(ipStr)
-		if ip != nil && !ip.IsLoopback() {
-			addresses = append(addresses, datatype.Address(ip))
+		if ip != nil {
+			if ip.IsLoopback() {
+				loopback = ip
+			} else {
+				addresses = append(addresses, datatype.Address(ip))
+			}
 		}
+	}
+	if len(addresses) == 0 && loopback != nil {
+		addresses = append(addresses, datatype.Address(loopback))
 	}
 	return addresses, nil
 }

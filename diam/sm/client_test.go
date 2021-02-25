@@ -345,8 +345,8 @@ func TestClient_Conn_LocalAddresses_Loopback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to parse local addresses: %v", err)
 	}
-	if len(addrList) > 0 {
-		t.Fatal("Loopback address was not skipped")
+	if len(addrList) != 1 {
+		t.Fatal("The only available loopback address was skipped")
 	}
 }
 

@@ -143,7 +143,7 @@ func (c *conn) notifyClientGone() {
 }
 
 // A ConnState represents the state of a client connection to a server.
-type ConnState int
+type ConnState int8
 
 const (
 	// StateNew represents a new connection that is expected to
@@ -178,7 +178,11 @@ var stateName = map[ConnState]string{
 }
 
 func (c ConnState) String() string {
-	return stateName[c]
+	name, ok := stateName[c]
+	if !ok {
+		return "UNDEFINED"
+	}
+	return name
 }
 
 // Create new connection from rwc.
@@ -209,7 +213,7 @@ func (c *conn) setState(state ConnState) {
 	case StateClosed:
 		srv.trackConn(c, false)
 	}
-	if state > 0xff || state < 0 {
+	if state > 0xf || state < 0 {
 		panic("internal error")
 	}
 	packedState := uint64(time.Now().Unix()<<8) | uint64(state)

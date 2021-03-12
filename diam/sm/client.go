@@ -333,7 +333,7 @@ func getHostsWithoutPort(hosts string) (string, error) {
 func getLocalAddresses(c diam.Conn) ([]datatype.Address, error) {
 	var (
 		addrStr  string
-		loopback IP
+		loopback net.IP
 	)
 	if c.LocalAddr() != nil {
 		addrStr = c.LocalAddr().String()

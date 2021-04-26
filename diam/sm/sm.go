@@ -46,6 +46,11 @@ type Settings struct {
 	VendorID    datatype.Unsigned32
 	ProductName datatype.UTF8String
 
+	// Dictionaries are used to construct the list of supported applications,
+	// and should match the ones configured in the client/server. Will default
+	// to dict.Default.
+	Dict *dict.Parser
+
 	// OriginStateID is optional for clients, and not added if unset.
 	//
 	// On servers it has no effect because CEA will contain the
@@ -90,6 +95,9 @@ type StateMachine struct {
 
 // New creates and initializes a new StateMachine for clients or servers.
 func New(settings *Settings) *StateMachine {
+	if settings.Dict == nil {
+		settings.Dict = dict.Default
+	}
 	if len(settings.HostIPAddresses) == 0 && len(settings.HostIPAddress) > 0 {
 		settings.HostIPAddresses = []datatype.Address{settings.HostIPAddress}
 	}
@@ -97,7 +105,7 @@ func New(settings *Settings) *StateMachine {
 		cfg:           settings,
 		mux:           diam.NewServeMux(),
 		hsNotifyc:     make(chan diam.Conn),
-		supportedApps: PrepareSupportedApps(dict.Default),
+		supportedApps: PrepareSupportedApps(settings.Dict),
 	}
 	sm.mux.Handle("CER", handleCER(sm))
 	sm.mux.Handle("DWR", handshakeOK(handleDWR(sm)))

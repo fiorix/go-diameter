@@ -15,6 +15,7 @@ import (
 	"sync"
 
 	"github.com/fiorix/go-diameter/v4/diam/datatype"
+	"github.com/fiorix/go-diameter/v4/diam/dict/library"
 )
 
 const (
@@ -66,6 +67,18 @@ func NewParser(filename ...string) (*Parser, error) {
 	for _, f := range filename {
 		if err = p.LoadFile(f); err != nil {
 			return nil, err
+		}
+	}
+	return p, nil
+}
+
+// NewParserFromLibrary allocates a new Parser optionally loading dictionaries from the library.
+func NewParserFromLibrary(dictionaries ...library.DictInfo) (*Parser, error) {
+	p := new(Parser)
+	var err error
+	for _, dict := range dictionaries {
+		if err = p.Load(bytes.NewReader([]byte(dict.XML))); err != nil {
+			return nil, fmt.Errorf("Cannot load %s dictionary: %s", dict.Name, err)
 		}
 	}
 	return p, nil

@@ -68,6 +68,12 @@ type Settings struct {
 	//
 	// Deprecated: HostIPAddress is depreciated, use HostIPAddresses instead
 	HostIPAddress datatype.Address
+
+	// Dictionary is optional, and defaults to dict.Default is unset.
+	//
+	// It is used to compute the list of supported Application-ID and Vendor-ID pairs
+	// in order to send them in the CEA.
+	Dictionary *dict.Parser
 }
 
 var (
@@ -93,11 +99,14 @@ func New(settings *Settings) *StateMachine {
 	if len(settings.HostIPAddresses) == 0 && len(settings.HostIPAddress) > 0 {
 		settings.HostIPAddresses = []datatype.Address{settings.HostIPAddress}
 	}
+	if settings.Dictionary == nil {
+		settings.Dictionary = dict.Default
+	}
 	sm := &StateMachine{
 		cfg:           settings,
 		mux:           diam.NewServeMux(),
 		hsNotifyc:     make(chan diam.Conn),
-		supportedApps: PrepareSupportedApps(dict.Default),
+		supportedApps: PrepareSupportedApps(settings.Dictionary),
 	}
 	sm.mux.Handle("CER", handleCER(sm))
 	sm.mux.Handle("DWR", handshakeOK(handleDWR(sm)))

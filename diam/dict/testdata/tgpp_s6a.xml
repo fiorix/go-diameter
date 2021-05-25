@@ -544,6 +544,8 @@
             <data type="Grouped">
                 <rule avp="Max-Requested-Bandwidth-UL" required="true" max="1"/>
                 <rule avp="Max-Requested-Bandwidth-DL" required="true" max="1"/>
+                <rule avp="Extended-Max-Requested-BW-UL" required="true" max="1"/>
+                <rule avp="Extended-Max-Requested-BW-DL" required="true" max="1"/>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>

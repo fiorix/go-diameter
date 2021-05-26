@@ -7,6 +7,7 @@ package diam
 import (
 	"bytes"
 	"net"
+	"reflect"
 	"testing"
 	"time"
 

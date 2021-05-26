@@ -320,12 +320,25 @@ func (cli *Client) makeDWR(osid uint32) *diam.Message {
 	return m
 }
 
+func getHostsWithoutPort(hosts string) (string, error) {
+	i := len(hosts) - 1
+	for ; i >= 0 && hosts[i] != ':'; i-- {
+		if hosts[i] < '0' || hosts[i] > '9' {
+			return "", fmt.Errorf("found non numerical character in port at position %d", i+1)
+		}
+	}
+	return hosts[:i], nil
+}
+
 func getLocalAddresses(c diam.Conn) ([]datatype.Address, error) {
-	var addrStr string
+	var (
+		addrStr  string
+		loopback net.IP
+	)
 	if c.LocalAddr() != nil {
 		addrStr = c.LocalAddr().String()
 	}
-	addr, _, err := net.SplitHostPort(addrStr)
+	addr, err := getHostsWithoutPort(addrStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse local ip %s [%q]: %s", addrStr, c.LocalAddr(), err)
 	}
@@ -334,8 +347,15 @@ func getLocalAddresses(c diam.Conn) ([]datatype.Address, error) {
 	for _, ipStr := range hostIPs {
 		ip := net.ParseIP(ipStr)
 		if ip != nil {
-			addresses = append(addresses, datatype.Address(ip))
+			if ip.IsLoopback() {
+				loopback = ip
+			} else {
+				addresses = append(addresses, datatype.Address(ip))
+			}
 		}
+	}
+	if len(addresses) == 0 && loopback != nil {
+		addresses = append(addresses, datatype.Address(loopback))
 	}
 	return addresses, nil
 }

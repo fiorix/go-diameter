@@ -334,7 +334,7 @@ func TestEmbeddedStruct(t *testing.T) {
 	}
 	type CER struct {
 		Common
-		HostIP      net.IP `avp:"Host-IP-Address"`
+		HostIP net.IP `avp:"Host-IP-Address"`
 	}
 	var d CER
 	if err := msg.Unmarshal(&d); err != nil {
@@ -355,7 +355,6 @@ func TestEmbeddedStruct(t *testing.T) {
 		t.Fatal("Failed to marshal struct")
 	}
 
-
 	var readBack CER
 	if err = newMsg.Unmarshal(&readBack); err != nil {
 		t.Fatal(err)
@@ -363,7 +362,6 @@ func TestEmbeddedStruct(t *testing.T) {
 	if readBack.OriginHost != d.OriginHost {
 		t.Fatal("name does not match when mashal/unmarshalling")
 	}
-
 
 	// Test embedded non struct values
 	type CEREmb struct {
@@ -401,8 +399,6 @@ func TestEmbeddedStruct(t *testing.T) {
 	if readBackEmb.IP.String() != expectedIp.String() {
 		t.Fatalf("Host IP does not match when mashal/unmarshalling: %v != %v", readBackEmb.IP, expectedIp)
 	}
-
-
 
 }
 

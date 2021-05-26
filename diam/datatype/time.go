@@ -19,17 +19,16 @@ const rfc2030offset = 2085978496 // 2085978496 comes from FFFFFFFF – 220898880
 
 // DecodeTime decodes a Time data type from byte array.
 func DecodeTime(b []byte) (Type, error) {
-        if len(b) != 4 {
-                return &Time{}, nil
-        }
-        if (b[0] >> 7) == 0 {
-                return Time(time.Unix(int64(binary.BigEndian.Uint32(b))+rfc2030offset, 0)), nil
-        } else {
-                return Time(time.Unix(int64(binary.BigEndian.Uint32(b))-rfc868offset, 0)), nil
-        }
+	if len(b) != 4 {
+		return &Time{}, nil
+	}
+	if (b[0] >> 7) == 0 {
+		return Time(time.Unix(int64(binary.BigEndian.Uint32(b))+rfc2030offset, 0)), nil
+	} else {
+		return Time(time.Unix(int64(binary.BigEndian.Uint32(b))-rfc868offset, 0)), nil
+	}
 
 }
-
 
 // Serialize implements the Type interface.
 func (t Time) Serialize() []byte {

@@ -634,6 +634,14 @@
 			<data type="Unsigned32"/>
 		</avp>
 
+		<avp name="Extended-GBR-DL" code="2850" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="Extended-GBR-UL" code="2851" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
 		<avp name="IMS-Application-Reference-Identifier" code="2601" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="UTF8String"/>
 		</avp>
@@ -932,6 +940,14 @@
 		</avp>
 
 		<avp name="Max-Requested-Bandwidth-UL" code="516" must="V,M"	may="P" must-not="-" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="Extended-Max-Requested-BW-DL" code="554" must="V"	may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="Extended-Max-Requested-BW-UL" code="555" must="V"	may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
 			<data type="Unsigned32"/>
 		</avp>
 
@@ -1576,12 +1592,18 @@
 				<rule avp="QoS-Class-Identifier" required="false" max="1"/>
 				<rule avp="Max-Requested-Bandwidth-UL" required="false" max="1"/>
 				<rule avp="Max-Requested-Bandwidth-DL" required="false" max="1"/>
+				<rule avp="Extended-Max-Requested-BW-UL" required="false" max="1"/>
+				<rule avp="Extended-Max-Requested-BW-DL" required="false" max="1"/>
 				<rule avp="Guaranteed-Bitrate-UL" required="false" max="1"/>
 				<rule avp="Guaranteed-Bitrate-DL" required="false" max="1"/>
+				<rule avp="Extended-GBR-UL" required="false" max="1"/>
+				<rule avp="Extended-GBR-DL" required="false" max="1"/>
 				<rule avp="Bearer-Identifier" required="false" max="1"/>
 				<rule avp="Allocation-Retention-Priority" required="false" max="1"/>
 				<rule avp="APN-Aggregate-Max-Bitrate-UL" required="false" max="1"/>
 				<rule avp="APN-Aggregate-Max-Bitrate-DL" required="false" max="1"/>
+				<rule avp="Extended-APN-AMBR-UL" required="false" max="1"/>
+				<rule avp="Extended-APN-AMBR-DL" required="false" max="1"/>
 				<rule avp="Conditional-APN-Aggregate-Max-Bitrate" required="false"/>
 				<rule avp="AVP" required="false"/>
 			</data>
@@ -2477,6 +2499,14 @@
     </avp>
 
     <avp name="APN-Aggregate-Max-Bitrate-UL" code="1041" must="V" must-not="M" may-encrypt="Y" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="Extended-APN-AMBR-DL" code="2848" must="V" must-not="M" may= "P" may-encrypt="Y" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="Extended-APN-AMBR-UL" code="2849" must="V" must-not="M" may="P" may-encrypt="Y" vendor-id="10415">
       <data type="Unsigned32"/>
     </avp>
 

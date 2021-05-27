@@ -82,3 +82,21 @@ parsing messages is much slower than writing them, for example. This is
 because in order to parse messages it makes numerous dictionary lookups
 for AVP types, to be able to decode them. Encoding messages require less
 lookups and is generally simpler, thus faster.
+
+## Contribute
+
+In case you want to add new AVPs, please add them to `diam/dict/testdata` xml
+files. Then regenerate the go models using `./autogen.sh` you will find at 
+`diam` folder. This will modify files at `diam/dict` to include your changes.
+
+Before submitting PR, please run `make test` to test your changes. Or do it 
+manually:
+
+```
+	go test ./...
+```
+
+You also have the option to run the test using a Linux VM through Docker (this
+is not mandatory). To do so, run `make test_docker`. Runing test on Linux  can 
+be useful in case you add `sctp` tests. Note you will need to install
+docker and docker-compose.

@@ -3094,6 +3094,14 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<data type="Unsigned32"/>
 		</avp>
 
+		<avp name="Extended-GBR-DL" code="2850" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="Extended-GBR-UL" code="2851" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
 		<avp name="IMS-Application-Reference-Identifier" code="2601" must="V,M" may="P" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="UTF8String"/>
 		</avp>
@@ -3392,6 +3400,14 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 		</avp>
 
 		<avp name="Max-Requested-Bandwidth-UL" code="516" must="V,M"	may="P" must-not="-" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="Extended-Max-Requested-BW-DL" code="554" must="V"	may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="Extended-Max-Requested-BW-UL" code="555" must="V"	may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
 			<data type="Unsigned32"/>
 		</avp>
 
@@ -4036,12 +4052,18 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="QoS-Class-Identifier" required="false" max="1"/>
 				<rule avp="Max-Requested-Bandwidth-UL" required="false" max="1"/>
 				<rule avp="Max-Requested-Bandwidth-DL" required="false" max="1"/>
+				<rule avp="Extended-Max-Requested-BW-UL" required="false" max="1"/>
+				<rule avp="Extended-Max-Requested-BW-DL" required="false" max="1"/>
 				<rule avp="Guaranteed-Bitrate-UL" required="false" max="1"/>
 				<rule avp="Guaranteed-Bitrate-DL" required="false" max="1"/>
+				<rule avp="Extended-GBR-UL" required="false" max="1"/>
+				<rule avp="Extended-GBR-DL" required="false" max="1"/>
 				<rule avp="Bearer-Identifier" required="false" max="1"/>
 				<rule avp="Allocation-Retention-Priority" required="false" max="1"/>
 				<rule avp="APN-Aggregate-Max-Bitrate-UL" required="false" max="1"/>
 				<rule avp="APN-Aggregate-Max-Bitrate-DL" required="false" max="1"/>
+				<rule avp="Extended-APN-AMBR-UL" required="false" max="1"/>
+				<rule avp="Extended-APN-AMBR-DL" required="false" max="1"/>
 				<rule avp="Conditional-APN-Aggregate-Max-Bitrate" required="false"/>
 				<rule avp="AVP" required="false"/>
 			</data>
@@ -4940,6 +4962,14 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
       <data type="Unsigned32"/>
     </avp>
 
+    <avp name="Extended-APN-AMBR-DL" code="2848" must="V" must-not="M" may= "P" may-encrypt="Y" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
+    <avp name="Extended-APN-AMBR-UL" code="2849" must="V" must-not="M" may="P" may-encrypt="Y" vendor-id="10415">
+      <data type="Unsigned32"/>
+    </avp>
+
 	</application>
 </diameter>`
 
@@ -5489,6 +5519,8 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Grouped">
                 <rule avp="Max-Requested-Bandwidth-UL" required="true" max="1"/>
                 <rule avp="Max-Requested-Bandwidth-DL" required="true" max="1"/>
+                <rule avp="Extended-Max-Requested-BW-UL" required="true" max="1"/>
+                <rule avp="Extended-Max-Requested-BW-DL" required="true" max="1"/>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>
@@ -6337,6 +6369,8 @@ var tgppswxXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Grouped">
                 <rule avp="Max-Requested-Bandwidth-UL" required="true" max="1"/>
                 <rule avp="Max-Requested-Bandwidth-DL" required="true" max="1"/>
+                <rule avp="Extended-Max-Requested-BW-UL" required="true" max="1"/>
+                <rule avp="Extended-Max-Requested-BW-DL" required="true" max="1"/>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>
@@ -6351,10 +6385,19 @@ var tgppswxXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Unsigned32"/>
         </avp>
 
+		<avp name="Extended-Max-Requested-BW-DL" code="554" must="V"	may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="Extended-Max-Requested-BW-UL" code="555" must="V"	may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+			<data type="Unsigned32"/>
+		</avp>
+
         <avp name="TGPP-Charging-Characteristics" code="13" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             <!-- 3GPP TS 29.061 [21] -->
             <data type="UTF8String"/>
         </avp>
+
 
         <avp name="APN-OI-Replacement" code="1427" must="M,V" may-encrypt="N" vendor-id="10415">
             <!-- 3GPP TS 29.272 Section 7.3.32 -->

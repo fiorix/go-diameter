@@ -206,6 +206,12 @@ const (
 	ExpirationDate                             = 1439
 	Expires                                    = 888
 	Exponent                                   = 429
+	ExtendedAPNAMBRDL                          = 2848
+	ExtendedAPNAMBRUL                          = 2849
+	ExtendedGBRDL                              = 2850
+	ExtendedGBRUL                              = 2851
+	ExtendedMaxRequestedBWDL                   = 554
+	ExtendedMaxRequestedBWUL                   = 555
 	ExternalClient                             = 1479
 	ExtPDPAddress                              = 1621
 	ExtPDPType                                 = 1620

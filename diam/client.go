@@ -8,6 +8,8 @@ package diam
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"net"
 	"time"
 
@@ -137,12 +139,24 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 	} else {
 		config = TLSConfigClone(srv.TLSConfig)
 	}
+
 	if len(certFile) != 0 {
+		caCertPool := x509.NewCertPool()
+		caCert, err := ioutil.ReadFile(certFile)
+		if err != nil {
+			return nil, err
+		}
+		caCertPool.AppendCertsFromPEM(caCert)
+		config.RootCAs = caCertPool
+		config.ServerName = ""
+
 		config.Certificates = make([]tls.Certificate, 1)
 		config.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
 		if err != nil {
 			return nil, err
 		}
+
+		config.BuildNameToCertificate()
 	}
 
 	var rw net.Conn

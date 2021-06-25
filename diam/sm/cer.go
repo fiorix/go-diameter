@@ -88,6 +88,9 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 		a = m.Answer(diam.UnableToComply)
 	}
 	a.Header.CommandFlags |= diam.ErrorFlag
+	// Fix for Same H2H and E2E Identifier in success response
+	a.Header.HopByHopID = m.Header.HopByHopID
+	a.Header.EndToEndID = m.Header.EndToEndID
 	a.NewAVP(avp.OriginHost, avp.Mbit, 0, sm.cfg.OriginHost)
 	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, sm.cfg.OriginRealm)
 	for _, hostAddress := range hostAddresses {
@@ -125,6 +128,9 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	}
 
 	a := m.Answer(diam.Success)
+	// Fix for Same H2H and E2E Identifier in success response
+	a.Header.HopByHopID = m.Header.HopByHopID
+	a.Header.EndToEndID = m.Header.EndToEndID
 	a.NewAVP(avp.OriginHost, avp.Mbit, 0, sm.cfg.OriginHost)
 	a.NewAVP(avp.OriginRealm, avp.Mbit, 0, sm.cfg.OriginRealm)
 	for _, hostAddress := range hostAddresses {

@@ -1174,7 +1174,6 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
         </avp>
 
 
-
         <avp name="Charging-Rule-Install" code="1001" must="M,V" may="P" may-encrypt="Y" vendor-id="10415">
             <!-- 3GPP 29.212 Section 5.3.2 -->
             <data type="Grouped">
@@ -5985,7 +5984,7 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </data>
         </avp>
 
-        <avp name="MIP-Home-Agent-Address" code="334" must="M" must-not="V" vendor-id="0">
+        <avp name="MIP-Home-Agent-Address" code="334" must="M" must-not="V" vendor-id="10415">
             <data type="Address"/>
         </avp>
 
@@ -6249,15 +6248,6 @@ var tgppswxXML = `<?xml version="1.0" encoding="UTF-8"?>
 
         <!-- RFC 5447 Diameter Mobile IPv6: Support for Network Access Server to Diameter Server Interaction -->
         <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
-            <data type="Grouped">
-                <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
-                <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>
-                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1"/>
-                <rule avp="AVP" required="false"/>
-            </data>
-        </avp>
-
-        <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="0">
             <data type="Grouped">
                 <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
                 <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>

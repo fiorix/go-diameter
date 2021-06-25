@@ -114,7 +114,6 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 // successCEA sends a success answer indicating that the CER was successfully
 // parsed and accepted by the server.
 func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER) error {
-	tgppVendorIdAdded := false
 	var (
 		hostAddresses []datatype.Address
 		err           error
@@ -151,14 +150,7 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 			typ = avp.AcctApplicationID
 		}
 		if app.Vendor != 0 {
-			if app.Vendor == 10415 {
-				if  tgppVendorIdAdded == false {
-					a.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(app.Vendor))
-					tgppVendorIdAdded = true
-				}
-			} else {
-				a.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(app.Vendor))
-			}
+			a.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(app.Vendor))
 			a.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
 				AVP: []*diam.AVP{
 					diam.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(app.Vendor)),

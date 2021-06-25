@@ -11,7 +11,7 @@ import (
 
 func TestApps(t *testing.T) {
 	apps := Default.Apps()
-	if len(apps) != 10 {
+	if len(apps) != 9 {
 		t.Fatalf("Unexpected # of apps. Want 8, have %d", len(apps))
 	}
 	// Base protocol.

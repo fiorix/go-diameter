@@ -17,7 +17,9 @@ func DecodeIPv6(b []byte) (Type, error) {
 	if len(b) != net.IPv6len {
 		return IPv6(make(net.IP, net.IPv6len)), nil
 	}
-	return IPv6(b), nil
+	tmp := make([]byte, len(b))
+	copy(tmp, b)
+	return IPv6(tmp), nil
 }
 
 // Serialize implements the Type interface.

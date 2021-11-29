@@ -32,9 +32,13 @@ func DecodeAddress(b []byte) (Type, error) {
 			return nil, errors.New("Invalid length for IPv6")
 		}
 	default:
-		return Address(b), nil
+		tmp := make([]byte, len(b))
+		copy(tmp, b)
+		return Address(tmp), nil
 	}
-	return Address(b[2:]), nil
+	tmp := make([]byte, len(b))
+	copy(tmp, b)
+	return Address(tmp[2:]), nil
 }
 
 // Serialize implements the Type interface.

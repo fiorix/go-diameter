@@ -426,6 +426,7 @@ const (
 	ParticipantsInvolved                       = 887
 	PasswordRetry                              = 75
 	PDNConnectionChargingID                    = 2050
+	PDNConnectionID                            = 1065
 	PDNGWAllocationType                        = 1438
 	PDNType                                    = 1456
 	PDPAddress                                 = 1227

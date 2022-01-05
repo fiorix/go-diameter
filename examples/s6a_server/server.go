@@ -104,7 +104,7 @@ func handleAIR(settings sm.Settings) diam.HandlerFunc {
 		OriginRealm             datatype.DiameterIdentity `avp:"Origin-Realm"`
 		AuthSessionState        datatype.UTF8String       `avp:"Auth-Session-State"`
 		UserName                string                    `avp:"User-Name"`
-		VisitedPLMNID           datatype.Unsigned32       `avp:"Visited-PLMN-Id"`
+		VisitedPLMNID           datatype.OctetString      `avp:"Visited-PLMN-Id"`
 		RequestedEUTRANAuthInfo RequestedEUTRANAuthInfo   `avp:"Requested-EUTRAN-Authentication-Info"`
 	}
 	return func(c diam.Conn, m *diam.Message) {
@@ -195,7 +195,7 @@ func handleULR(settings sm.Settings) diam.HandlerFunc {
 		OriginRealm      datatype.DiameterIdentity `avp:"Origin-Realm"`
 		AuthSessionState datatype.Unsigned32       `avp:"Auth-Session-State"`
 		UserName         datatype.UTF8String       `avp:"User-Name"`
-		VisitedPLMNID    datatype.Unsigned32       `avp:"Visited-PLMN-Id"`
+		VisitedPLMNID    datatype.OctetString      `avp:"Visited-PLMN-Id"`
 		RATType          datatype.Unsigned32       `avp:"RAT-Type"`
 		ULRFlags         datatype.Unsigned32       `avp:"ULR-Flags"`
 	}

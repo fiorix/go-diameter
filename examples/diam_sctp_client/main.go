@@ -55,7 +55,7 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-	sctpConn := cli.Connection().(*sctp.SCTPConn)
+	sctpConn := cli.Connection().(*diam.SCTPConn)
 	sctpLAdds, err = sctpConn.SCTPLocalAddr(0)
 	if err != nil {
 		log.Fatal(err)

@@ -3,6 +3,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"net"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/fiorix/go-diameter/v4/examples/s6a_proxy/protos"
 	"github.com/fiorix/go-diameter/v4/examples/s6a_proxy/service"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 

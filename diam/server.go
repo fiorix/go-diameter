@@ -8,6 +8,7 @@ package diam
 
 import (
 	"bufio"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -16,8 +17,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	"golang.org/x/net/context"
 
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 )

@@ -3,6 +3,7 @@
 package service
 
 import (
+	"context"
 	"net"
 	"sync"
 	"time"
@@ -13,7 +14,6 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 	"github.com/fiorix/go-diameter/v4/diam/sm"
 	"github.com/fiorix/go-diameter/v4/examples/s6a_proxy/protos"
-	"golang.org/x/net/context"
 )
 
 const (

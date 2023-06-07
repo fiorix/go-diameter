@@ -5,7 +5,7 @@
 package smpeer
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/fiorix/go-diameter/v4/diam/datatype"
 	"github.com/fiorix/go-diameter/v4/diam/sm/smparser"

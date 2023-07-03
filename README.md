@@ -1,11 +1,14 @@
 # Diameter Base Protocol
 
-Package [go-diameter](http://godoc.org/github.com/fiorix/go-diameter) is an
+[![Go Report Card](https://goreportcard.com/badge/github.com/fiorix/go-diameter)](https://goreportcard.com/report/github.com/fiorix/go-diameter)
+[![Test Status](https://github.com/fiorix/go-diameter/actions/workflows/test.yaml/badge.svg)](https://github.com/fiorix/go-diameter/actions/workflows/test.yaml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/fiorix/go-diameter/v4.svg)](https://pkg.go.dev/github.com/fiorix/go-diameter/v4)
+[![Latest](https://img.shields.io/github/v/tag/fiorix/go-diameter.svg?sort=semver&style=flat-square&label=latest)](https://github.com/fiorix/go-diameter/tags)
+
+Package [go-diameter](https://pkg.go.dev/github.com/fiorix/go-diameter/v4) is an
 implementation of the
 Diameter Base Protocol [RFC 6733](http://tools.ietf.org/html/rfc6733)
-and a stack for the [Go programming language](http://golang.org).
-
-[![GoDoc](https://godoc.org/github.com/fiorix/go-diameter?status.svg)](https://godoc.org/github.com/fiorix/go-diameter)
+and a stack for the [Go programming language](https://go.dev/).
 
 ### Status
 
@@ -13,9 +16,7 @@ The current implementation is solid and works fine for general purpose
 clients and servers. It can send and receive messages efficiently as
 well as build and parse AVPs based on dictionaries.
 
-See the API documentation at http://godoc.org/github.com/fiorix/go-diameter
-
-[![Build Status](https://secure.travis-ci.org/fiorix/go-diameter.png)](http://travis-ci.org/fiorix/go-diameter)
+See the API documentation at https://pkg.go.dev/github.com/fiorix/go-diameter/v4
 
 ## Features
 
@@ -30,7 +31,7 @@ See the API documentation at http://godoc.org/github.com/fiorix/go-diameter
   	  	[TS 129 272](http://www.etsi.org/deliver/etsi_ts/129200_129299/129272/10.09.00_60/ts_129272v100900p.pdf)
 - Human readable AVP representation (for debugging)
 - TLS, IPv4 and IPv6 support for both clients and servers
-- Stack based on [net/http](http://golang.org/pkg/net/http/) for simplicity
+- Stack based on [net/http](https://pkg.go.dev/net/http) for simplicity
 - Ships with sample client, server, snoop agent and benchmark tool
 - [State machines](http://tools.ietf.org/html/rfc6733#section-5.6) for CER/CEA and DWR/DWA for clients and servers
 - TCP and SCTP support. SCTP support relies on kernel SCTP implementation and external github.com/ishidawataru/sctp

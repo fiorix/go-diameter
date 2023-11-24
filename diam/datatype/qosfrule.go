@@ -11,7 +11,9 @@ type QoSFilterRule OctetString
 
 // DecodeQoSFilterRule decodes an QoSFilterRule data type from byte array.
 func DecodeQoSFilterRule(b []byte) (Type, error) {
-	return QoSFilterRule(OctetString(b)), nil
+	d := make([]byte, len(b))
+	copy(d, b)
+	return QoSFilterRule(OctetString(d)), nil
 }
 
 // Serialize implements the Type interface.

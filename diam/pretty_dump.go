@@ -3,6 +3,7 @@ package diam
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 	"time"
@@ -13,16 +14,16 @@ import (
 )
 
 func (m *Message) PrettyDump() string {
-	return prettyDumpWithDepth(m, 0)
+	var b bytes.Buffer
+	prettyDumpMessage(&b, m, 0)
+	return b.String()
 }
 
-func prettyDumpWithDepth(m *Message, depth int) string {
-	var b bytes.Buffer
-
+func prettyDumpMessage(w io.Writer, m *Message, depth int) {
 	requestFlag, errorFlag, proxyFlag, retransmittedFlag := flagsToString(m.Header)
 
 	// Print Header
-	fmt.Fprintf(&b, "%s(%d) %s(%d) %s%s%s%s %d, %d\n",
+	fmt.Fprintf(w, "%s(%d) %s(%d) %s%s%s%s %d, %d\n",
 		cmdToString(m.Dictionary(), m.Header),
 		m.Header.CommandCode,
 		appIdToString(int(m.Header.ApplicationID)),
@@ -35,58 +36,39 @@ func prettyDumpWithDepth(m *Message, depth int) string {
 		m.Header.EndToEndID)
 
 	// Print Titles
-	fmt.Fprintf(&b, "  %-40s %8s %5s  %s %s %s  %-18s  %s\n",
+	fmt.Fprintf(w, "  %-40s %8s %5s  %s %s %s  %-18s  %s\n",
 		"AVP", "Vendor", "Code", "V", "M", "P", "Type", "Value")
 
-	indent := strings.Repeat("  ", max(0, depth))
-
+	// Print AVPs
 	for _, a := range m.AVP {
-		avpName, avpType, avpData, isGrouped := avpToString(m, a)
-
-		// Print AVPs
-		fmt.Fprintf(&b, "  %-40s %8d %5d  %s %s %s  %-18s  %s\n",
-			indent+avpName,
-			a.VendorID,
-			a.Code,
-			boolToSymbol(a.Flags&avp.Vbit == avp.Vbit),
-			boolToSymbol(a.Flags&avp.Mbit == avp.Mbit),
-			boolToSymbol(a.Flags&avp.Pbit == avp.Pbit),
-			avpType,
-			avpData)
-
-		if isGrouped {
-			fmt.Fprintf(&b, "%s", groupedAVPToString(m, a, depth+1))
-		}
+		prettyDumpAVP(w, m, a, depth)
 	}
-
-	return b.String()
 }
 
-func groupedAVPToString(m *Message, a *AVP, depth int) string {
-	var b bytes.Buffer
+func prettyDumpGroupedAVP(w io.Writer, m *Message, a *AVP, depth int) {
+	for _, ga := range a.Data.(*GroupedAVP).AVP {
+		prettyDumpAVP(w, m, ga, depth)
+	}
+}
 
+func prettyDumpAVP(w io.Writer, m *Message, a *AVP, depth int) {
 	indent := strings.Repeat("  ", max(0, depth))
 
-	for _, ga := range a.Data.(*GroupedAVP).AVP {
-		avpName, avpType, avpData, isGrouped := avpToString(m, ga)
+	avpName, avpType, avpData, isGrouped := avpToString(m, a)
 
-		// Print Grouped AVPs
-		fmt.Fprintf(&b, "  %-40s %8d %5d  %s %s %s  %-18s  %s\n",
-			indent+avpName,
-			ga.VendorID,
-			ga.Code,
-			boolToSymbol(a.Flags&avp.Vbit == avp.Vbit),
-			boolToSymbol(a.Flags&avp.Mbit == avp.Mbit),
-			boolToSymbol(a.Flags&avp.Pbit == avp.Pbit),
-			avpType,
-			avpData)
+	fmt.Fprintf(w, "  %-40s %8d %5d  %s %s %s  %-18s  %s\n",
+		indent+avpName,
+		a.VendorID,
+		a.Code,
+		boolToSymbol(a.Flags&avp.Vbit == avp.Vbit),
+		boolToSymbol(a.Flags&avp.Mbit == avp.Mbit),
+		boolToSymbol(a.Flags&avp.Pbit == avp.Pbit),
+		avpType,
+		avpData)
 
-		if isGrouped {
-			fmt.Fprintf(&b, "%s", groupedAVPToString(m, ga, depth+1))
-		}
+	if isGrouped {
+		prettyDumpGroupedAVP(w, m, a, depth+1)
 	}
-
-	return b.String()
 }
 
 func cmdToString(dictionary *dict.Parser, header *Header) string {

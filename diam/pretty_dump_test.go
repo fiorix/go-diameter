@@ -33,7 +33,7 @@ func TestPrettyDump(t *testing.T) {
 			NewAVP(avp.PSInformation, avp.Mbit, 10415, &GroupedAVP{
 				AVP: []*AVP{
 					NewAVP(avp.CalledStationID, avp.Mbit, 0, datatype.UTF8String("10999")),
-					NewAVP(avp.StartTime, avp.Mbit, 10415, datatype.Time(time.Unix(1377093974, 0))),
+					NewAVP(avp.StartTime, 0, 10415, datatype.Time(time.Unix(1377093974, 0))),
 				},
 			}),
 		}})
@@ -43,6 +43,4 @@ func TestPrettyDump(t *testing.T) {
 
 	// New PrettyDump() print
 	t.Logf("Message:\n%s", msg.PrettyDump())
-
-	// TODO Maybe make PrettyDump() testable and assert the output
 }

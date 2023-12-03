@@ -102,7 +102,7 @@ func TestPrettyDumpAVP(t *testing.T) {
 					NewAVP(avp.PSInformation, avp.Mbit, 10415, &GroupedAVP{
 						AVP: []*AVP{
 							NewAVP(avp.CalledStationID, avp.Mbit, 0, datatype.UTF8String("10999")),
-							NewAVP(avp.StartTime, 0, 10415, datatype.Time(time.Unix(1377093974, 0))),
+							NewAVP(avp.StartTime, 0, 10415, datatype.Time(time.Date(2023, 8, 21, 22, 06, 14, 0, time.UTC))),
 						},
 					}),
 				}}),
@@ -110,7 +110,7 @@ func TestPrettyDumpAVP(t *testing.T) {
 				"  Service-Information                         10415   873  ✓ ✓ ✗  Grouped",
 				"    PS-Information                            10415   874  ✓ ✓ ✗  Grouped",
 				"      Called-Station-Id                           0    30  ✗ ✓ ✗  UTF8String          10999",
-				"      Start-Time                              10415  2041  ✓ ✗ ✗  Time                2013-08-21 22:06:14 +0800 +08",
+				"      Start-Time                              10415  2041  ✓ ✗ ✗  Time                2023-08-21 22:06:14 +0000 UTC",
 			}, "\n"),
 		},
 	}

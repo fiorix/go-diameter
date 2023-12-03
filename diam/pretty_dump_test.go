@@ -57,22 +57,27 @@ func TestPrettyDumpAVP(t *testing.T) {
 		{
 			name:     "Unsigned32PrettyDumpTest",
 			avp:      NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(13)),
-			expected: "Vendor-Id                                       0   266  ✗ ✓ ✗  Unsigned32          13",
+			expected: "  Vendor-Id                                       0   266  ✗ ✓ ✗  Unsigned32          13",
 		},
 		{
 			name:     "UTF8StringPrettyDumpTest",
 			avp:      NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String("abc-1234567")),
-			expected: "Session-Id                                      0   263  ✗ ✓ ✗  UTF8String          abc-1234567",
+			expected: "  Session-Id                                      0   263  ✗ ✓ ✗  UTF8String          abc-1234567",
 		},
 		{
 			name:     "AddressPrettyDumpTest",
 			avp:      NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP("10.1.0.1"))),
-			expected: "Host-IP-Address                                 0   257  ✗ ✓ ✗  Address             10.1.0.1",
+			expected: "  Host-IP-Address                                 0   257  ✗ ✓ ✗  Address             10.1.0.1",
+		},
+		{
+			name:     "AddressIPv6PrettyDumpTest",
+			avp:      NewAVP(avp.GGSNAddress, avp.Mbit, 10415, datatype.Address(net.ParseIP("2001:0db8::ff00:0042:8329"))),
+			expected: "  GGSN-Address                                10415   847  ✓ ✓ ✗  Address             2001:db8::ff00:42:8329",
 		},
 		{
 			name:     "EnumeratedPrettyDumpTest",
 			avp:      NewAVP(avp.CCRequestType, avp.Mbit, 0, datatype.Enumerated(1)),
-			expected: "CC-Request-Type                                 0   416  ✗ ✓ ✗  Enumerated          1",
+			expected: "  CC-Request-Type                                 0   416  ✗ ✓ ✗  Enumerated          1",
 		},
 		{
 			name: "GroupedAVPPrettyDumpTest",
@@ -122,9 +127,10 @@ func TestPrettyDumpAVP(t *testing.T) {
 				lines[i] = strings.TrimRightFunc(line, unicode.IsSpace)
 			}
 			actual := strings.Join(lines, "\n")
+			actual = strings.TrimSuffix(actual, "\n")
 
-			if !strings.Contains(actual, tc.expected) {
-				t.Errorf("\n  Actual = '%v'\nExpected = '%v'\n", actual, tc.expected)
+			if actual != tc.expected {
+				t.Errorf("\nActual:\n%v\nExpected:\n%v\n", actual, tc.expected)
 			}
 		})
 	}

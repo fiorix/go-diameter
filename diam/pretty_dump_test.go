@@ -55,32 +55,32 @@ func TestPrettyDumpAVP(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "Unsigned32PrettyDumpTest",
+			name:     "Unsigned32",
 			avp:      NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(13)),
 			expected: "  Vendor-Id                                       0   266  ✗ ✓ ✗  Unsigned32          13",
 		},
 		{
-			name:     "UTF8StringPrettyDumpTest",
+			name:     "UTF8String",
 			avp:      NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String("abc-1234567")),
 			expected: "  Session-Id                                      0   263  ✗ ✓ ✗  UTF8String          abc-1234567",
 		},
 		{
-			name:     "AddressPrettyDumpTest",
+			name:     "Address",
 			avp:      NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP("10.1.0.1"))),
 			expected: "  Host-IP-Address                                 0   257  ✗ ✓ ✗  Address             10.1.0.1",
 		},
 		{
-			name:     "AddressIPv6PrettyDumpTest",
+			name:     "AddressIPv6",
 			avp:      NewAVP(avp.GGSNAddress, avp.Mbit, 10415, datatype.Address(net.ParseIP("2001:0db8::ff00:0042:8329"))),
 			expected: "  GGSN-Address                                10415   847  ✓ ✓ ✗  Address             2001:db8::ff00:42:8329",
 		},
 		{
-			name:     "EnumeratedPrettyDumpTest",
+			name:     "Enumerated",
 			avp:      NewAVP(avp.CCRequestType, avp.Mbit, 0, datatype.Enumerated(1)),
 			expected: "  CC-Request-Type                                 0   416  ✗ ✓ ✗  Enumerated          1",
 		},
 		{
-			name: "GroupedAVPPrettyDumpTest",
+			name: "GroupedAVP",
 			avp: NewAVP(avp.MultipleServicesCreditControl, avp.Mbit, 0, &GroupedAVP{
 				AVP: []*AVP{
 					NewAVP(avp.ServiceIdentifier, avp.Mbit, 0, datatype.Unsigned32(7786)),
@@ -96,7 +96,7 @@ func TestPrettyDumpAVP(t *testing.T) {
 			}, "\n"),
 		},
 		{
-			name: "NestedGroupedAVPPrettyDumpTest",
+			name: "NestedGroupedAVP",
 			avp: NewAVP(avp.ServiceInformation, avp.Mbit, 10415, &GroupedAVP{
 				AVP: []*AVP{
 					NewAVP(avp.PSInformation, avp.Mbit, 10415, &GroupedAVP{

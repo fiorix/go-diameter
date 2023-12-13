@@ -11,7 +11,9 @@ type Unknown []byte
 
 // DecodeUnknown decodes an Unknown from byte array.
 func DecodeUnknown(b []byte) (Type, error) {
-	return Unknown(b), nil
+	tmp := make([]byte, len(b))
+	copy(tmp, b)
+	return Unknown(tmp), nil
 }
 
 // Serialize implements the Type interface.

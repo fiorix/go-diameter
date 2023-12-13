@@ -16,27 +16,16 @@ import (
 
 // parseAvpTag return the avp_name and omitempty option
 func parseAvpTag(tag reflect.StructTag) (string, bool) {
-	if tag == "" {
-		return "", false
+	var omitEmpty bool
+	name := tag.Get("avp")
+	if name == "" {
+		return "", omitEmpty
 	}
-	name := string(tag)
-	if strings.HasPrefix(name, "avp:\"") {
-		name = name[5 : len(name)-1]
-		omitEmpty := false
-		if strings.HasSuffix(name, ",omitempty") {
-			name = name[0 : len(name)-10]
-			omitEmpty = true
-		}
-		if strings.IndexByte(name, '"') == -1 {
-			return name, omitEmpty
-		}
+	if strings.HasSuffix(name, ",omitempty") {
+		name = name[0 : len(name)-10]
+		omitEmpty = true
 	}
-
-	name = tag.Get("avp")
-	if idx := strings.Index(name, ","); idx != -1 {
-		return name[:idx], false
-	}
-	return name, true
+	return name, omitEmpty
 }
 
 func isEmptyValue(v reflect.Value) bool {

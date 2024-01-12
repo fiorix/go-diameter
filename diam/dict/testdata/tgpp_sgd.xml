@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+    <!--
+        3GPP TS 29.338 version 17.1.0 Release 17
+        See: https://www.etsi.org/deliver/etsi_ts/129300_129399/129338/17.01.00_60/ts_129338v170100p.pdf
+    -->
+
+    <application id="16777313" name="TGPP SGd">
+        <vendor id="10415" name="TGPP" />
+
+        <command code="8388645" short="OF" name="MO-Forward-Short-Message">
+            <!-- 
+            < MO-Forward-Short-Message-Request > ::= < Diameter Header: 8388645, REQ, PXY, 16777313 >
+                    < Session-Id >
+                    [ DRMP ]
+                    [ Vendor-Specific-Application-Id ]
+                    { Auth-Session-State }
+                    { Origin-Host }
+                    { Origin-Realm }
+                    [ Destination-Host ]
+                    { Destination-Realm }
+                    { SC-Address }
+                    [ OFR-Flags ]
+                    *[ Supported-Features ]
+                    { User-Identifier }
+                    { SM-RP-UI }
+                    [ SMSMI-Correlation-ID ]
+                    [ SM-Delivery-Outcome ]
+                    *[ AVP ]
+                    *[ Proxy-Info ]
+                    *[ Route-Record ]
+            -->
+            <request>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Destination-Host" required="false" max="1" />
+                <rule avp="Destination-Realm" required="true" max="1" />
+                <rule avp="SC-Address" required="true" max="1" />
+                <rule avp="OFR-Flags" required="false" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="User-Identifier" required="true" max="1" />
+                <rule avp="SM-RP-UI" required="true" max="1" />
+                <rule avp="SMSMI-Correlation-ID" required="false" max="1" />
+                <rule avp="SM-Delivery-Outcome" required="false" max="1" />
+                <rule avp="AVP" required="false" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </request>
+            <!-- 
+                < MO-Forward-Short-Message-Answer > ::= < Diameter Header: 8388645, PXY, 16777313 > 
+                    < Session-Id > 
+                    [ DRMP ] 
+                    [ Vendor-Specific-Application-Id ] 
+                    [ Result-Code ] 
+                    [ Experimental-Result ] 
+                    { Auth-Session-State } 
+                    { Origin-Host } 
+                    { Origin-Realm } 
+                    *[ Supported-Features ] 
+                    [ SM-Delivery-Failure-Cause ] 
+                    [ SM-RP-UI ] 
+                    [ External-Identifier ] 
+                    *[ AVP ] 
+                    [ Failed-AVP ] 
+                    *[ Proxy-Info ] 
+                    *[ Route-Record ] 
+            -->
+            <answer>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Result-Code" required="false" max="1" />
+                <rule avp="Experimental-Result" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="SM-Delivery-Failure-Cause" required="false" max="1" />
+                <rule avp="SM-RP-UI" required="false" max="1" />
+                <rule avp="External-Identifier" required="false" max="1" />
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="AVP" required="false" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </answer>
+        </command>
+
+        <command code="8388646" short="TF" name="MT-Forward-Short-Message">
+            <!--
+                < MT-Forward-Short-Message-Request > ::= < Diameter Header: 8388646, REQ, PXY, 16777313 >
+                                        < Session-Id > 
+                                        [ DRMP ] 
+                                        [ Vendor-Specific-Application-Id ] 
+                                        { Auth-Session-State } 
+                                        { Origin-Host } 
+                                        { Origin-Realm }
+                                        { Destination-Host } 
+                                        { Destination-Realm } 
+                                        { User-Name } 
+                                        *[ Supported-Features ] 
+                                        [ SMSMI-Correlation-ID ]
+                                        { SC-Address } 
+                                        { SM-RP-UI } 
+                                        [ MME-Number-for-MT-SMS ]
+                                        [ SGSN-Number ]
+                                        [ TFR-Flags ] 
+                                        [ SM-Delivery-Timer ] 
+                                        [ SM-Delivery-Start-Time ]
+                                        [ Maximum-Retransmission-Time ]
+                                        [ SMS-GMSC-Address ] 
+                                        *[ AVP ]
+                                        *[ Proxy-Info ] 
+                                        *[ Route-Record ] 
+            -->
+            <request>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Destination-Host" required="true" max="1" />
+                <rule avp="Destination-Realm" required="true" max="1" />
+                <rule avp="User-Name" required="true" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="SMSMI-Correlation-ID" required="false" max="1" />
+                <rule avp="SC-Address" required="true" max="1" />
+                <rule avp="SM-RP-UI" required="true" max="1" />
+                <rule avp="MME-Number-for-MT-SMS" required="false" max="1" />
+                <rule avp="SGSN-Number" required="false" max="1" />
+                <rule avp="TFR-Flags" required="false" max="1" />
+                <rule avp="SM-Delivery-Timer" required="false" max="1" />
+                <rule avp="SM-Delivery-Start-Time" required="false" max="1" />
+                <rule avp="Maximum-Retransmission-Time" required="false" max="1" />
+                <rule avp="SMS-GMSC-Address" required="false" max="1" />
+                <rule avp="AVP" required="false" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </request>
+
+            <answer>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Result-Code" required="false" max="1" />
+                <rule avp="Experimental-Result" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="Absent-User-Diagnostic-SM" required="false" max="1" />
+                <rule avp="SM-Delivery-Failure-Cause" required="false" max="1" />
+                <rule avp="SM-RP-UI" required="false" max="1" />
+                <rule avp="Requested-Retransmission-Time" required="false" max="1" />
+                <rule avp="User-Identifier" required="false" max="1" />
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="AVP" required="false" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </answer>
+        </command>
+
+        <avp name="SC-Address" code="3300" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString" />
+        </avp>
+
+        <avp name="SM-RP-UI " code="3301" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString" />
+        </avp>
+
+        <avp name="TFR-Flags" code="3302" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="SM-Delivery-Failure-Cause" code="3303" must="M,V" may-encrypt="N"
+            vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="SM-Enumerated-Delivery-Failure-Cause" required="true" max="1" />
+                <rule avp="SM-Diagnostic-Info" required="false" max="1" />
+                <rule avp="AVP" required="true" />
+            </data>
+        </avp>
+
+        <avp name="SM-Enumerated-Delivery-Failure-Cause" code="3304" must="M,V" may-encrypt="N"
+            vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="MEMORY_CAPACITY_EXCEEDED" />
+                <item code="1" name="EQUIPMENT_PROTOCOL_ERROR" />
+                <item code="2" name="EQUIPMENT_NOT_SM-EQUIPPED" />
+                <item code="3" name="UNKNOWN_SERVICE_CENTRE" />
+                <item code="4" name="SC-CONGESTION" />
+                <item code="5" name="INVALID_SME-ADDRESS" />
+                <item code="6" name="USER_NOT_SC-USER" />
+            </data>
+        </avp>
+
+        <avp name="SM-Diagnostic-Info" code="3305" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString" />
+        </avp>
+
+        <avp name="SM-Delivery-Timer" code="3306" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="SM-Delivery-Start-Time" code="3307" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Time" />
+        </avp>
+
+        <avp name="SMSMI-Correlation-ID" code="3324" must="V" must-not="M" may-encrypt="N"
+            vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="HSS-ID" required="false" max="1" />
+                <rule avp="Originating-SIP-URI" required="false" max="1" />
+                <rule avp="Destination-SIP-URI" required="false" max="1" />
+                <rule avp="AVP" required="false" />
+            </data>
+        </avp>
+
+        <avp name="HSS-ID" code="3325" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String" />
+        </avp>
+
+        <avp name="Originating-SIP-URI" code="3326" must="V" must-not="M" may-encrypt="N"
+            vendor-id="10415">
+            <data type="UTF8String" />
+        </avp>
+
+        <avp name="Destination-SIP-URI" code="3327" must="V" must-not="M" may-encrypt="N"
+            vendor-id="10415">
+            <data type="UTF8String" />
+        </avp>
+
+        <avp name="OFR-Flags" code="3328" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="Maximum-Retransmission-Time" code="3330" must="V" must-not="M" may-encrypt="N"
+            vendor-id="10415">
+            <data type="Time" />
+        </avp>
+
+        <avp name="Requested-Retransmission-Time" code="3331" must="V" must-not="M" may-encrypt="N"
+            vendor-id="10415">
+            <data type="Time" />
+        </avp>
+
+        <avp name="SMS-GMSC-Address" code="3332" must="V" must-not="M" may-encrypt="N"
+            vendor-id="10415">
+            <data type="OctetString" />
+        </avp>
+
+        <!-- Reused AVPs-->
+
+        <!-- IETF RFC 7944 - https://tools.ietf.org/html/rfc7944 -->
+        <avp name="DRMP" code="301" must-not="V">
+            <data type="Enumerated">
+                <item code="0" name="PRIORITY_0" />
+                <item code="1" name="PRIORITY_1" />
+                <item code="2" name="PRIORITY_2" />
+                <item code="3" name="PRIORITY_3" />
+                <item code="4" name="PRIORITY_4" />
+                <item code="5" name="PRIORITY_5" />
+                <item code="6" name="PRIORITY_6" />
+                <item code="7" name="PRIORITY_7" />
+                <item code="8" name="PRIORITY_8" />
+                <item code="9" name="PRIORITY_9" />
+                <item code="10" name="PRIORITY_10" />
+                <item code="11" name="PRIORITY_11" />
+                <item code="12" name="PRIORITY_12" />
+                <item code="13" name="PRIORITY_13" />
+                <item code="14" name="PRIORITY_14" />
+                <item code="15" name="PRIORITY_15" />
+            </data>
+        </avp>
+
+        <avp name="User-Name" code="1" must="M" may="P" must-not="V" may-encrypt="Y"
+            vendor-id="10415">
+            <data type="UTF8String" />
+        </avp>
+
+        <avp name="Supported-Features" code="628" must="V" may="M" may-encrypt="N" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="Vendor-Id" required="true" max="1" />
+                <rule avp="Feature-List-ID" required="true" max="1" />
+                <rule avp="Feature-List" required="true" max="1" />
+            </data>
+        </avp>
+
+        <avp name="Feature-List-ID" code="629" must="V" must_not="M" may-encrypt="N"
+            vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="Feature-List" code="630" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+        <avp name="User-Identifier" code="3102" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="User-Name" required="false" max="1" />
+                <rule avp="MSISDN" required="false" max="1" />
+                <rule avp="External-Identifier" required="false" max="1" />
+                <rule avp="LMSI" required="false" max="1" />
+                <rule avp="AVP" required="false" />
+            </data>
+        </avp>
+
+        <avp name="External-Identifier" code="3111" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String" />
+        </avp>
+
+        <avp name="MSISDN" code="700" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString" />
+        </avp>
+
+        <avp name="LMSI" code="2400" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString" />
+        </avp>
+
+        <avp name="MME-Number-for-MT-SMS" code="1645" must="V" must-not="M" may-encrypt="N"
+            vendor-id="10415">
+            <data type="OctetString" />
+        </avp>
+
+        <avp name="SGSN-Number" code="1489" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString" />
+        </avp>
+
+        <avp name="Absent-User-Diagnostic-SM" code="3322" must="M,V" may-encrypt="N"
+            vendor-id="10415">
+            <data type="Unsigned32" />
+        </avp>
+
+
+    </application>
+
+</diameter>

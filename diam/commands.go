@@ -17,6 +17,8 @@ const (
 	CreditControl             = 272
 	DeviceWatchdog            = 280
 	DisconnectPeer            = 282
+	MOForwardShortMessage     = 8388645
+	MTForwardShortMessage     = 8388646
 	MultimediaAuthentication  = 303
 	Notify                    = 323
 	PurgeUE                   = 321
@@ -53,6 +55,8 @@ const (
 	MAR = "MAR"
 	NOA = "NOA"
 	NOR = "NOR"
+	OFA = "OFA"
+	OFR = "OFR"
 	PUA = "PUA"
 	PUR = "PUR"
 	RAA = "RAA"
@@ -67,6 +71,8 @@ const (
 	SLR = "SLR"
 	STA = "STA"
 	STR = "STR"
+	TFA = "TFA"
+	TFR = "TFR"
 	ULA = "ULA"
 	ULR = "ULR"
 )

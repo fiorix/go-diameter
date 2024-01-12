@@ -6,11 +6,16 @@ package dict
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 )
 
 func TestApps(t *testing.T) {
 	apps := Default.Apps()
+
+	for _, i := range apps {
+		fmt.Println(i.ID, i.Name)
+	}
 	if len(apps) != 9 {
 		t.Fatalf("Unexpected # of apps. Want 9, have %d", len(apps))
 	}
@@ -34,15 +39,14 @@ func TestApps(t *testing.T) {
 	if apps[4].ID != 1 {
 		t.Fatalf("Unexpected app.ID. Want 1, have %d", apps[4].ID)
 	}
-	// 3GPP S6a applications
-	if apps[6].ID != 16777236 {
-		t.Fatalf("Unexpected app.ID. Want 16777236, have %d", apps[6].ID)
+	if apps[6].ID != 16777251 {
+		t.Fatalf("Unexpected app.ID. Want 16777251, have %d", apps[6].ID)
 	}
-	if apps[7].ID != 16777251 {
-		t.Fatalf("Unexpected app.ID. Want 16777251, have %d", apps[7].ID)
+	if apps[7].ID != 16777265 {
+		t.Fatalf("Unexpected app.ID. Want 16777265, have %d", apps[7].ID)
 	}
-	if apps[8].ID != 16777265 {
-		t.Fatalf("Unexpected app.ID. Want 16777265, have %d", apps[8].ID)
+	if apps[8].ID != 16777313 {
+		t.Fatalf("Unexpected app.ID. Want 16777313, have %d", apps[8].ID)
 	}
 }
 

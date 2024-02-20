@@ -353,7 +353,7 @@ const (
 	MOLR                                       = 1485
 	MPSPriority                                = 1616
 	MSCAddress                                 = 3417
-	MSISDN                                     = 700
+	MSISDN                                     = 701
 	MTCIWFAddress                              = 3406
 	MandatoryCapability                        = 604
 	MaxRequestedBandwidthDL                    = 515

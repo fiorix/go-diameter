@@ -3594,7 +3594,7 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 			<data type="OctetString"/>
 		</avp>
 
-		<avp name="MSISDN" code="700" must="V,M"	may="-" must-not="-" may-encrypt="N" vendor-id="10415">
+		<avp name="MSISDN" code="701" must="V,M"	may="-" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="OctetString"/>
 		</avp>
 
@@ -6341,7 +6341,7 @@ var tgppsgdXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="UTF8String" />
         </avp>
 
-        <avp name="MSISDN" code="700" must="M,V" may-encrypt="N" vendor-id="10415">
+        <avp name="MSISDN" code="701" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="OctetString" />
         </avp>
 

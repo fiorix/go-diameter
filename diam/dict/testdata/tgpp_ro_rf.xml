@@ -1133,7 +1133,7 @@
 			<data type="OctetString"/>
 		</avp>
 
-		<avp name="MSISDN" code="700" must="V,M"	may="-" must-not="-" may-encrypt="N" vendor-id="10415">
+		<avp name="MSISDN" code="701" must="V,M"	may="-" must-not="-" may-encrypt="N" vendor-id="10415">
 			<data type="OctetString"/>
 		</avp>
 

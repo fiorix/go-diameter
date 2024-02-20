@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fiorix/go-diameter/v4/diam"
-	"github.com/fiorix/go-diameter/v4/diam/avp"
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
-	"github.com/fiorix/go-diameter/v4/diam/diamtest"
-	"github.com/fiorix/go-diameter/v4/diam/dict"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/avp"
+	"github.com/stormvirux/go-diameter/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/diamtest"
+	"github.com/stormvirux/go-diameter/diam/dict"
 )
 
 func testResultCode(m *diam.Message, want uint32) bool {
@@ -33,7 +33,7 @@ func TestStateMachineTCP(t *testing.T) {
 	testStateMachine(t, "tcp")
 }
 
-/// TestStateMachine establishes a connection with a test server and
+// / TestStateMachine establishes a connection with a test server and
 // sends a Re-Auth-Request message to ensure the handshake was
 // completed and that the RAR handler has context from the peer.
 func testStateMachine(t *testing.T, network string) {

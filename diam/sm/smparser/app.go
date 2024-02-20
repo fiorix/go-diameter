@@ -5,10 +5,10 @@
 package smparser
 
 import (
-	"github.com/fiorix/go-diameter/v4/diam"
-	"github.com/fiorix/go-diameter/v4/diam/avp"
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
-	"github.com/fiorix/go-diameter/v4/diam/dict"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/avp"
+	"github.com/stormvirux/go-diameter/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/dict"
 )
 
 // Role stores information whether SM is initialized as a Client or a Server
@@ -87,11 +87,13 @@ func (app *Application) handleGroup(d *dict.Parser, gavp *diam.AVP) (failedAVP *
 
 // validateAll is a convenience method to test a slice of application IDs.
 // according to https://tools.ietf.org/html/rfc6733#page-60:
-//   A receiver of a Capabilities-Exchange-Request (CER) message that does
-//   not have any applications in common with the sender MUST return a
-//   Capabilities-Exchange-Answer (CEA) with the Result-Code AVP set to
-//   DIAMETER_NO_COMMON_APPLICATION and SHOULD disconnect the transport
-//   layer connection.
+//
+//	A receiver of a Capabilities-Exchange-Request (CER) message that does
+//	not have any applications in common with the sender MUST return a
+//	Capabilities-Exchange-Answer (CEA) with the Result-Code AVP set to
+//	DIAMETER_NO_COMMON_APPLICATION and SHOULD disconnect the transport
+//	layer connection.
+//
 // so, we need to find at least one App ID in common
 func (app *Application) validateAll(
 	d *dict.Parser, appType uint32, appAVPs []*diam.AVP, localRole Role) (failedAVP *diam.AVP, err error) {

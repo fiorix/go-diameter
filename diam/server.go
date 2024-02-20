@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fiorix/go-diameter/v4/diam/dict"
+	"github.com/stormvirux/go-diameter/diam/dict"
 )
 
 // The Handler interface allow arbitrary objects to be

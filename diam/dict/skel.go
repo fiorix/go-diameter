@@ -10,7 +10,7 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	"github.com/stormvirux/go-diameter/v1/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/datatype"
 )
 
 // File is the dictionary root element of a XML file.  See diam_base.xml.

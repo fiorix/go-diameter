@@ -7,10 +7,10 @@ package sm
 import (
 	"fmt"
 
-	"github.com/stormvirux/go-diameter/v1/diam"
-	"github.com/stormvirux/go-diameter/v1/diam/datatype"
-	"github.com/stormvirux/go-diameter/v1/diam/dict"
-	"github.com/stormvirux/go-diameter/v1/diam/sm/smpeer"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/dict"
+	"github.com/stormvirux/go-diameter/diam/sm/smpeer"
 )
 
 // SupportedApp holds properties of each locally supported App

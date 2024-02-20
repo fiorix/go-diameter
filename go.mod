@@ -1,4 +1,4 @@
-module github.com/stormvirux/go-diameter/v1
+module github.com/stormvirux/go-diameter
 
 go 1.21
 

@@ -8,8 +8,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stormvirux/go-diameter/v1/diam/datatype"
-	"github.com/stormvirux/go-diameter/v1/diam/sm/smparser"
+	"github.com/stormvirux/go-diameter/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/sm/smparser"
 )
 
 func TestFromCER(t *testing.T) {

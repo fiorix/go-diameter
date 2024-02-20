@@ -10,10 +10,10 @@ import (
 	"bytes"
 	"log"
 
-	"github.com/stormvirux/go-diameter/v1/diam"
-	"github.com/stormvirux/go-diameter/v1/diam/avp"
-	"github.com/stormvirux/go-diameter/v1/diam/datatype"
-	"github.com/stormvirux/go-diameter/v1/diam/dict"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/avp"
+	"github.com/stormvirux/go-diameter/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/dict"
 )
 
 func main() {

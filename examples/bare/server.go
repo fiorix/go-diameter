@@ -10,8 +10,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/stormvirux/go-diameter/v1/diam"
-	"github.com/stormvirux/go-diameter/v1/diam/dict"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/dict"
 )
 
 func main() {

@@ -10,7 +10,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stormvirux/go-diameter/v1/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/datatype"
 )
 
 // parentAppIds map allows for hierarchical AVP search dependencies

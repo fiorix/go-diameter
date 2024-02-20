@@ -8,8 +8,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/stormvirux/go-diameter/v1/diam/datatype"
-	"github.com/stormvirux/go-diameter/v1/diam/dict"
+	"github.com/stormvirux/go-diameter/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/dict"
 )
 
 // GroupedAVPType is the identifier of the GroupedAVP data type.

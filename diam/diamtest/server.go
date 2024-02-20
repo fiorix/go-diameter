@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/stormvirux/go-diameter/v1/diam"
-	"github.com/stormvirux/go-diameter/v1/diam/dict"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/dict"
 )
 
 // A Server is a Diameter server listening on a system-chosen port on the

@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stormvirux/go-diameter/v1/diam"
-	"github.com/stormvirux/go-diameter/v1/diam/diamtest"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/diamtest"
 )
 
 func TestCapabilitiesExchangeSCTP(t *testing.T) {

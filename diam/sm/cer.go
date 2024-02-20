@@ -7,11 +7,11 @@ package sm
 import (
 	"fmt"
 
-	"github.com/stormvirux/go-diameter/v1/diam"
-	"github.com/stormvirux/go-diameter/v1/diam/avp"
-	"github.com/stormvirux/go-diameter/v1/diam/datatype"
-	"github.com/stormvirux/go-diameter/v1/diam/sm/smparser"
-	"github.com/stormvirux/go-diameter/v1/diam/sm/smpeer"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/avp"
+	"github.com/stormvirux/go-diameter/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam/sm/smparser"
+	"github.com/stormvirux/go-diameter/diam/sm/smpeer"
 )
 
 // handleCER handles Capabilities-Exchange-Request messages.

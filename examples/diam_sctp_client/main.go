@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/ishidawataru/sctp"
-	"github.com/stormvirux/go-diameter/v1/diam"
-	"github.com/stormvirux/go-diameter/v1/diam/avp"
-	"github.com/stormvirux/go-diameter/v1/diam/datatype"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/avp"
+	"github.com/stormvirux/go-diameter/diam/datatype"
 )
 
 var addr = flag.String("addr", "192.168.60.145:3868", "server address in form of ip:port to connect to")

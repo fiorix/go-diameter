@@ -5,9 +5,9 @@
 package sm
 
 import (
-	"github.com/stormvirux/go-diameter/v1/diam"
-	"github.com/stormvirux/go-diameter/v1/diam/sm/smparser"
-	"github.com/stormvirux/go-diameter/v1/diam/sm/smpeer"
+	"github.com/stormvirux/go-diameter/diam"
+	"github.com/stormvirux/go-diameter/diam/sm/smparser"
+	"github.com/stormvirux/go-diameter/diam/sm/smpeer"
 )
 
 // handleCEA handles Capabilities-Exchange-Answer messages.

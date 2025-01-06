@@ -68,7 +68,6 @@ var (
 )
 
 func main() {
-
 	flag.Parse()
 	if len(*addr) == 0 {
 		flag.Usage()
@@ -125,31 +124,36 @@ func main() {
 	// Print error reports.
 	go printErrors(mux.ErrorReports())
 
+	// Sleep after completion to observe DWR/As going in the background
+
 	conn, err := cli.DialNetwork(*networkType, *addr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = sendAIR(conn, cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-	select {
-	case <-done:
-	case <-time.After(10 * time.Second):
-		log.Fatal("Authentication Information timeout")
-	}
-	err = sendULR(conn, cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-	select {
-	case <-done:
-	case <-time.After(10 * time.Second):
-		log.Fatal("Update Location timeout")
+
+	for {
+		err = sendAIR(conn, cfg)
+		if err != nil {
+			log.Fatal(err)
+		}
+		select {
+		case <-done:
+		case <-time.After(10 * time.Second):
+			log.Fatal("Authentication Information timeout")
+		}
+		err = sendULR(conn, cfg)
+		if err != nil {
+			log.Fatal(err)
+		}
+		select {
+		case <-done:
+		case <-time.After(10 * time.Second):
+			log.Fatal("Update Location timeout")
+		}
 	}
 
 	// Sleep after completion to observe DWR/As going in the background
-	time.Sleep(time.Duration(*completionSleep) * time.Second)
+	// time.Sleep(time.Duration(*completionSleep) * time.Second)
 }
 
 func printErrors(ec <-chan *diam.ErrorReport) {
@@ -166,11 +170,12 @@ func sendAIR(c diam.Conn, cfg *sm.Settings) error {
 	}
 	sid := "session;" + strconv.Itoa(int(rand.Uint32()))
 	m := diam.NewRequest(diam.AuthenticationInformation, diam.TGPP_S6A_APP_ID, dict.Default)
+	m.Header.CommandFlags |= diam.ProxiableFlag
 	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
 	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
-	m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
+	// m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
 	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(*ueIMSI))
 	m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
 	m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
@@ -273,11 +278,12 @@ func sendULR(c diam.Conn, cfg *sm.Settings) error {
 	}
 	sid := "session;" + strconv.Itoa(int(rand.Uint32()))
 	m := diam.NewRequest(diam.UpdateLocation, diam.TGPP_S6A_APP_ID, dict.Default)
+	m.Header.CommandFlags |= diam.ProxiableFlag
 	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
 	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
-	m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
+	// m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
 	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(*ueIMSI))
 	m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
 	m.NewAVP(avp.RATType, avp.Mbit, uint32(*vendorID), datatype.Enumerated(1004))

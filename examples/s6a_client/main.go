@@ -125,6 +125,12 @@ func main() {
 	go printErrors(mux.ErrorReports())
 
 	// Sleep after completion to observe DWR/As going in the background
+	imsis := []string{
+		"234502000000000",
+		"234502000000001",
+		"234502000000002",
+	}
+	idx := 0
 
 	conn, err := cli.DialNetwork(*networkType, *addr)
 	if err != nil {
@@ -132,7 +138,10 @@ func main() {
 	}
 
 	for {
-		err = sendAIR(conn, cfg)
+		idx++
+		idx %= len(imsis)
+		imsi := imsis[idx]
+		err = sendAIR(conn, cfg, imsi)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -141,7 +150,7 @@ func main() {
 		case <-time.After(10 * time.Second):
 			log.Fatal("Authentication Information timeout")
 		}
-		err = sendULR(conn, cfg)
+		err = sendULR(conn, cfg, imsi)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -163,7 +172,7 @@ func printErrors(ec <-chan *diam.ErrorReport) {
 }
 
 // Create & send Authentication-Information Request
-func sendAIR(c diam.Conn, cfg *sm.Settings) error {
+func sendAIR(c diam.Conn, cfg *sm.Settings, imsi string) error {
 	meta, ok := smpeer.FromContext(c.Context())
 	if !ok {
 		return errors.New("peer metadata unavailable")
@@ -176,7 +185,7 @@ func sendAIR(c diam.Conn, cfg *sm.Settings) error {
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
 	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
 	// m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
-	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(*ueIMSI))
+	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(imsi))
 	m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
 	m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
 	m.NewAVP(avp.RequestedEUTRANAuthenticationInfo, avp.Vbit|avp.Mbit, uint32(*vendorID), &diam.GroupedAVP{
@@ -271,7 +280,7 @@ type ULA struct {
 }
 
 // Create & send Update-Location Request
-func sendULR(c diam.Conn, cfg *sm.Settings) error {
+func sendULR(c diam.Conn, cfg *sm.Settings, imsi string) error {
 	meta, ok := smpeer.FromContext(c.Context())
 	if !ok {
 		return errors.New("peer metadata unavailable")
@@ -284,7 +293,7 @@ func sendULR(c diam.Conn, cfg *sm.Settings) error {
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
 	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
 	// m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
-	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(*ueIMSI))
+	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(imsi))
 	m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
 	m.NewAVP(avp.RATType, avp.Mbit, uint32(*vendorID), datatype.Enumerated(1004))
 	m.NewAVP(avp.ULRFlags, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(ULR_FLAGS))

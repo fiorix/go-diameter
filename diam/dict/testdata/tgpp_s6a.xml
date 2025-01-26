@@ -82,6 +82,52 @@
             </answer>
         </command>
 
+        <command code="319" short="ID" name="Insert-Subscriber-Data">
+            <request>
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+                <rule avp="Auth-Session-State" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Destination-Host" required="true" max="1"/>
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="User-Name" required="true" max="1"/>
+                <rule avp="Supported-Features" required="false"/>
+                <rule avp="Subscription-Data" required="true" max="1"/>
+                <rule avp="IDR-Flags" required="false" max="1"/>
+                <rule avp="Reset-ID" required="false"/>
+                <rule avp="AVP" required="false"/>
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </request>
+            <answer>
+                <rule avp="Session-Id" required="true" max="1"/>
+                 <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+                <rule avp="Supported-Features" required="false"/>
+                <rule avp="Result-Code" required="false" max="1"/>
+                <rule avp="Experimental-Result" required="false" max="1"/>
+                <rule avp="Auth-Session-State" required="false" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="IMS-Voice-Over-PS-Sessions" required="false" max="1"/>
+                <rule avp="Last-UE-Activity-time" required="false" max="1"/>
+                <rule avp="RAT-Type" required="true" max="1"/>
+                <rule avp="IDA-Flags" required="false" max="1"/>
+                <rule avp="EPS-User-State" required="false" max="1" />
+                <rule avp="EPS-Location-Information" required="false" max="1" />
+                <rule avp="Local-Time-Zone" required="false" max="1" />
+                <rule avp="Supported-Services" required="false" max="1" />
+                <rule avp="Monitoring-Event-Report" required="false" />
+                <rule avp="Monitoring-Event-Config-Status" required="false" />
+                <rule avp="AVP" required="false"/>
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </answer>
+        </command>
+
         <command code="318" short="AI" name="Authentication-Information">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
@@ -949,6 +995,10 @@
         </avp>
 
         <avp name="CLR-Flags" code="1638" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="IDR-Flags" code="1490" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
             <data type="Unsigned32"/>
         </avp>
 

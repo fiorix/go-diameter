@@ -1117,6 +1117,7 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="QoS-Information" required="false" max="1"/>
                 <rule avp="TGPP-SGSN-MCC-MNC" required="false" max="1"/>
                 <rule avp="TGPP-User-Location-Info" required="false" max="1"/>
+                <rule avp="PDN-Connection-ID" required="false" max="1"/>
             </request>
             <answer>
                 <!-- 3GPP 29.212 Section 5.6.3 -->
@@ -1489,6 +1490,10 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Flow-Direction" required="false" max="1"/>
                 <!-- *[ AVP ]-->
             </data>
+        </avp>
+
+        <avp name="PDN-Connection-ID" code="1065" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="must" vendor-id="TGPP">
+            <type type-name="OctetString"/>
         </avp>
 
     </application>

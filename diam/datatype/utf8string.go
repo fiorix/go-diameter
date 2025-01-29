@@ -11,7 +11,9 @@ type UTF8String OctetString
 
 // DecodeUTF8String decodes an UTF8String data type from byte array.
 func DecodeUTF8String(b []byte) (Type, error) {
-	return UTF8String(OctetString(b)), nil
+	d := make([]byte, len(b))
+	copy(d, b)
+	return UTF8String(OctetString(d)), nil
 }
 
 // Serialize implements the Type interface.

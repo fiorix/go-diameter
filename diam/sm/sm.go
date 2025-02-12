@@ -104,7 +104,7 @@ func New(settings *Settings) *StateMachine {
 	sm := &StateMachine{
 		cfg:           settings,
 		mux:           diam.NewServeMux(),
-		hsNotifyc:     make(chan diam.Conn, 20),
+		hsNotifyc:     make(chan diam.Conn, 100),
 		supportedApps: PrepareSupportedApps(settings.Dict),
 	}
 	sm.mux.Handle("CER", handleCER(sm))

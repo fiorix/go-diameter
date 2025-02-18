@@ -126,9 +126,9 @@ func main() {
 
 	// Sleep after completion to observe DWR/As going in the background
 	imsis := []string{
-		"234502000000000",
-		"234502000000001",
-		"234502000000002",
+		"234500021000001",
+		"234500021000002",
+		"234500021000003",
 	}
 	idx := 0
 
@@ -159,6 +159,10 @@ func main() {
 		case <-time.After(10 * time.Second):
 			log.Fatal("Update Location timeout")
 		}
+
+
+    // sleep a while
+    <-time.After(1 * time.Second)
 	}
 
 	// Sleep after completion to observe DWR/As going in the background

@@ -146,19 +146,23 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		select {
-		case <-done:
-		case <-time.After(10 * time.Second):
-			log.Fatal("Authentication Information timeout")
+		if *reqestDelayMs == 0 {
+			select {
+			case <-done:
+			case <-time.After(10 * time.Second):
+				log.Fatal("Authentication Information timeout")
+			}
 		}
 		err = sendULR(conn, cfg, imsi)
 		if err != nil {
 			log.Fatal(err)
 		}
-		select {
-		case <-done:
-		case <-time.After(10 * time.Second):
-			log.Fatal("Update Location timeout")
+		if *reqestDelayMs == 0 {
+			select {
+			case <-done:
+			case <-time.After(10 * time.Second):
+				log.Fatal("Update Location timeout")
+			}
 		}
 
 		// sleep a while

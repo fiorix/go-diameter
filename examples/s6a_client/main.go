@@ -66,7 +66,7 @@ var (
 	plmnID          = flag.String("plmnid", "\x00\xF1\x10", "Client (UE) PLMN ID")
 	vectors         = flag.Uint("vectors", 3, "Number Of Requested Auth Vectors")
 	completionSleep = flag.Uint("sleep", 10, "After Completion Sleep Time (seconds)")
-	reqestDelayMs   = flag.Uint("request_delay", 1000, "Sleep between req.")
+	requestDelayus   = flag.Uint("request_delay", 10000000, "Sleep between req.")
 )
 
 func main() {
@@ -146,7 +146,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if *reqestDelayMs == 0 {
+		if *requestDelayus > 100_000 {
 			select {
 			case <-done:
 			case <-time.After(10 * time.Second):
@@ -157,7 +157,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if *reqestDelayMs == 0 {
+		if *requestDelayus > 100_000 {
 			select {
 			case <-done:
 			case <-time.After(10 * time.Second):
@@ -166,7 +166,7 @@ func main() {
 		}
 
 		// sleep a while
-		<-time.After(time.Duration(*reqestDelayMs) * time.Millisecond)
+		<-time.After(time.Duration(*requestDelayus) * time.Microsecond)
 	}
 
 	// Sleep after completion to observe DWR/As going in the background

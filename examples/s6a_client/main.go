@@ -34,6 +34,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"math/rand"
 	"net"
@@ -65,6 +66,7 @@ var (
 	plmnID          = flag.String("plmnid", "\x00\xF1\x10", "Client (UE) PLMN ID")
 	vectors         = flag.Uint("vectors", 3, "Number Of Requested Auth Vectors")
 	completionSleep = flag.Uint("sleep", 10, "After Completion Sleep Time (seconds)")
+	reqestDelayMs   = flag.Uint("request_delay", 1000, "Sleep between req.")
 )
 
 func main() {
@@ -124,12 +126,8 @@ func main() {
 	// Print error reports.
 	go printErrors(mux.ErrorReports())
 
-	// Sleep after completion to observe DWR/As going in the background
-	imsis := []string{
-		"234500021000001",
-		"234500021000002",
-		"234500021000003",
-	}
+	imsi_base := "234500021000000"
+	MAX_IDX := 9999999
 	idx := 0
 
 	conn, err := cli.DialNetwork(*networkType, *addr)
@@ -139,8 +137,11 @@ func main() {
 
 	for {
 		idx++
-		idx %= len(imsis)
-		imsi := imsis[idx]
+		if idx > MAX_IDX {
+			idx = 0
+		}
+		imsi := fmt.Sprintf("%s%06d", imsi_base, idx)
+
 		err = sendAIR(conn, cfg, imsi)
 		if err != nil {
 			log.Fatal(err)
@@ -160,9 +161,8 @@ func main() {
 			log.Fatal("Update Location timeout")
 		}
 
-
-    // sleep a while
-    <-time.After(1 * time.Second)
+		// sleep a while
+		<-time.After(time.Duration(*reqestDelayMs) * time.Millisecond)
 	}
 
 	// Sleep after completion to observe DWR/As going in the background
@@ -200,7 +200,7 @@ func sendAIR(c diam.Conn, cfg *sm.Settings, imsi string) error {
 				avp.ImmediateResponsePreferred, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(0)),
 		},
 	})
-	log.Printf("\nSending AIR to %s\n%s\n", c.RemoteAddr(), m)
+	log.Printf("\nSending AIR to %s\n", c.RemoteAddr())
 	_, err := m.WriteTo(c)
 	return err
 }
@@ -302,21 +302,14 @@ func sendULR(c diam.Conn, cfg *sm.Settings, imsi string) error {
 	m.NewAVP(avp.RATType, avp.Mbit, uint32(*vendorID), datatype.Enumerated(1004))
 	m.NewAVP(avp.ULRFlags, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(ULR_FLAGS))
 	m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
-	log.Printf("\nSending ULR to %s\n%s\n", c.RemoteAddr(), m)
+	log.Printf("\nSending ULR (%s) to %s\n", imsi, c.RemoteAddr())
 	_, err := m.WriteTo(c)
 	return err
 }
 
 func handleAuthenticationInformationAnswer(done chan struct{}) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
-		log.Printf("Received Authentication-Information Answer from %s\n%s\n", c.RemoteAddr(), m)
-		var aia AIA
-		err := m.Unmarshal(&aia)
-		if err != nil {
-			log.Printf("AIA Unmarshal failed: %s", err)
-		} else {
-			log.Printf("Unmarshaled Authentication-Information Answer:\n%#+v\n", aia)
-		}
+		log.Printf("Received Authentication-Information Answer from %s\n", c.RemoteAddr())
 		ok := struct{}{}
 		done <- ok
 	}
@@ -324,14 +317,7 @@ func handleAuthenticationInformationAnswer(done chan struct{}) diam.HandlerFunc 
 
 func handleUpdateLocationAnswer(done chan struct{}) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
-		log.Printf("Received Update-Location Answer from %s\n%s\n", c.RemoteAddr(), m)
-		var ula ULA
-		err := m.Unmarshal(&ula)
-		if err != nil {
-			log.Printf("ULA Unmarshal failed: %s", err)
-		} else {
-			log.Printf("Unmarshaled UL Answer:\n%#+v\n", ula)
-		}
+		log.Printf("Received Update-Location Answer from %s\n", c.RemoteAddr())
 		ok := struct{}{}
 		done <- ok
 	}

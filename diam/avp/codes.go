@@ -263,6 +263,7 @@ const (
 	HPLMNODB                                   = 1418
 	ICSIndicator                               = 1491
 	IdleTimeout                                = 28
+	IDRFlags                                   = 1490
 	IMEI                                       = 1402
 	ImmediateResponsePreferred                 = 1412
 	IMSApplicationReferenceIdentifier          = 2601

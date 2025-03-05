@@ -5058,6 +5058,52 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             </answer>
         </command>
 
+        <command code="319" short="ID" name="Insert-Subscriber-Data">
+            <request>
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+                <rule avp="Auth-Session-State" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Destination-Host" required="true" max="1"/>
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="User-Name" required="true" max="1"/>
+                <rule avp="Supported-Features" required="false"/>
+                <rule avp="Subscription-Data" required="true" max="1"/>
+                <rule avp="IDR-Flags" required="false" max="1"/>
+                <rule avp="Reset-ID" required="false"/>
+                <rule avp="AVP" required="false"/>
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </request>
+            <answer>
+                <rule avp="Session-Id" required="true" max="1"/>
+                 <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+                <rule avp="Supported-Features" required="false"/>
+                <rule avp="Result-Code" required="false" max="1"/>
+                <rule avp="Experimental-Result" required="false" max="1"/>
+                <rule avp="Auth-Session-State" required="false" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="IMS-Voice-Over-PS-Sessions" required="false" max="1"/>
+                <rule avp="Last-UE-Activity-time" required="false" max="1"/>
+                <rule avp="RAT-Type" required="true" max="1"/>
+                <rule avp="IDA-Flags" required="false" max="1"/>
+                <rule avp="EPS-User-State" required="false" max="1" />
+                <rule avp="EPS-Location-Information" required="false" max="1" />
+                <rule avp="Local-Time-Zone" required="false" max="1" />
+                <rule avp="Supported-Services" required="false" max="1" />
+                <rule avp="Monitoring-Event-Report" required="false" />
+                <rule avp="Monitoring-Event-Config-Status" required="false" />
+                <rule avp="AVP" required="false"/>
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false"/>
+                <rule avp="Route-Record" required="false"/>
+            </answer>
+        </command>
+
         <command code="318" short="AI" name="Authentication-Information">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
@@ -5928,6 +5974,10 @@ var tgpps6aXML = `<?xml version="1.0" encoding="UTF-8"?>
             <data type="Unsigned32"/>
         </avp>
 
+        <avp name="IDR-Flags" code="1490" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
         <avp name="UE-SRVCC-Capability" code="1615" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
             <data type="Enumerated">
                 <item code="0" name="UE-SRVCC-NOT-SUPPORTED"/>
@@ -6621,7 +6671,6 @@ var tgppswxXML = `<?xml version="1.0" encoding="UTF-8"?>
 
 var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
-
 	<!--
 		3GPP TS 29.214
 		See: https://www.3gpp.org/ftp//Specs/archive/29_series/29.214/29214-g40.zip
@@ -6713,7 +6762,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="AVP" required="false"/>
 			</answer>
 		</command>
-
 		<command code="258" short="RA" name="Re-Auth">
 			<request>
 				<rule avp="Session-Id " required="true" max="1"/>
@@ -6778,7 +6826,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="AVP" required="false"/>
 			</answer>
 		</command>
-
 		<command code="275" short="ST" name="Session-Termination">
 			<request>
 				<rule avp="Session-Id" required="true" max="1"/>
@@ -6832,7 +6879,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="AVP" required="false"/>
 			</answer>
 		</command>
-
 		<command code="274" short="AS" name="Abort-Session">
 			<request>
 				<rule avp="Session-Id" required="true" max="1"/>
@@ -7013,7 +7059,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="Max-Requested-Bandwidth-UL" code="516" vendor-id="10415" must="M,V" may-encrypt="Y">
 			<data type="Unsigned32"/>
 		</avp>
-
 		<avp name="Extended-Max-Requested-BW-DL" code="554" vendor-id="10415" must="V" may-encrypt="Y">
 			<data type="Unsigned32"/>
 		</avp>
@@ -7348,21 +7393,18 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<item code="2" name="RESTRICT_ACCESS"/>
             		</data>
         	</avp>
-
 		 <avp name="Pre-emption-Capability" code="1047" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             		<data type="Enumerated">
                 		<item code="0" name="PRE-EMPTION_CAPABILITY_ENABLED"/>
                 		<item code="1" name="PRE-EMPTION_CAPABILITY_DISABLED"/>
             		</data>
         	</avp>
-
 		<avp name="Pre-emption-Vulnerability" code="1048" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             		<data type="Enumerated">
                 		<item code="0" name="PRE-EMPTION_VULNERABILITY_ENABLED"/>
                 		<item code="1" name="PRE-EMPTION_VULNERABILITY_DISABLED"/>
             		</data>
         	</avp>
-
 		<avp name="Reservation-Priority" code="458" vendor-id="10415" must="V" may-encrypt="Y">
             		<data type="Enumerated">
                 		<item code="0" name="DEFAULT"/>
@@ -7383,11 +7425,9 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="Called-Party-Address" code="832" must="V,M" may-encrypt="N" vendor-id="10415">
             		<data type="UTF8String"/>
         	</avp>
-
 		<avp name="Requested-Party-Address" code="1251" must="V,M" may-encrypt="N" vendor-id="10415">
             		<data type="UTF8String"/>
         	</avp>
-
 		 <avp name="Called-Asserted-Identity" code="1250" must="V,M" may-encrypt="N" vendor-id="10415">
         	    	<data type="UTF8String"/>
         	</avp>
@@ -7406,7 +7446,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<item code="9" name="Non-3GPP-5GS"/>
             		</data>
         	</avp>
-
 		<avp name="RAT-Type" code="1032" must="M,V" may-encrypt="Y" vendor-id="10415">
             		<data type="Enumerated">
                 		<item code="0" name="WLAN"/>
@@ -7422,7 +7461,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<item code="2003" name="EHRPD"/>
             		</data>
         	</avp>
-
 		<avp name="Granted-Service-Unit" code="431" must="M" may-encrypt="Y">
             		<data type="Grouped">
                 		<rule avp="Tariff-Time-Change" required="false" max="1"/>
@@ -7435,7 +7473,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<!-- *[ AVP ]-->
             		</data>
         	</avp>
-
 		<avp name="Used-Service-Unit" code="446" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Grouped">
                 		<rule avp="Tariff-Change-Usage" required="false" max="1"/>
@@ -7452,11 +7489,9 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		 <avp name="Tariff-Time-Change" code="451" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Time"/>
         	</avp>
-
 		<avp name="CC-Time" code="420" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Unsigned32"/>
         	</avp>
-
 		 <avp name="CC-Money" code="413" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Grouped">
                 		<rule avp="Unit-Value" required="true" max="1"/>
@@ -7470,27 +7505,21 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<rule avp="Exponent" required="true" max="1"/>
             		</data>
         	</avp>
-
 		<avp name="Currency-Code" code="425" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Unsigned32"/>
         	</avp>
-
 		<avp name="Value-Digits" code="447" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Integer64"/>
         	</avp>
-
 		<avp name="Exponent" code="429" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Integer32"/>
         	</avp>
-
 		<avp name="CC-Total-Octets" code="421" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Unsigned64"/>
         	</avp>
-
 		 <avp name="CC-Output-Octets" code="414" must="M" may="P" must-not="V" may-encrypt="Y">
         	    	<data type="Unsigned64"/>
         	</avp>
-
 		 <avp name="CC-Service-Specific-Units" code="417" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Unsigned64"/>
         	</avp>
@@ -7498,7 +7527,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
         	<avp name="CC-Input-Octets" code="412" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Unsigned64"/>
         	</avp>
-
 		<avp name="DRMP" code="301" must-not="V">
             		<data type="Enumerated">
                 		<item code="0" name="PRIORITY_0"/>
@@ -7519,19 +7547,15 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<item code="15" name="PRIORITY_15"/>
             		</data>
         	</avp>
-
 		<avp name="Origin-Host" code="264" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="DiameterIdentity"/>
         	</avp>
-
 		<avp name="Origin-Realm" code="296" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="DiameterIdentity"/>
         	</avp>
-
 		<avp name="Destination-Host" code="293" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="DiameterIdentity"/>
         	</avp>
-
         	<avp name="Destination-Realm" code="283" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="DiameterIdentity"/>
         	</avp>
@@ -7539,25 +7563,21 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="Auth-Application-Id" code="258" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="Unsigned32"/>
         	</avp>
-
 		<avp name="Auth-Session-State" code="277" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="Enumerated">
                 		<item code="0" name="STATE_MAINTAINED"/>
                 		<item code="1" name="NO_STATE_MAINTAINED"/>
             		</data>
         	</avp>
-
 		 <avp name="Subscription-Id" code="443" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Grouped">
                 		<rule avp="Subscription-Id-Type" required="true" max="1"/>
                 		<rule avp="Subscription-Id-Data" required="true" max="1"/>
             		</data>
         	</avp>
-
         	<avp name="Subscription-Id-Data" code="444" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="UTF8String"/>
         	</avp>
-
         	<avp name="Subscription-Id-Type" code="450" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="Enumerated">
                 		<item code="0" name="END_USER_E164"/>
@@ -7566,7 +7586,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<item code="3" name="END_USER_NAI"/>
             		</data>
         	</avp>
-
 		<avp name="OC-Supported-Features" code="621" must-not="V">
             		<data type="Grouped">
                 		<rule avp="Subscription-Id-Type" required="true" max="1"/>
@@ -7589,11 +7608,9 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="Feature-List-ID" code="629" must="V" must_not="M" may-encrypt="N" vendor-id="10415">
 			<data type="Unsigned32"/>
 		</avp>
-
 		<avp name="Feature-List" code="630" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
 			<data type="Unsigned32"/>
 		</avp>
-
 		<avp name="Framed-IP-Address" code="8" must="M" may="-" must-not="V" may-encrypt="Y">
             		<data type="OctetString"/>
         	</avp>
@@ -7636,26 +7653,21 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="Proxy-Host" code="280" must="M" may="-" must-not="P,V" may-encrypt="-">
             		<data type="DiameterIdentity"/>
         	</avp>
-
         	<avp name="Proxy-State" code="33" must="M" may="-" must-not="P,V" may-encrypt="-">
             		<data type="OctetString"/>
         	</avp>
-
 		 <avp name="Route-Record" code="282" must="M" may="-" must-not="P,V" may-encrypt="-">
             		<data type="DiameterIdentity"/>
         	</avp>
-
 		 <avp name="Result-Code" code="268" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="Unsigned32"/>
         	</avp>
-
 		 <avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="Grouped">
                 		<rule avp="Vendor-Id" required="true" max="1"/>
                 		<rule avp="Experimental-Result-Code" required="true" max="1"/>
             		</data>
         	</avp>
-
         	<avp name="Experimental-Result-Code" code="298" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="Unsigned32"/>
         	</avp>
@@ -7663,14 +7675,12 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		 <avp name="AN-GW-Address" code="1050" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             		<data type="Address"/>
         	</avp>
-
 		<avp name="AN-Trusted" code="1503" must="M,V">
             		<data type="Enumerated">
 				<item code="0" name="TRUSTED"/>
                 		<item code="1" name="UNTRUSTED"/>
 			</data>
         	</avp>
-
 		<avp name="NetLoc-Access-Support" code="2824" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             		<data type="Unsigned32"/>
         	</avp>
@@ -7684,22 +7694,18 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<rule avp="AVP" required="false"/>
             		</data>
         	</avp>
-
         	<avp name="OC-Sequence-Number" code="624" must-not="V">
            		<data type="Unsigned64"/>
         	</avp>
-
        	 	<avp name="OC-Validity-Duration" code="625" must-not="V">
             		<data type="Unsigned32"/>
         	</avp>
-
         	<avp name="OC-Report-Type" code="626" must-not="V">
             		<data type="Enumerated">
                 		<item code="0" name="HOST_REPORT"/>
                 		<item code="1" name="REALM_REPORT"/>
             		</data>
         	</avp>
-
         	<avp name="OC-Reduction-Percentage" code="627" must-not="V">
             		<data type="Unsigned32"/>
         	</avp>
@@ -7710,7 +7716,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<rule avp="User-Equipment-Info-Value" required="true" max="1"/>
             		</data>
         	</avp>
-
         	<avp name="User-Equipment-Info-Type" code="459" must="-" may="P,M" must-not="V" may-encrypt="Y">
             		<data type="Enumerated">
                 		<item code="0" name="IMEISV"/>
@@ -7719,11 +7724,9 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
                 		<item code="3" name="MODIFIED_EUI64"/>
             		</data>
         	</avp>
-
         	<avp name="User-Equipment-Info-Value" code="460" must="-" may="P,M" must-not="V" may-encrypt="Y">
             		<data type="OctetString"/>
         	</avp>
-
 		<avp name="Class" code="25" must="M" may="P" must-not="V" may-encrypt="Y">
             		<data type="OctetString"/>
         	</avp>
@@ -7731,11 +7734,9 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		 <avp name="Error-Message" code="281" must="-" may="P" must-not="V,M" may-encrypt="-">
             		<data type="UTF8String"/>
         	</avp>
-
         	<avp name="Error-Reporting-Host" code="294" must="-" may="P" must-not="V,M" may-encrypt="-">
             		<data type="DiameterIdentity"/>
         	</avp>
-
 		 <avp name="Redirect-Host" code="292" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="DiameterURI"/>
         	</avp>
@@ -7755,7 +7756,6 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="Redirect-Max-Cache-Time" code="262" must="M" may="P" must-not="V" may-encrypt="-">
             		<data type="Unsigned32"/>
         	</avp>
-
 		<avp name="Load" code="650" must-not="V">
          		 <data type="Grouped">
                 		<rule avp="Load-Type" required="false" max="1"/>
@@ -7779,38 +7779,27 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="SourceID" code="649" must-not="V">
         	    	<data type="DiameterIdentity"/>
 	        </avp>
-
 		<avp name="User-Location-Info-Time" code="2812" must="V" may="P" must-not="M" may-encrypt="Y">
         	    	<data type="Time"/>
 	        </avp>
-
 		<avp name="RAN-NAS-Release-Cause" code="2819" must="V" may="P" must-not="M" may-encrypt="Y">
         	    	<data type="OctetString"/>
 	        </avp>
-
 		<avp name="TWAN-Identifier" code="29" must="V" may="P" must-not="M" may-encrypt="Y">
         	    	<data type="OctetString"/>
 	        </avp>
-
-
 		<avp name="TCP-Source-Port" code="2843" must="V" may="P" must-not="M" may-encrypt="Y">
         	    	<data type="Unsigned32"/>
 	        </avp>
-
-
 		<avp name="UDP-Source-Port" code="2806" must="V" may="P" must-not="M" may-encrypt="Y">
         	    	<data type="Unsigned32"/>
 	        </avp>
-
-
 		<avp name="UE-Local-IP-Address" code="2805" must="V" may="P" must-not="M" may-encrypt="Y">
         	    	<data type="Address"/>
 	        </avp>
-
 		<avp name="Failed-AVP" code="279" must="M" may="P" must-not="V" may-encrypt="-">
         	    	<data type="Grouped"/>
 	        </avp>
-
 		<avp name="Framed-Ipv6-Prefix" code="97" must="M" may-encrypt="Y">
             		<data type="OctetString"/>
 	        </avp>
@@ -7818,13 +7807,11 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="TGPP-SGSN-MCC-MNC" code="18" must="V"    may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             		<data type="UTF8String"/>
         	</avp>
-
         	<avp name="TGPP-User-Location-Info" code="22" must="V"  may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             		<data type="OctetString"/>
 	        </avp>
-
    		<avp name="TGPP-MS-TimeZone" code="23" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             		<data type="OctetString"/>
        </avp>
 	</application>
-</diameter>`	
+</diameter>`

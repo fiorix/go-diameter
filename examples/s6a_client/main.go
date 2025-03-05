@@ -111,7 +111,7 @@ func main() {
 	}
 
 	// Set message handlers.
-	done := make(chan struct{}, 1000)
+	done := make(chan struct{}, 100000000)
 	mux.HandleIdx(
 		diam.CommandIndex{AppID: diam.TGPP_S6A_APP_ID, Code: diam.AuthenticationInformation, Request: false},
 		handleAuthenticationInformationAnswer(done))
@@ -204,7 +204,7 @@ func sendAIR(c diam.Conn, cfg *sm.Settings, imsi string) error {
 				avp.ImmediateResponsePreferred, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(0)),
 		},
 	})
-	log.Printf("\nSending AIR to %s\n", c.RemoteAddr())
+	log.Printf("Sending AIR to %s\n", c.RemoteAddr())
 	_, err := m.WriteTo(c)
 	return err
 }
@@ -306,7 +306,7 @@ func sendULR(c diam.Conn, cfg *sm.Settings, imsi string) error {
 	m.NewAVP(avp.RATType, avp.Mbit, uint32(*vendorID), datatype.Enumerated(1004))
 	m.NewAVP(avp.ULRFlags, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(ULR_FLAGS))
 	m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
-	log.Printf("\nSending ULR (%s) to %s\n", imsi, c.RemoteAddr())
+	log.Printf("Sending ULR (%s) to %s\n", imsi, c.RemoteAddr())
 	_, err := m.WriteTo(c)
 	return err
 }

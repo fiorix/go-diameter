@@ -66,7 +66,7 @@ var (
 	plmnID          = flag.String("plmnid", "\x00\xF1\x10", "Client (UE) PLMN ID")
 	vectors         = flag.Uint("vectors", 3, "Number Of Requested Auth Vectors")
 	completionSleep = flag.Uint("sleep", 10, "After Completion Sleep Time (seconds)")
-	requestDelayus   = flag.Uint("request_delay", 10000000, "Sleep between req.")
+	requestDelayus  = flag.Uint("request_delay", 10000000, "Sleep between req.")
 )
 
 func main() {
@@ -150,7 +150,7 @@ func main() {
 			select {
 			case <-done:
 			case <-time.After(10 * time.Second):
-				log.Fatal("Authentication Information timeout")
+				log.Print("Authentication Information timeout")
 			}
 		}
 		err = sendULR(conn, cfg, imsi)
@@ -161,7 +161,7 @@ func main() {
 			select {
 			case <-done:
 			case <-time.After(10 * time.Second):
-				log.Fatal("Update Location timeout")
+				log.Print("Update Location timeout")
 			}
 		}
 

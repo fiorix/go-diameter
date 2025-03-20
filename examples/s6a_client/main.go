@@ -34,6 +34,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"math/rand"
 	"net"
@@ -48,23 +49,21 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/sm/smpeer"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 var (
-	addr            = flag.String("addr", "192.168.60.145:3868", "address in form of ip:port to connect to")
-	host            = flag.String("diam_host", "magma-oai.openair4G.eur", "diameter identity host")
-	realm           = flag.String("diam_realm", "openair4G.eur", "diameter identity realm")
-	networkType     = flag.String("network_type", "sctp", "protocol type tcp/sctp/tcp4/tcp6/sctp4/sctp6")
-	retries         = flag.Uint("retries", 3, "Maximum number of retransmits")
-	watchdog        = flag.Uint("watchdog", 5, "Diameter watchdog interval in seconds. 0 to disable watchdog.")
-	vendorID        = flag.Uint("vendor", 10415, "Vendor ID")
-	appID           = flag.Uint("app", 16777251, "AuthApplicationID")
-	ueIMSI          = flag.String("imsi", "001010000000001", "Client (UE) IMSI")
-	plmnID          = flag.String("plmnid", "\x00\xF1\x10", "Client (UE) PLMN ID")
-	vectors         = flag.Uint("vectors", 3, "Number Of Requested Auth Vectors")
-	completionSleep = flag.Uint("sleep", 10, "After Completion Sleep Time (seconds)")
+	addr         = flag.String("addr", "192.168.60.145:3868", "address in form of ip:port to connect to")
+	host         = flag.String("diam_host", "magma-oai.openair4G.eur", "diameter identity host")
+	realm        = flag.String("diam_realm", "openair4G.eur", "diameter identity realm")
+	networkType  = flag.String("network_type", "sctp", "protocol type tcp/sctp/tcp4/tcp6/sctp4/sctp6")
+	retries      = flag.Uint("retries", 3, "Maximum number of retransmits")
+	watchdog     = flag.Uint("watchdog", 5, "Diameter watchdog interval in seconds. 0 to disable watchdog.")
+	vendorID     = flag.Uint("vendor", 10415, "Vendor ID")
+	appID        = flag.Uint("app", 16777251, "AuthApplicationID")
+	imsiBase     = flag.String("imsi_base", "234500021000000", "Client (UE) IMSI base")
+	plmnID       = flag.String("plmnid", "\x00\xF1\x10", "Client (UE) PLMN ID")
+	vectors      = flag.Uint("vectors", 3, "Number Of Requested Auth Vectors")
+	requestDelay = flag.Uint("request_delay", 1_000, "Sleep between requests - default 1 second")
+	verbose      = flag.Bool("verbose", false, "Print verbose output")
+	r            = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 func main() {
@@ -109,7 +108,7 @@ func main() {
 	}
 
 	// Set message handlers.
-	done := make(chan struct{}, 1000)
+	done := make(chan struct{}, 100000000)
 	mux.HandleIdx(
 		diam.CommandIndex{AppID: diam.TGPP_S6A_APP_ID, Code: diam.AuthenticationInformation, Request: false},
 		handleAuthenticationInformationAnswer(done))
@@ -124,7 +123,8 @@ func main() {
 	// Print error reports.
 	go printErrors(mux.ErrorReports())
 
-	// Sleep after completion to observe DWR/As going in the background
+	const MAX_IDX = 9999999
+	idx := 0
 
 	conn, err := cli.DialNetwork(*networkType, *addr)
 	if err != nil {
@@ -132,28 +132,38 @@ func main() {
 	}
 
 	for {
-		err = sendAIR(conn, cfg)
-		if err != nil {
-			log.Fatal(err)
+		idx++
+		if idx > MAX_IDX {
+			idx = 0
 		}
-		select {
-		case <-done:
-		case <-time.After(10 * time.Second):
-			log.Fatal("Authentication Information timeout")
-		}
-		err = sendULR(conn, cfg)
-		if err != nil {
-			log.Fatal(err)
-		}
-		select {
-		case <-done:
-		case <-time.After(10 * time.Second):
-			log.Fatal("Update Location timeout")
-		}
-	}
+		imsi := fmt.Sprintf("%s%06d", *imsiBase, idx)
 
-	// Sleep after completion to observe DWR/As going in the background
-	// time.Sleep(time.Duration(*completionSleep) * time.Second)
+		err = sendAIR(conn, cfg, imsi)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if *requestDelay > 100_000 {
+			select {
+			case <-done:
+			case <-time.After(10 * time.Second):
+				log.Print("Authentication Information timeout")
+			}
+		}
+		err = sendULR(conn, cfg, imsi)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if *requestDelay > 100_000 {
+			select {
+			case <-done:
+			case <-time.After(10 * time.Second):
+				log.Print("Update Location timeout")
+			}
+		}
+
+		// sleep a while
+		<-time.After(time.Duration(*requestDelay) * time.Millisecond)
+	}
 }
 
 func printErrors(ec <-chan *diam.ErrorReport) {
@@ -163,23 +173,23 @@ func printErrors(ec <-chan *diam.ErrorReport) {
 }
 
 // Create & send Authentication-Information Request
-func sendAIR(c diam.Conn, cfg *sm.Settings) error {
+func sendAIR(c diam.Conn, cfg *sm.Settings, imsi string) error {
 	meta, ok := smpeer.FromContext(c.Context())
 	if !ok {
 		return errors.New("peer metadata unavailable")
 	}
-	sid := "session;" + strconv.Itoa(int(rand.Uint32()))
+	sid := "session;" + strconv.Itoa(int(r.Uint32()))
 	m := diam.NewRequest(diam.AuthenticationInformation, diam.TGPP_S6A_APP_ID, dict.Default)
 	m.Header.CommandFlags |= diam.ProxiableFlag
-	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
-	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
-	// m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
-	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(*ueIMSI))
-	m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
-	m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
-	m.NewAVP(avp.RequestedEUTRANAuthenticationInfo, avp.Vbit|avp.Mbit, uint32(*vendorID), &diam.GroupedAVP{
+	_, _ = m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
+	_, _ = m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
+	_, _ = m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
+	_, _ = m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
+	// _, _ = m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
+	_, _ = m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(imsi))
+	_, _ = m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
+	_, _ = m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
+	_, _ = m.NewAVP(avp.RequestedEUTRANAuthenticationInfo, avp.Vbit|avp.Mbit, uint32(*vendorID), &diam.GroupedAVP{
 		AVP: []*diam.AVP{
 			diam.NewAVP(
 				avp.NumberOfRequestedVectors, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(*vectors)),
@@ -187,7 +197,7 @@ func sendAIR(c diam.Conn, cfg *sm.Settings) error {
 				avp.ImmediateResponsePreferred, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(0)),
 		},
 	})
-	log.Printf("\nSending AIR to %s\n%s\n", c.RemoteAddr(), m)
+	log.Printf("Sending AIR to %s\n", c.RemoteAddr())
 	_, err := m.WriteTo(c)
 	return err
 }
@@ -271,38 +281,40 @@ type ULA struct {
 }
 
 // Create & send Update-Location Request
-func sendULR(c diam.Conn, cfg *sm.Settings) error {
+func sendULR(c diam.Conn, cfg *sm.Settings, imsi string) error {
 	meta, ok := smpeer.FromContext(c.Context())
 	if !ok {
 		return errors.New("peer metadata unavailable")
 	}
-	sid := "session;" + strconv.Itoa(int(rand.Uint32()))
+	sid := "session;" + strconv.Itoa(int(r.Uint32()))
 	m := diam.NewRequest(diam.UpdateLocation, diam.TGPP_S6A_APP_ID, dict.Default)
 	m.Header.CommandFlags |= diam.ProxiableFlag
-	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
-	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
-	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
-	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
-	// m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
-	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(*ueIMSI))
-	m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
-	m.NewAVP(avp.RATType, avp.Mbit, uint32(*vendorID), datatype.Enumerated(1004))
-	m.NewAVP(avp.ULRFlags, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(ULR_FLAGS))
-	m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
-	log.Printf("\nSending ULR to %s\n%s\n", c.RemoteAddr(), m)
+	_, _ = m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
+	_, _ = m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
+	_, _ = m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
+	_, _ = m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
+	// _, _ = m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
+	_, _ = m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(imsi))
+	_, _ = m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
+	_, _ = m.NewAVP(avp.RATType, avp.Mbit, uint32(*vendorID), datatype.Enumerated(1004))
+	_, _ = m.NewAVP(avp.ULRFlags, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.Unsigned32(ULR_FLAGS))
+	_, _ = m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
+	log.Printf("Sending ULR (%s) to %s\n", imsi, c.RemoteAddr())
 	_, err := m.WriteTo(c)
 	return err
 }
 
 func handleAuthenticationInformationAnswer(done chan struct{}) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
-		log.Printf("Received Authentication-Information Answer from %s\n%s\n", c.RemoteAddr(), m)
-		var aia AIA
-		err := m.Unmarshal(&aia)
-		if err != nil {
-			log.Printf("AIA Unmarshal failed: %s", err)
-		} else {
-			log.Printf("Unmarshaled Authentication-Information Answer:\n%#+v\n", aia)
+		log.Printf("Received Authentication-Information Answer from %s\n", c.RemoteAddr())
+		if *verbose {
+			var aia AIA
+			err := m.Unmarshal(&aia)
+			if err != nil {
+				log.Printf("AIA Unmarshal failed: %s", err)
+			} else {
+				log.Printf("Unmarshaled Authentication-Information Answer:\n%#+v\n", aia)
+			}
 		}
 		ok := struct{}{}
 		done <- ok
@@ -311,13 +323,15 @@ func handleAuthenticationInformationAnswer(done chan struct{}) diam.HandlerFunc 
 
 func handleUpdateLocationAnswer(done chan struct{}) diam.HandlerFunc {
 	return func(c diam.Conn, m *diam.Message) {
-		log.Printf("Received Update-Location Answer from %s\n%s\n", c.RemoteAddr(), m)
-		var ula ULA
-		err := m.Unmarshal(&ula)
-		if err != nil {
-			log.Printf("ULA Unmarshal failed: %s", err)
-		} else {
-			log.Printf("Unmarshaled UL Answer:\n%#+v\n", ula)
+		log.Printf("Received Update-Location Answer from %s\n", c.RemoteAddr())
+		if *verbose {
+			var ula ULA
+			err := m.Unmarshal(&ula)
+			if err != nil {
+				log.Printf("ULA Unmarshal failed: %s", err)
+			} else {
+				log.Printf("Unmarshaled UL Answer:\n%#+v\n", ula)
+			}
 		}
 		ok := struct{}{}
 		done <- ok

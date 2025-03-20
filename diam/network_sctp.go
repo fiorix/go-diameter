@@ -379,6 +379,9 @@ func (d sctpDialer) Dial(network, address string) (net.Conn, error) {
 		sctp.InitMsg{
 			NumOstreams:  MaxOutboundSCTPStreams,
 			MaxInstreams: MaxInboundSCTPStreams})
+	conn.Setsockopt(sctp.SCTP_NODELAY, uintptr(1), uintptr(1))
+  // also an option
+  // conn.SetReadBuffer(20000)
 	return NewSCTPConn(conn), err
 }
 
@@ -401,5 +404,6 @@ func (d sctpSingleStreamDialer) Dial(network, address string) (net.Conn, error) 
 // Accept implements the Accept method in the listener interface for sctpListener (see: MultistreamListen).
 func (l sctpListener) Accept() (net.Conn, error) {
 	conn, err := l.AcceptSCTP()
+	conn.Setsockopt(sctp.SCTP_NODELAY, uintptr(1), uintptr(1))
 	return NewSCTPConn(conn), err
 }

@@ -11,7 +11,9 @@ type OctetString string
 
 // DecodeOctetString decodes an OctetString from byte array.
 func DecodeOctetString(b []byte) (Type, error) {
-	return OctetString(b), nil
+	tmp := make([]byte, len(b))
+	copy(tmp, b)
+	return OctetString(tmp), nil
 }
 
 // Serialize implements the Type interface.

@@ -6,6 +6,8 @@ package sm
 
 import (
 	"fmt"
+	"net"
+	"os"
 
 	"github.com/fiorix/go-diameter/v4/diam"
 	"github.com/fiorix/go-diameter/v4/diam/datatype"
@@ -93,6 +95,14 @@ func New(settings *Settings) *StateMachine {
 	if len(settings.HostIPAddresses) == 0 && len(settings.HostIPAddress) > 0 {
 		settings.HostIPAddresses = []datatype.Address{settings.HostIPAddress}
 	}
+
+	if len(settings.HostIPAddresses) == 0 && len(settings.HostIPAddress) == 0 {
+		val, set := os.LookupEnv("EXTERNAL_HOST_IP")
+		if set {
+			settings.HostIPAddresses = []datatype.Address{datatype.Address(net.ParseIP(val))}
+		}
+	}
+
 	sm := &StateMachine{
 		cfg:           settings,
 		mux:           diam.NewServeMux(),

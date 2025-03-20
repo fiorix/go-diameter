@@ -22,6 +22,8 @@ func DecodeAddress(b []byte) (Type, error) {
 	if binary.BigEndian.Uint16(b[:2]) == 0 || binary.BigEndian.Uint16(b[:2]) == 65535 {
 		return nil, errors.New("Invalid address type received")
 	}
+	tmp := make([]byte, len(b))
+	copy(tmp, b)
 	switch binary.BigEndian.Uint16(b[:2]) {
 	case 0x01:
 		if len(b[2:]) != 4 {
@@ -32,9 +34,9 @@ func DecodeAddress(b []byte) (Type, error) {
 			return nil, errors.New("Invalid length for IPv6")
 		}
 	default:
-		return Address(b), nil
+		return Address(tmp), nil
 	}
-	return Address(b[2:]), nil
+	return Address(tmp[2:]), nil
 }
 
 // Serialize implements the Type interface.

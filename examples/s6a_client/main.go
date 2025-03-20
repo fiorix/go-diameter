@@ -61,7 +61,7 @@ var (
 	imsiBase     = flag.String("imsi_base", "234500021000000", "Client (UE) IMSI base")
 	plmnID       = flag.String("plmnid", "\x00\xF1\x10", "Client (UE) PLMN ID")
 	vectors      = flag.Uint("vectors", 3, "Number Of Requested Auth Vectors")
-	requestDelay = flag.Uint("request_delay", 1_000, "Sleep between requests - default 1 second")
+	requestDelay = flag.Float64("request_delay", 1_000, "Sleep between requests - default 1 second")
 	verbose      = flag.Bool("verbose", false, "Print verbose output")
 	r            = rand.New(rand.NewSource(time.Now().UnixNano()))
 )

@@ -153,7 +153,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if *requestDelayMs > 100_000 {
+		if *requestDelayMs > 100 {
 			select {
 			case <-done:
 			case <-time.After(10 * time.Second):

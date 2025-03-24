@@ -116,6 +116,11 @@ func New(settings *Settings) *StateMachine {
 	return sm
 }
 
+//overrite the supported auth application IDs
+func (sm *StateMachine) UpdateSupportedApps(updatedSuppApp []*SupportedApp) {
+	sm.supportedApps = updatedSuppApp
+}
+
 // Settings return the Settings object used by this StateMachine.
 func (sm *StateMachine) Settings() *Settings {
 	return sm.cfg

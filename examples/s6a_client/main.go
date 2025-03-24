@@ -50,20 +50,20 @@ import (
 )
 
 var (
-	addr         = flag.String("addr", "192.168.60.145:3868", "address in form of ip:port to connect to")
-	host         = flag.String("diam_host", "magma-oai.openair4G.eur", "diameter identity host")
-	realm        = flag.String("diam_realm", "openair4G.eur", "diameter identity realm")
-	networkType  = flag.String("network_type", "sctp", "protocol type tcp/sctp/tcp4/tcp6/sctp4/sctp6")
-	retries      = flag.Uint("retries", 3, "Maximum number of retransmits")
-	watchdog     = flag.Uint("watchdog", 5, "Diameter watchdog interval in seconds. 0 to disable watchdog.")
-	vendorID     = flag.Uint("vendor", 10415, "Vendor ID")
-	appID        = flag.Uint("app", 16777251, "AuthApplicationID")
-	imsiBase     = flag.String("imsi_base", "234500021000000", "Client (UE) IMSI base")
-	plmnID       = flag.String("plmnid", "\x00\xF1\x10", "Client (UE) PLMN ID")
-	vectors      = flag.Uint("vectors", 3, "Number Of Requested Auth Vectors")
-	requestDelay = flag.Uint("request_delay", 1_000, "Sleep between requests - default 1 second")
-	verbose      = flag.Bool("verbose", false, "Print verbose output")
-	r            = rand.New(rand.NewSource(time.Now().UnixNano()))
+	addr           = flag.String("addr", "192.168.60.145:3868", "address in form of ip:port to connect to")
+	host           = flag.String("diam_host", "magma-oai.openair4G.eur", "diameter identity host")
+	realm          = flag.String("diam_realm", "openair4G.eur", "diameter identity realm")
+	networkType    = flag.String("network_type", "sctp", "protocol type tcp/sctp/tcp4/tcp6/sctp4/sctp6")
+	retries        = flag.Uint("retries", 3, "Maximum number of retransmits")
+	watchdog       = flag.Uint("watchdog", 5, "Diameter watchdog interval in seconds. 0 to disable watchdog.")
+	vendorID       = flag.Uint("vendor", 10415, "Vendor ID")
+	appID          = flag.Uint("app", 16777251, "AuthApplicationID")
+	imsiBase       = flag.String("imsi_base", "234500021000000", "Client (UE) IMSI base")
+	plmnID         = flag.String("plmnid", "\x00\xF1\x10", "Client (UE) PLMN ID")
+	vectors        = flag.Uint("vectors", 3, "Number Of Requested Auth Vectors")
+	requestDelayMs = flag.Float64("request_delay_ms", 1_000, "Sleep between requests - default 1 second")
+	verbose        = flag.Bool("verbose", false, "Print verbose output")
+	r              = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 func main() {
@@ -142,7 +142,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if *requestDelay > 100_000 {
+		if *requestDelayMs > 100 {
 			select {
 			case <-done:
 			case <-time.After(10 * time.Second):
@@ -153,7 +153,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if *requestDelay > 100_000 {
+		if *requestDelayMs > 100 {
 			select {
 			case <-done:
 			case <-time.After(10 * time.Second):
@@ -162,7 +162,7 @@ func main() {
 		}
 
 		// sleep a while
-		<-time.After(time.Duration(*requestDelay) * time.Millisecond)
+		<-time.After(time.Duration(*requestDelayMs) * time.Millisecond)
 	}
 }
 

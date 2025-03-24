@@ -17,7 +17,9 @@ func DecodeIPv4(b []byte) (Type, error) {
 	if len(b) != 4 {
 		return IPv4{0, 0, 0, 0}, nil
 	}
-	return IPv4(b), nil
+	tmp := make([]byte, len(b))
+	copy(tmp, b)
+	return IPv4(tmp), nil
 }
 
 // Serialize implements the Type interface.

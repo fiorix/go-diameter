@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+    <application id="16777312" type="auth" name="TGPP S6C">
+        <vendor id="10415" name="TGPP"/>
+<command code="8388647" short="SR" name="Send-Routing-Info-for-SM" >
+                         <request>
+    <rule avp="Session-Id" required="true" max="1" />
+    <rule avp="DRMP" required="false" max="1" pointer="true" />
+    <rule avp="Vendor-Specific-Application-Id" required="false" max="1" pointer="true" />
+    <rule avp="Auth-Session-State" required="true" max="1" />
+    <rule avp="Origin-Host" required="true" max="1" />
+    <rule avp="Origin-Realm" required="true" max="1" />
+    <rule avp="Destination-Host" required="false" max="1" pointer="true" />
+    <rule avp="Destination-Realm" required="true" max="1" />
+    <rule avp="MSISDN" required="false" max="1" pointer="true" />
+    <rule avp="User-Name" required="false" max="1" pointer="true" />
+    <rule avp="SMSMI-Correlation-ID" required="false" max="1" pointer="true"/>
+    <rule avp="Supported-Features" required="false" />
+    <rule avp="SC-Address" required="false" max="1" pointer="true" />
+    <rule avp="SM-RP-MTI" required="false" max="1" pointer="true" />
+    <rule avp="SM-RP-SMEA" required="false" max="1" pointer="true" />
+    <rule avp="SRR-Flags" required="false" max="1" pointer="true" />
+    <rule avp="SM-Delivery-Not-Intended" required="false" max="1" pointer="true" />
+    <rule avp="AVP" required="false" />
+    <rule avp="Proxy-Info" required="false" />
+    <rule avp="Route-Record" required="false" />
+                         </request>
+
+                         <answer>
+    <rule avp="Session-Id" required="true" max="1" />
+    <rule avp="DRMP" required="false" max="1"  pointer="true" />
+    <rule avp="Vendor-Specific-Application-Id" required="false" max="1"pointer="true" />
+    <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+    <rule avp="Experimental-Result" required="false" max="1" pointer="true" />
+    <rule avp="Auth-Session-State" required="true" max="1" />
+    <rule avp="Origin-Host" required="true" max="1" />
+    <rule avp="Origin-Realm" required="true" max="1" />
+    <rule avp="User-Name" required="false" max="1" pointer="true" />
+    <rule avp="Supported-Features" required="false" />
+    <rule avp="Serving-Node" required="false" max="1" pointer="true" />
+    <rule avp="Additional-Serving-Node" required="false" max="1" pointer="true" />
+    <rule avp="SMSF-3GPP-Address" required="false" max="1" pointer="true" />
+    <rule avp="SMSF-Non-3GPP-Address" required="false" max="1" pointer="true" />
+    <rule avp="LMSI" required="false" max="1" pointer="true" />
+    <rule avp="User-Identifier" required="false" max="1" pointer="true" />
+    <rule avp="MWD-Status" required="false" max="1" pointer="true" />
+    <rule avp="MME-Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    <rule avp="MSC-Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    <rule avp="SGSN-Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    <rule avp="SMSF-3GPP-Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    <rule avp="SMSF-Non-3GPP-Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    <rule avp="AVP" required="false" />
+    <rule avp="Failed-AVP" required="false" max="1" pointer="true" />
+    <rule avp="Proxy-Info" required="false" />
+    <rule avp="Route-Record" required="false" />
+                         </answer>
+</command>
+
+<command code="8388648" short="AL" name="Alert-Service-Centre" >
+<request>
+    <rule avp="Session-Id" required="true" max="1" />
+    <rule avp="DRMP" required="false" max="1" pointer="true" />
+    <rule avp="Vendor-Specific-Application-Id" required="false" max="1" pointer="true" />
+    <rule avp="Auth-Session-State" required="true" max="1" />
+    <rule avp="Origin-Host" required="true" max="1" />
+    <rule avp="Origin-Realm" required="true" max="1" />
+    <rule avp="Destination-Host" required="false" max="1" pointer="true" />
+    <rule avp="Destination-Realm" required="true" max="1" />
+    <rule avp="SC-Address" required="true" max="1" pointer="true" />
+    <rule avp="User-Identifier" required="true" max="1" pointer="true" />
+    <rule avp="SMSMI-Correlation-ID" required="false" max="1" pointer="true"/>
+    <rule avp="Maximum-UE-Availability-Time" required="false" max="1" pointer="true" />
+    <rule avp="SMS-GMSC-Alert-Event" required="false" max="1" pointer="true" />
+    <rule avp="Serving-Node" required="false" max="1" pointer="true" />
+    <rule avp="Supported-Features" required="false" />
+    <rule avp="AVP" required="false" />
+    <rule avp="Proxy-Info" required="false" />
+    <rule avp="Route-Record" required="false" />
+</request>
+<answer>
+    <rule avp="Session-Id" required="true" max="1" />
+    <rule avp="DRMP" required="false" max="1"  pointer="true" />
+    <rule avp="Vendor-Specific-Application-Id" required="false" max="1" pointer="true" />
+    <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+    <rule avp="Experimental-Result" required="false" max="1" pointer="true" />
+    <rule avp="Auth-Session-State" required="true" max="1" />
+    <rule avp="Origin-Host" required="true" max="1" />
+    <rule avp="Origin-Realm" required="true" max="1" />
+    <rule avp="Supported-Features" required="false" />
+    <rule avp="AVP" required="false" />
+    <rule avp="Failed-AVP" required="false" max="1" pointer="true" />
+    <rule avp="Proxy-Info" required="false" />
+    <rule avp="Route-Record" required="false" />
+</answer>
+</command>
+
+<command code="8388649" short="RD" name="Report-SM-Delivery-Status" >
+    <request>
+    <rule avp="Session-Id" required="true" max="1" />
+    <rule avp="DRMP" required="false" max="1" pointer="true" />
+    <rule avp="Vendor-Specific-Application-Id" required="false" max="1" pointer="true" />
+    <rule avp="Auth-Session-State" required="true" max="1" />
+    <rule avp="Origin-Host" required="true" max="1" />
+    <rule avp="Origin-Realm" required="true" max="1" />
+    <rule avp="Destination-Host" required="false" max="1" pointer="true" />
+    <rule avp="Destination-Realm" required="true" max="1" />
+    <rule avp="Supported-Features" required="false" />
+    <rule avp="User-Identifier" required="true" max="1" />
+    <rule avp="SMSMI-Correlation-ID" required="false" max="1" pointer="true"/>
+    <rule avp="SC-Address" required="true" max="1" />
+    <rule avp="SM-Delivery-Outcome" required="true" max="1" />
+    <rule avp="RDR-Flags" required="false" max="1" pointer="true" />
+    <rule avp="AVP" required="false" />
+    <rule avp="Proxy-Info" required="false" />
+    <rule avp="Route-Record" required="false" />
+    </request>
+<answer>
+    <rule avp="Session-Id" required="true" max="1" />
+    <rule avp="DRMP" required="false" max="1"  pointer="true" />
+    <rule avp="Vendor-Specific-Application-Id" required="false" max="1" pointer="true" />
+    <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+    <rule avp="Experimental-Result" required="false" max="1" pointer="true" />
+    <rule avp="Auth-Session-State" required="true" max="1" />
+    <rule avp="Origin-Host" required="true" max="1" />
+    <rule avp="Origin-Realm" required="true" max="1" />
+    <rule avp="Supported-Features" required="false" />
+    <rule avp="User-Identifier" required="false" max="1" pointer="true" />
+    <rule avp="AVP" required="false" />
+    <rule avp="Failed-AVP" required="false" max="1" pointer="true" />
+    <rule avp="Proxy-Info" required="false" />
+    <rule avp="Route-Record" required="false" />
+</answer>
+</command>
+
+<avp name="Session-Id" code="263" must="M" may="P" must-not="V" may-encrypt="Y">
+    <data type="UTF8String"/>
+</avp>
+
+<avp name="DRMP" code="301" must-not="V">
+    <data type="Enumerated">
+        <item code="0" name="PRIORITY_0"/>
+        <item code="1" name="PRIORITY_1"/>
+        <item code="2" name="PRIORITY_2"/>
+        <item code="3" name="PRIORITY_3"/>
+        <item code="4" name="PRIORITY_4"/>
+        <item code="5" name="PRIORITY_5"/>
+        <item code="6" name="PRIORITY_6"/>
+        <item code="7" name="PRIORITY_7"/>
+        <item code="8" name="PRIORITY_8"/>
+        <item code="9" name="PRIORITY_9"/>
+        <item code="10" name="PRIORITY_10"/>
+        <item code="11" name="PRIORITY_11"/>
+        <item code="12" name="PRIORITY_12"/>
+        <item code="13" name="PRIORITY_13"/>
+        <item code="14" name="PRIORITY_14"/>
+        <item code="15" name="PRIORITY_15"/>
+    </data>
+</avp>
+
+<avp name="Vendor-Specific-Application-Id" code="260" must="M" may="P" must-not="V" may-encrypt="N" vendor-id="10415">
+    <data type="Grouped" >
+        <rule avp="Vendor-ID" required="false" max="1" />
+        <rule avp="Auth-Application-Id" required="false" max="1" />
+        <rule avp="Acct-Application-Id" required="false" max="1" />
+    </data>
+</avp>
+
+<avp name="Auth-Session-State" code="277" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="Enumerated">
+        <item code="0" name="STATE_MAINTAINED"/>
+        <item code="1" name="NO_STATE_MAINTAINED"/>
+    </data>
+</avp>
+
+<avp name="Origin-Host" code="264" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="Origin-Realm" code="296" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="Destination-Host" code="293" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="Destination-Realm" code="283" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="MSISDN" code="701" must="M,V" may="-" must-not="-" may-encrypt="N" vendor-id="10415">
+    <data type="OctetString" />
+</avp>
+
+<avp name="User-Name" code="1" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
+    <data type="UTF8String" />
+</avp>
+
+<avp name="SMSMI-Correlation-ID" code="3324" must="V" may="-" must-not="-" may-encrypt="N" vendor-id="10415">
+    <data type="Grouped" >
+        <rule avp="HSS-ID" required="false" max="1" pointer="true" />
+        <rule avp="Originating-SIP-URI" required="false" max="1" pointer="true" />
+        <rule avp="Destination-SIP-URI" required="false" max="1" pointer="true" />
+        <rule avp="AVP" required="false" />
+    </data>
+</avp>
+
+<avp name="HSS-ID" code="3325" must="V" may="-" must-not="-" may-encrypt="N">
+    <data type="UTF8String" />
+</avp>
+
+<avp name="Originating-SIP-URI" code="3325" must="V" may="-" must-not="-" may-encrypt="N">
+    <data type="UTF8String" />
+</avp>
+
+<avp name="Destination-SIP-URI" code="3327" must="V" may="-" must-not="-" may-encrypt="N">
+    <data type="UTF8String" />
+</avp>
+
+<avp name="Supported-Features" code="628" must="V" may-encrypt="N" vendor-id="10415">
+    <data type="Grouped" >
+        <rule avp="Vendor-ID" required="true" max="1" />
+        <rule avp="Feature-List-ID" required="true" max="1" />
+        <rule avp="Feature-List" required="true" max="1" />
+    </data>
+</avp>
+
+<avp name="Vendor-ID" code="266" must="M" may-encrypt="-" vendor-id="10415">
+    <data type="Unsigned32" />
+</avp>
+
+<avp name="Feature-List-ID" code="629" must="V" may-encrypt="N" vendor-id="10415">
+    <data type="Unsigned32" />
+</avp>
+
+<avp name="Feature-List" code="630" must="V" may-encrypt="N" vendor-id="10415">
+    <data type="Unsigned32" />
+</avp>
+
+<avp name="SC-Address" code="3300" must="M,V" may="-" must-not="-" may-encrypt="N" vendor-id="10415">
+    <data type="OctetString" />
+</avp>
+
+<avp name="SM-RP-MTI" code="3308" must="M,V" may="-" must-not="-" may-encrypt="N" >
+    <data type="Enumerated" >
+        <item code="0" name="SM_DELIVER"  />
+        <item code="1" name="SM_STATUS_REPORT"  />
+    </data>
+</avp>
+
+<avp name="SM-RP-SMEA" code="3309" must="M,V" may="-" must-not="-" may-encrypt="N" vendor-id="10415">
+    <data type="OctetString" />
+</avp>
+
+<avp name="SRR-Flags" code="3310" must="M,V" may="-" must-not="-" may-encrypt="N" vendor-id="10415">
+    <data type="Unsigned32" />
+</avp>
+
+<avp name="SM-Delivery-Not-Intended" code="3311" must="M,V" may="-" must-not="-" may-encrypt="N" >
+    <data type="Enumerated" >
+        <item code="0" name="ONLY_IMSI_REQUESTED"  />
+        <item code="1" name="ONLY_MCC_MNC_REQUESTED"  />
+    </data>
+</avp>
+
+<avp name="Proxy-Info" code="284" must="M" may="-" must-not="P,V" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="Proxy-Host" required="true" max="1" />
+        <rule avp="Proxy-State" required="true" max="1" />
+    </data>
+</avp>
+
+<avp name="Proxy-Host" code="280" must="M" may="-" must-not="P,V" may-encrypt="N">
+    <data type="DiameterIdentity" />
+</avp>
+
+<avp name="Proxy-State" code="33" must="M" may="-" must-not="P,V" may-encrypt="N">
+    <data type="OctetString" />
+</avp>
+
+<avp name="Route-Record" code="282" must="M" may="-" must-not="P,V" may-encrypt="N">
+    <data type="DiameterIdentity" />
+</avp>
+
+<avp name="Result-Code" code="268" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="Unsigned32" />
+</avp>
+
+<avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="Vendor-ID" required="true" max="1"/>
+        <rule avp="Experimental-Result-Code" required="true" max="1"/>
+    </data>
+</avp>
+
+<avp name="Experimental-Result-Code" code="298" must="M" may="P" must-not="V" may-encrypt="N">
+      <data type="Unsigned32"  />
+</avp>
+
+<avp name="Serving-Node" code="2401" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SGSN-Name" required="false" max="1" pointer="true" />
+        <rule avp="SGSN-Realm" required="false" max="1" pointer="true" />
+        <rule avp="SGSN-Number" required="false" max="1" pointer="true" />
+        <rule avp="MME-Name" required="false" max="1" pointer="true" />
+        <rule avp="MME-Realm" required="false" max="1" pointer="true" />
+        <rule avp="MME-Number-for-MT-SMS" required="false" max="1" pointer="true" />
+        <rule avp="MSC-Number" required="false" max="1" pointer="true" />
+        <rule avp="IP-SM-GW-Number" required="false" max="1" pointer="true" />
+        <rule avp="IP-SM-GW-Name" required="false" max="1" pointer="true" />
+        <rule avp="IP-SM-GW-Realm" required="false" max="1" pointer="true" />
+        <rule avp="AVP" required="false" />
+    </data>
+</avp>
+
+<avp name="SGSN-Name" code="2409" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="SGSN-Realm" code="2410" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="SGSN-Number" code="1489" must="M,V" may="-" must-not="P,V" may-encrypt="N">
+    <data type="OctetString" />
+</avp>
+<avp name="IP-SM-GW-Number" code="3100" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="OctetString"/>
+</avp>
+<avp name="IP-SM-GW-Name" code="3101" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+<avp name="IP-SM-GW-Realm" code="3112" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="MME-Name" code="2410" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="MME-Realm" code="2408" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="MME-Number-for-MT-SMS" code="1645" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="OctetString" />
+</avp>
+
+<avp name="MSC-Number" code="2403" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="OctetString" />
+</avp>
+
+<avp name="Additional-Serving-Node" code="2406" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SGSN-Name" required="false" max="1" pointer="true" />
+        <rule avp="SGSN-Realm" required="false" max="1" pointer="true" />
+        <rule avp="SGSN-Number" required="false" max="1" pointer="true" />
+        <rule avp="MME-Name" required="false" max="1" pointer="true" />
+        <rule avp="MME-Realm" required="false" max="1" pointer="true" />
+        <rule avp="MME-Number-for-MT-SMS" required="false" max="1" pointer="true" />
+        <rule avp="MSC-Number" required="false" max="1" pointer="true" />
+        <rule avp="AVP" required="false" />
+    </data>
+</avp>
+
+<avp name="SMSF-3GPP-Address" code="3344" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SMSF-3GPP-Number" required="false" max="1" pointer="true" />
+        <rule avp="SMSF-3GPP-Name" required="false" max="1" pointer="true" />
+        <rule avp="SMSF-3GPP-Realm" required="false" max="1" pointer="true" />
+        <rule avp="AVP" required="false" />
+    </data>
+</avp>
+
+<avp name="SMSF-3GPP-Number" code="3338" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="OctetString" />
+</avp>
+
+<avp name="SMSF-3GPP-Name" code="3340" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="SMSF-3GPP-Realm" code="3342" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="SMSF-Non-3GPP-Address" code="3345" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SMSF-Non-3GPP-Number" required="false" max="1" pointer="true" />
+        <rule avp="SMSF-Non-3GPP-Name" required="false" max="1" pointer="true" />
+        <rule avp="SMSF-Non-3GPP-Realm" required="false" max="1" pointer="true" />
+        <rule avp="AVP" required="false" />
+    </data>
+</avp>
+
+<avp name="SMSF-Non-3GPP-Number" code="3339" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="OctetString" />
+</avp>
+
+<avp name="SMSF-Non-3GPP-Name" code="3341" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="SMSF-Non-3GPP-Realm" code="3343" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="User-Identifier" code="3102" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="User-Name" required="false" max="1" pointer="true" />
+        <rule avp="MSISDN" required="false" max="1" pointer="true" />
+        <rule avp="External-Identifier" required="false" max="1" pointer="true" />
+        <rule avp="LMSI" required="false" max="1" pointer="true" />
+        <rule avp="AVP" required="false" />
+    </data>
+</avp>
+
+<avp name="External-Identifier" code="3111" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="UTF8String" />
+</avp>
+
+<avp name="LMSI" code="2400" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="OctetString" />
+</avp>
+
+<avp name="Maximum-UE-Availability-Time" code="3329" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="Time"/>
+</avp>
+
+<avp name="SMS-GMSC-Alert-Event" code="3333" must="-" may="-" must-not="V" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="SM-Delivery-Outcome" code="3316" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="MME-SM-Delivery-Outcome" required="false" max="1" pointer="true" />
+        <rule avp="MSC-SM-Delivery-Outcome" required="false" max="1" pointer="true" />
+        <rule avp="SGSN-SM-Delivery-Outcome" required="false" max="1" pointer="true" />
+        <rule avp="IP-SM-GW-SM-Delivery-Outcome" required="false" max="1" pointer="true" />
+        <rule avp="SMSF-3GPP-SM-Delivery-Outcome" required="false" max="1" pointer="true" />
+        <rule avp="SMSF-Non-3GPP-SM-Delivery-Outcome" required="false" max="1" pointer="true" />
+        <rule avp="AVP" required="false" />
+    </data>
+</avp>
+
+<avp name="MME-SM-Delivery-Outcome" code="3317" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SM-Delivery-Cause" required="false" max="1" pointer="true" />
+        <rule avp="Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    </data>
+</avp>
+
+<avp name="MSC-SM-Delivery-Outcome" code="3318" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SM-Delivery-Cause" required="false" max="1" pointer="true" />
+        <rule avp="Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    </data>
+</avp>
+
+<avp name="SGSN-SM-Delivery-Outcome" code="3319" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SM-Delivery-Cause" required="false" max="1" pointer="true" />
+        <rule avp="Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    </data>
+</avp>
+
+<avp name="IP-SM-GW-SM-Delivery-Outcome" code="3320" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SM-Delivery-Cause" required="false" max="1" pointer="true" />
+        <rule avp="Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    </data>
+</avp>
+
+<avp name="SMSF-3GPP-SM-Delivery-Outcome" code="3336" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SM-Delivery-Cause" required="false" max="1" pointer="true" />
+        <rule avp="Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    </data>
+</avp>
+
+<avp name="SMSF-Non-3GPP-SM-Delivery-Outcome" code="3337" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Grouped" >
+        <rule avp="SM-Delivery-Cause" required="false" max="1" pointer="true" />
+        <rule avp="Absent-User-Diagnostic-SM" required="false" max="1" pointer="true" />
+    </data>
+</avp>
+
+<avp name="SM-Delivery-Cause" code="3321" must="M,V" may="-" must-not="-" may-encrypt="N" >
+    <data type="Enumerated" >
+        <item code="0" name="UE_ MEMORY_CAPACITY_EXCEEDED"  />
+        <item code="1" name="ABSENT_USER"  />
+        <item code="2" name="SUCCESSFUL_TRANSFER"  />
+    </data>
+</avp>
+
+<avp name="Absent-User-Diagnostic-SM" code="3322" must="M,V" may="-" must-not="V" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="RDR-Flags" code="3323" must="V" may="-" must-not="-" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="Failed-AVP" code="279" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="Grouped" />
+</avp>
+
+<avp name="MWD-Status" code="3312" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="MME-Absent-User-Diagnostic-SM" code="3313" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="MSC-Absent-User-Diagnostic-SM" code="3314" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="SGSN-Absent-User-Diagnostic-SM" code="3315" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="SMSF-3GPP-Absent-User-Diagnostic-SM" code="3334" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="SMSF-Non-3GPP-Absent-User-Diagnostic-SM" code="3335" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="Unsigned32"/>
+</avp>
+
+<avp name="IP-SM-GW-Number" code="3100" must="V" may="-" must-not="M" may-encrypt="N">
+    <data type="OctetString"/>
+</avp>
+
+<avp name="IP-SM-GW-Name" code="3101" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+<avp name="IP-SM-GW-Realm" code="3112" must="M,V" may="-" must-not="-" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+</avp>
+
+        </application>
+</diameter>

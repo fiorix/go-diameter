@@ -190,7 +190,7 @@ func (p *Parser) FindCommand(appid, code uint32) (*Command, error) {
 		// Always fall back to base dict.
 		return cmd, nil
 	}
-	return nil, fmt.Errorf("Could not find preloaded Command with code %d", code)
+        return nil, fmt.Errorf("Could not find preloaded Command with code %d", code)
 }
 
 // Enum is a helper function that returns a pre-loaded Enum item for the

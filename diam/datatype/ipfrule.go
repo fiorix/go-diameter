@@ -11,7 +11,9 @@ type IPFilterRule OctetString
 
 // DecodeIPFilterRule decodes an IPFilterRule data type from byte array.
 func DecodeIPFilterRule(b []byte) (Type, error) {
-	return IPFilterRule(OctetString(b)), nil
+	tmp := make([]byte, len(b))
+	copy(tmp, b)
+	return IPFilterRule(OctetString(tmp)), nil
 }
 
 // Serialize implements the Type interface.

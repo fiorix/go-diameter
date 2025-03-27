@@ -2,10 +2,10 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/fiorix/go-diameter)](https://goreportcard.com/report/github.com/fiorix/go-diameter)
 [![Test Status](https://github.com/fiorix/go-diameter/actions/workflows/test.yaml/badge.svg)](https://github.com/fiorix/go-diameter/actions/workflows/test.yaml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/fiorix/go-diameter/v4.svg)](https://pkg.go.dev/github.com/fiorix/go-diameter/v4)
+[![Go Reference](https://pkg.go.dev/badge/github.com/deb-2025/go-diameter.svg)](https://pkg.go.dev/github.com/deb-2025/go-diameter)
 [![Latest](https://img.shields.io/github/v/tag/fiorix/go-diameter.svg?sort=semver&style=flat-square&label=latest)](https://github.com/fiorix/go-diameter/tags)
 
-Package [go-diameter](https://pkg.go.dev/github.com/fiorix/go-diameter/v4) is an
+Package [go-diameter](https://pkg.go.dev/github.com/deb-2025/go-diameter) is an
 implementation of the
 Diameter Base Protocol [RFC 6733](http://tools.ietf.org/html/rfc6733)
 and a stack for the [Go programming language](https://go.dev/).
@@ -16,7 +16,7 @@ The current implementation is solid and works fine for general purpose
 clients and servers. It can send and receive messages efficiently as
 well as build and parse AVPs based on dictionaries.
 
-See the API documentation at https://pkg.go.dev/github.com/fiorix/go-diameter/v4
+See the API documentation at https://pkg.go.dev/github.com/deb-2025/go-diameter
 
 ## Features
 
@@ -45,16 +45,16 @@ With Go 1.11 and newer (preferred), you can start the client and server already:
 
 ```
 export GO111MODULE=on
-go run github.com/fiorix/go-diameter/v4/examples/server
-go run github.com/fiorix/go-diameter/v4/examples/client -hello
+go run github.com/deb-2025/go-diameter/examples/server
+go run github.com/deb-2025/go-diameter/examples/client -hello
 ```
 
 Without modules, use standard procedure:
 
 ```
-go get github.com/fiorix/go-diameter/examples/...
-go run github.com/fiorix/go-diameter/examples/server
-go run github.com/fiorix/go-diameter/examples/client -hello
+go get github.com/deb-2025/go-diameter/examples/...
+go run github.com/deb-2025/go-diameter/examples/server
+go run github.com/deb-2025/go-diameter/examples/client -hello
 ```
 
 Source code is your best friend. Check out other examples and test cases.

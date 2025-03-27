@@ -9,10 +9,10 @@ import (
 	"net"
 	"os"
 
-	"github.com/fiorix/go-diameter/v4/diam"
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
-	"github.com/fiorix/go-diameter/v4/diam/dict"
-	"github.com/fiorix/go-diameter/v4/diam/sm/smpeer"
+	"github.com/deb-2025/go-diameter/diam"
+	"github.com/deb-2025/go-diameter/diam/datatype"
+	"github.com/deb-2025/go-diameter/diam/dict"
+	"github.com/deb-2025/go-diameter/diam/sm/smpeer"
 )
 
 // SupportedApp holds properties of each locally supported App

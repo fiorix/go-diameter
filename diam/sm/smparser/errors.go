@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/fiorix/go-diameter/v4/diam"
+	"github.com/deb-2025/go-diameter/diam"
 )
 
 var (

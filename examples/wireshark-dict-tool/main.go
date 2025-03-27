@@ -18,7 +18,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/fiorix/go-diameter/v4/diam/dict"
+	"github.com/deb-2025/go-diameter/diam/dict"
 )
 
 func main() {

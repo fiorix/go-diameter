@@ -7,6 +7,7 @@ package diam
 import (
 	"bytes"
 	"net"
+	"reflect"
 	"testing"
 	"time"
 
@@ -418,5 +419,71 @@ func BenchmarkUnmarshal(b *testing.B) {
 	var cer CER
 	for n := 0; n < b.N; n++ {
 		msg.Unmarshal(&cer)
+	}
+}
+
+func TestParseAvpTag(t *testing.T) {
+	testCases := []struct {
+		tag        string
+		expAvpName string
+		expOmit    bool
+	}{
+		{
+			tag:        "",
+			expAvpName: "",
+			expOmit:    false,
+		},
+		{
+			tag:        `json:"session"`,
+			expAvpName: "",
+			expOmit:    false,
+		},
+		{
+			tag:        `avp:"Session-Id"`,
+			expAvpName: "Session-Id",
+			expOmit:    false,
+		},
+		{
+			tag:        `avp:"Session-Id,omitempty"`,
+			expAvpName: "Session-Id",
+			expOmit:    true,
+		},
+		{
+			tag:        `avp:"Session-Id" json:"sessionId"`,
+			expAvpName: "Session-Id",
+			expOmit:    false,
+		},
+		{
+			tag:        `avp:"Session-Id,omitempty" json:"sessionId"`,
+			expAvpName: "Session-Id",
+			expOmit:    true,
+		},
+		{
+			tag:        `avp:"Session-Id" json:"sessionId,omitempty"`,
+			expAvpName: "Session-Id",
+			expOmit:    false,
+		},
+		{
+			tag:        `avp:"Session-Id,omitempty" json:"sessionId,omitempty"`,
+			expAvpName: "Session-Id",
+			expOmit:    true,
+		},
+	}
+	for _, test := range testCases {
+		avpName, omit := parseAvpTag(reflect.StructTag(test.tag))
+		if avpName != test.expAvpName {
+			t.Errorf("AVPName - got:%s\texpected:%s for tag `%s`\n",
+				avpName,
+				test.expAvpName,
+				test.tag,
+			)
+		}
+		if omit != test.expOmit {
+			t.Errorf("omitempty - got:%v\texpected:%v for tag `%s`\n",
+				omit,
+				test.expOmit,
+				test.tag,
+			)
+		}
 	}
 }

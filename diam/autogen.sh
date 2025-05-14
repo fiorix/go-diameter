@@ -12,7 +12,7 @@ os="$(uname -s)"
 if [ -z "$SED" ]; then
 	if [ "$os" = "Darwin" ]; then
 		command -v gsed || {
-			echo "gsed is required. install it by running 'brew install gnu-sed'"
+			echo -e "gsed is required. install it by running 'brew install gnu-sed'"
 			exit 1
 		}
 		SED="gsed"
@@ -50,14 +50,14 @@ cat $dict | "$SED" \
 	-ne 's/.*command code="\(.*\)" .* name="\(.*\)".*/\2 = \1/p' \
 	| sort -u >> $src
 
-echo ')\n// Short Command Names\nconst (\n' >> $src
+echo -e ')\n// Short Command Names\nconst (\n' >> $src
 
 cat $dict | "$SED" \
 	-e 's/-//g' \
 	-ne 's/.*command code="[0-9]*".*\s.*short="\([^"]*\).*/\1R = "\1R"\n\1A = "\1A"/p' \
 	| sort -u >> $src
 
-echo ')' >> $src
+echo -e ')' >> $src
 go fmt $src
 
 ## Generate applications.go
@@ -81,7 +81,7 @@ cat $dict | "$SED" \
     -ne 's/\s*<application\s*id="\([0-9]*\)".*name="\(.*\)".*/\U\2_APP_ID = \1/p' \
     | sort -u | sort -nk 3 >> $src
 
-echo ')\n' >> $src
+echo -e ')\n' >> $src
 go fmt $src
 
 ## Generate avp/codes.go
@@ -106,7 +106,7 @@ cat $dict | "$SED" \
 	-ne 's/.*avp name="\(.*\)" code="\([0-9]*\)".*/\1 = \2/p' \
 	| LC_COLLATE=C sort -u $SORT_FLAG_IGNORE_CASE >> $src
 
-echo ')\n' >> $src
+echo -e ')\n' >> $src
 
 go fmt $src
 
@@ -139,6 +139,7 @@ func init() {
 		{"Gx Charging Control", gxcreditcontrolXML},
 		{"Network Access Server", networkaccessserverXML},
 		{"TGPP", tgpprorfXML},
+		{"TGPP_Cx", tgppcxXML},		
 		{"TGPP_S6a", tgpps6aXML},
 		{"TGPP_Swx", tgppswxXML},
 	}

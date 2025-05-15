@@ -18,9 +18,12 @@ const (
 	DeviceWatchdog            = 280
 	DisconnectPeer            = 282
 	InsertSubscriberData      = 319
+	LocationInfo              = 302
+	MultimediaAuth            = 303
 	MultimediaAuthentication  = 303
 	Notify                    = 323
 	PurgeUE                   = 321
+	PushProfile               = 305
 	ReAuth                    = 258
 	RegistrationTermination   = 304
 	Reset                     = 322
@@ -28,6 +31,7 @@ const (
 	SessionTermination        = 275
 	SpendingLimit             = 8388635
 	UpdateLocation            = 316
+	UserAuthorization         = 300
 )
 
 // Short Command Names
@@ -52,10 +56,14 @@ const (
 	DWR = "DWR"
 	IDA = "IDA"
 	IDR = "IDR"
+	LIA = "LIA"
+	LIR = "LIR"
 	MAA = "MAA"
 	MAR = "MAR"
 	NOA = "NOA"
 	NOR = "NOR"
+	PPA = "PPA"
+	PPR = "PPR"
 	PUA = "PUA"
 	PUR = "PUR"
 	RAA = "RAA"
@@ -70,6 +78,8 @@ const (
 	SLR = "SLR"
 	STA = "STA"
 	STR = "STR"
+	UAA = "UAA"
+	UAR = "UAR"
 	ULA = "ULA"
 	ULR = "ULR"
 )

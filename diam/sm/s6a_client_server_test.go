@@ -14,11 +14,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fiorix/go-diameter/v4/diam"
-	"github.com/fiorix/go-diameter/v4/diam/avp"
-	"github.com/fiorix/go-diameter/v4/diam/datatype"
-	"github.com/fiorix/go-diameter/v4/diam/dict"
-	"github.com/fiorix/go-diameter/v4/diam/sm/smpeer"
+	"github.com/rakeshgmtke/go-diameter/diam"
+	"github.com/rakeshgmtke/go-diameter/diam/avp"
+	"github.com/rakeshgmtke/go-diameter/diam/datatype"
+	"github.com/rakeshgmtke/go-diameter/diam/dict"
+	"github.com/rakeshgmtke/go-diameter/diam/sm/smpeer"
 )
 
 const (

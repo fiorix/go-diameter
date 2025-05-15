@@ -1,4 +1,4 @@
-module github.com/rakeshgmtke/go-diameter/
+module github.com/rakeshgmtke/go-diameter/v4
 
 go 1.20
 

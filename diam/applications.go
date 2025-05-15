@@ -13,6 +13,7 @@ const (
 	BASE_ACCOUNTING_APP_ID     = 3
 	CHARGING_CONTROL_APP_ID    = 4
 	TGPP_APP_ID                = 4
+	TGPP_CX_APP_ID             = 16777216
 	RX_APP_ID                  = 16777236
 	GX_CHARGING_CONTROL_APP_ID = 16777238
 	TGPP_S6A_APP_ID            = 16777251

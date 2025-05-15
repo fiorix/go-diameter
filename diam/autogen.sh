@@ -140,6 +140,7 @@ func init() {
 		{"Network Access Server", networkaccessserverXML},
 		{"TGPP", tgpprorfXML},
 		{"TGPP_Rx", tgpprxXML},
+		{"TGPP_Cx", tgppcxXML},
 		{"TGPP_S6a", tgpps6aXML},
 		{"TGPP_Swx", tgppswxXML},
 	}

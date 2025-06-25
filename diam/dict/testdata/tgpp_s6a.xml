@@ -9,6 +9,7 @@
         <command code="316" short="UL" name="Update-Location">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
+	        	<rule avp="DRMP" required="false" max="1"/>
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
@@ -16,6 +17,7 @@
                 <rule avp="Destination-Host" required="false" max="1"/>
                 <rule avp="Destination-Realm" required="true" max="1"/>
                 <rule avp="User-Name" required="true" max="1"/>
+	        	<rule avp="OC-Supported-Features" required="false" max="1"/>
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="Terminal-Information" required="false" max="1"/>
                 <rule avp="RAT-Type" required="true" max="1"/>
@@ -26,22 +28,34 @@
                 <rule avp="Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions" required="false" max="1"/>
                 <rule avp="GMLC-Address" required="false" max="1"/>
                 <rule avp="Active-APN" required="false"/>
+		<rule avp="Equivalent-PLMN-List" required="false"/>
+		<rule avp="MME-Number-for-MT-SMS" required="false"/>
+		<rule avp="SMS-Register-Request" required="false"/>
+		<rule avp="SGs-MME-Identity" required="false"/>
+		<rule avp="Coupled-Node-Diameter-ID" required="false"/>
+		<rule avp="Adjacent-PLMNs" required="false"/>
+		<rule avp="Supported-Services" required="false"/>
                 <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false"/>
                 <rule avp="Route-Record" required="false"/>
             </request>
             <answer>
                 <rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Result-Code" required="false" max="1"/>
-                <rule avp="Experimental-Result" required="false" max="1"/>
                 <rule avp="Error-Diagnostic" required="false" max="1"/>
+                <rule avp="Experimental-Result" required="false" max="1"/>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
                 <rule avp="Origin-Realm" required="true" max="1"/>
+		<rule avp="OC-Supported-Features" required="false" max="1"/>
+		<rule avp="OC-OLR" required="false" max="1"/>
+		<rule avp="Load" required="false"/>
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="ULA-Flags" required="false" max="1"/>
                 <rule avp="Subscription-Data" required="false" max="1"/>
+		<rule avp="Reset-ID" required="false"/>
                 <rule avp="AVP" required="false"/>
                 <rule avp="Failed-AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false"/>
@@ -52,6 +66,7 @@
         <command code="317" short="CL" name="Cancel-Location">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
@@ -68,6 +83,7 @@
             </request>
             <answer>
                 <rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="Result-Code" required="false" max="1"/>
@@ -85,6 +101,7 @@
         <command code="318" short="AI" name="Authentication-Information">
             <request>
                 <rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
@@ -92,16 +109,19 @@
                 <rule avp="Destination-Host" required="false" max="1"/>
                 <rule avp="Destination-Realm" required="true" max="1"/>
                 <rule avp="User-Name" required="true" max="1"/>
+		<rule avp="OC-Supported-Features" required="false" max="1"/>
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="Requested-EUTRAN-Authentication-Info" required="false" max="1"/>
                 <rule avp="Requested-UTRAN-GERAN-Authentication-Info" required="false" max="1"/>
                 <rule avp="Visited-PLMN-Id" required="true" max="1"/>
+                <rule avp="AIR-Flags" required="false" max="1"/>
                 <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false"/>
                 <rule avp="Route-Record" required="false"/>
             </request>
             <answer>
                 <rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
                 <rule avp="Result-Code" required="false" max="1"/>
                 <rule avp="Experimental-Result" required="false" max="1"/>
@@ -109,8 +129,12 @@
                 <rule avp="Auth-Session-State" required="true" max="1"/>
                 <rule avp="Origin-Host" required="true" max="1"/>
                 <rule avp="Origin-Realm" required="true" max="1"/>
+		<rule avp="OC-Supported-Features" required="false" max="1"/>
+                <rule avp="OC-OLR" required="false" max="1" />
+		<rule avp="Load" required="false"/>
                 <rule avp="Supported-Features" required="false"/>
                 <rule avp="Authentication-Info" required="true" max="1"/>
+		<rule avp="UE-Usage-Type" required="false"/>
                 <rule avp="AVP" required="false"/>
                 <rule avp="Failed-AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false"/>
@@ -118,26 +142,95 @@
             </answer>
         </command>
 
+	<command code="319" short="ID" name="Insert-Subscriber-Data">
+	    <request>
+		<rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
+		<rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+		<rule avp="Auth-Session-State" required="true" max="1"/>
+		<rule avp="Origin-Host" required="true" max="1"/>
+		<rule avp="Origin-Realm" required="true" max="1"/>
+		<rule avp="Destination-Host" required="true" max="1"/>
+		<rule avp="Destination-Realm" required="true" max="1"/>
+		<rule avp="User-Name" required="true" max="1"/>
+		<rule avp="Supported-Features" required="false"/>
+		<rule avp="Subscription-Data" required="true" max="1"/>
+		<rule avp="IDR-Flags" required="false" max="1"/>
+		<rule avp="Reset-ID" required="false"/>
+		<rule avp="AVP" required="false"/>
+		<rule avp="Proxy-Info" required="false"/>
+		<rule avp="Route-Record" required="false"/>
+	    </request>
+	    <answer>
+		<rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
+		<rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+		<rule avp="Supported-Features" required="false"/>
+		<rule avp="Result-Code" required="false" max="1"/>
+		<rule avp="Experimental-Result" required="false" max="1"/>
+		<rule avp="Auth-Session-State" required="true" max="1"/>
+		<rule avp="Origin-Host" required="true" max="1"/>
+		<rule avp="Origin-Realm" required="true" max="1"/>
+		<rule avp="IMS-Voice-Over-PS-Sessions-Supported" required="false"/>
+		<rule avp="Last-UE-Activity-Time" required="false"/>
+		<rule avp="RAT-Type" required="false" max="1"/>
+		<rule avp="IDA-Flags" required="false" max="1"/>
+		<rule avp="EPS-User-State" required="false" max="1"/>
+		<rule avp="EPS-Location-Information" required="false" max="1"/>
+		<rule avp="Local-Time-Zone" required="false" max="1"/>
+		<rule avp="Supported-Services" required="false"/>
+		<rule avp="Monitoring-Event-Report" required="false"/>
+		<rule avp="Monitoring-Event-Config-Status" required="false"/>
+		<rule avp="AVP" required="false"/>
+                <rule avp="Failed-AVP" required="false"/>
+		<rule avp="Proxy-Info" required="false"/>
+		<rule avp="Route-Record" required="false"/>
+	     </answer>
+	</command>
+
+	<command code="320" short="DS" name="Delete-Subscriber-Data">
+	    <request>
+		<rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
+		<rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+		<rule avp="Auth-Session-State" required="true" max="1"/>
+		<rule avp="Origin-Host" required="true" max="1"/>
+		<rule avp="Origin-Realm" required="true" max="1"/>
+		<rule avp="Destination-Host" required="true" max="1"/>
+		<rule avp="Destination-Realm" required="true" max="1"/>
+		<rule avp="User-Name" required="true" max="1"/>
+		<rule avp="Supported-Features" required="false"/>
+		<rule avp="DSR-Flags" required="true" max="1"/>
+		<rule avp="SCEF-ID" required="false"/>
+        <rule avp="Trace-Reference" required="false" max="1"/>
+        <rule avp="Context-Identifier" required="false" max="1" />
+		<rule avp="TS-Code" required="false"/>
+		<rule avp="SS-Code" required="false"/>
+		<rule avp="eDRX-Related-RAT" required="false" max="1"/>
+		<rule avp="External-Identifier" required="false"/>
+		<rule avp="AVP" required="false"/>
+		<rule avp="Proxy-Info" required="false"/>
+		<rule avp="Route-Record" required="false"/>
+	    </request>
+	    <answer>
+		<rule avp="Session-Id" required="true" max="1"/>
+		<rule avp="DRMP" required="false" max="1"/>
+		<rule avp="Vendor-Specific-Application-Id" required="false" max="1"/>
+		<rule avp="Supported-Features" required="false"/>
+		<rule avp="Result-Code" required="false" max="1"/>
+		<rule avp="Experimental-Result" required="false" max="1"/>
+		<rule avp="Auth-Session-State" required="true" max="1"/>
+		<rule avp="Origin-Host" required="true" max="1"/>
+		<rule avp="Origin-Realm" required="true" max="1"/>
+		<rule avp="DSA-Flags" required="false" max="1"/>
+		<rule avp="AVP" required="false"/>
+                <rule avp="Failed-AVP" required="false"/>
+		<rule avp="Proxy-Info" required="false"/>
+		<rule avp="Route-Record" required="false"/>
+	     </answer>
+	</command>
+
         <command code="321" short="PU" name="Purge-UE">
-            <!--
-                < Purge-UE-Request> ::=	< Diameter Header: 321, REQ, PXY, 16777251 >
-                < Session-Id >
-                [ DRMP ]
-                [ Vendor-Specific-Application-Id ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                [ Destination-Host ]
-                { Destination-Realm }
-                { User-Name }
-                [ OC-Supported-Features ]
-                [ PUR-Flags ]
-                *[ Supported-Features ]
-                [ EPS-Location-Information ]
-                *[ AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <request>
                 <rule avp="Session-Id" required="true" max="1" />
                 <rule avp="DRMP" required="false" max="1" />
@@ -152,30 +245,10 @@
                 <rule avp="PUR-Flags" required="false" max="1" />
                 <rule avp="Supported-Features" required="false" />
                 <rule avp="EPS-Location-Information" required="false" max="1" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
             </request>
-
-            <!--
-                < Purge-UE-Answer> ::=	< Diameter Header: 321, PXY, 16777251 >
-                < Session-Id >
-                [ DRMP ]
-                [ Vendor-Specific-Application-Id ]
-                *[ Supported-Features ]
-                [ Result-Code ]
-                [ Experimental-Result ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                [ OC-Supported-Features ]
-                [ OC-OLR ]
-                *[ Load ]
-                [ PUA-Flags ]
-                *[ AVP ]
-                [ Failed-AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <answer>
                 <rule avp="Session-Id" required="true" max="1" />
                 <rule avp="DRMP" required="false" max="1" />
@@ -188,8 +261,9 @@
                 <rule avp="Origin-Realm" required="true" max="1" />
                 <rule avp="OC-Supported-Features" required="false" max="1" />
                 <rule avp="OC-OLR" required="false" max="1" />
-                <!-- rule avp="Load" required="false" /-->
+                <rule avp="Load" required="false" />
                 <rule avp="PUA-Flags" required="false" max="1" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Failed-AVP" required="false" max="1" />
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
@@ -197,35 +271,6 @@
         </command>
 
         <command code="323" short="NO" name="Notify">
-            <!--
-                < Notify-Request> ::=	< Diameter Header: 323, REQ, PXY, 16777251 >
-                < Session-Id >
-                [ Vendor-Specific-Application-Id ]
-                [ DRMP ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                [ Destination-Host ]
-                { Destination-Realm }
-                { User-Name }
-                [ OC-Supported-Features ]
-                * [ Supported-Features ]
-                [ Terminal-Information ]
-                [ MIP6-Agent-Info ]
-                [ Visited-Network-Identifier ]
-                [ Context-Identifier ]
-                [ Service-Selection ]
-                [ Alert-Reason ]
-                [ UE-SRVCC-Capability ]
-                [ NOR-Flags ]
-                [ Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ]
-                [ Maximum-UE-Availability-Time ]
-                *[ Monitoring-Event-Config-Status ]
-                [ Emergency-Services ]
-                *[ AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <request>
                 <rule avp="Session-Id" required="true" max="1" />
                 <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
@@ -250,28 +295,10 @@
                 <rule avp="Maximum-UE-Availability-Type" required="false" max="1" />
                 <rule avp="Monitoring-Event-Config-Status" required="false" />
                 <rule avp="Emergency-Services" required="false" max="1" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
             </request>
-            <!--
-                < Notify-Answer> ::=	< Diameter Header: 323, PXY, 16777251 >
-                < Session-Id >
-                [ DRMP ]
-                [ Vendor-Specific-Application-Id ]
-                [ Result-Code ]
-                [ Experimental-Result ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                [ OC-Supported-Features ]
-                [ OC-OLR ]
-                *[ Load ]
-                *[ Supported-Features ]
-                *[ AVP ]
-                [ Failed-AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
             <answer>
                 <rule avp="Session-Id" required="true" max="1" />
                 <rule avp="DRMP" required="false" max="1" />
@@ -283,77 +310,56 @@
                 <rule avp="Origin-Realm" required="true" max="1" />
                 <rule avp="OC-Supported-Features" required="false" max="1" />
                 <rule avp="OC-OLR" required="false" max="1" />
-                <!-- rule avp="Load" required="false" /-->
+                <rule avp="Load" required="false" />
                 <rule avp="Supported-Features" required="false" />
+                <rule avp="AVP" required="false"/>
                 <rule avp="Failed-AVP" required="false" max="1" />
                 <rule avp="Proxy-Info" required="false" />
                 <rule avp="Route-Record" required="false" />
             </answer>
         </command>
-
-        <command code="322" short="RS" name="Reset">
-            <!--
-              < Reset-Request> ::= < Diameter Header: 322, REQ, PXY, 16777251 >
-                < Session-Id >
-                [ Vendor-Specific-Application-Id ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                { Destination-Host }
-                { Destination-Realm }
-                *[ Supported-Features ]
-                *[ User-Id ]
-                *[ AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
-            <request>
-                <rule avp="Session-Id" required="true" max="1" />
-                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
-                <rule avp="Auth-Session-State" required="true" max="1" />
-                <rule avp="Origin-Host" required="true" max="1" />
-                <rule avp="Origin-Realm" required="true" max="1" />
-                <rule avp="Destination-Host" required="false" max="1" />
-                <rule avp="Destination-Realm" required="true" max="1" />
-                <rule avp="Supported-Features" required="false" />
-                <rule avp="User-Id" required="false" />
-                <rule avp="Proxy-Info" required="false" />
-                <rule avp="Route-Record" required="false" />
-            </request>
-            <!--
-              < Reset-Answer> ::= < Diameter Header: 322, PXY, 16777251 >
-                < Session-Id >
-                [ Vendor-Specific-Application-Id ]
-                *[ Supported-Features ]
-                [ Result-Code ]
-                [ Experimental-Result ]
-                { Auth-Session-State }
-                { Origin-Host }
-                { Origin-Realm }
-                *[ AVP ]
-                *[ Failed-AVP ]
-                *[ Proxy-Info ]
-                *[ Route-Record ]
-            -->
-            <answer>
-                <rule avp="Session-Id" required="true" max="1" />
-                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
-                <rule avp="Supported-Features" required="false" />
-                <rule avp="Result-Code" required="false" max="1" />
-                <rule avp="Experimental-Result" required="false" max="1" />
-                <rule avp="Auth-Session-State" required="true" max="1" />
-                <rule avp="Origin-Host" required="true" max="1" />
-                <rule avp="Origin-Realm" required="true" max="1" />
-                <rule avp="Failed-AVP" required="false" max="1" />
-                <rule avp="Proxy-Info" required="false" />
-                <rule avp="Route-Record" required="false" />
-            </answer>
+	<command code="322" short="RS" name="Reset">
+    <request>
+        <rule avp="Session-Id" required="true" max="1" />
+        <rule avp="DRMP" required="false" max="1" />
+        <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+        <rule avp="Auth-Session-State" required="true" max="1" />
+        <rule avp="Origin-Host" required="true" max="1" />
+        <rule avp="Origin-Realm" required="true" max="1" />
+        <rule avp="Destination-Host" required="false" max="1" />
+        <rule avp="Destination-Realm" required="true" max="1" />
+        <rule avp="Supported-Features" required="false" />
+        <rule avp="User-Id" required="false" />
+        <rule avp="Proxy-Info" required="false" />
+        <rule avp="Route-Record" required="false" />
+        <rule avp="Reset-ID" required="false" />
+        <rule avp="Subscription-Data" required="false" max="1" />
+        <rule avp="Subscription-Data-Deletion" required="false" max="1" />
+    </request>
+	<answer>
+    <rule avp="Session-Id" required="true" max="1" />
+    <rule avp="DRMP" required="false" max="1" />
+    <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+    <rule avp="Auth-Session-State" required="true" max="1" />
+    <rule avp="Origin-Host" required="true" max="1" />
+    <rule avp="Origin-Realm" required="true" max="1" />
+    <rule avp="Destination-Host" required="false" max="1" />
+    <rule avp="Destination-Realm" required="false" max="1" />
+    <rule avp="Supported-Features" required="false" />
+    <rule avp="Reset-ID" required="false" />
+    <rule avp="Result-Code" required="false" max="1" />
+    <rule avp="Experimental-Result" required="false" max="1" />
+    <rule avp="Failed-AVP" required="false" max="1" />
+    <rule avp="AVP" required="false" />
+    <rule avp="Proxy-Info" required="false" />
+    <rule avp="Route-Record" required="false" />
+</answer>
         </command>
-
         <avp name="Subscription-Data" code="1400" vendor-id="10415" must="M,V" may-encrypt="N">
             <data type="Grouped">
                 <rule avp="Subscriber-Status" required="false" max="1"/>
                 <rule avp="MSISDN" required="false" max="1"/>
+                <rule avp="A-MSISDN" required="false" max="1"/>
                 <rule avp="STN-SR" required="false" max="1"/>
                 <rule avp="ICS-Indicator" required="false" max="1"/>
                 <rule avp="Network-Access-Mode" required="false" max="1"/>
@@ -378,6 +384,28 @@
                 <rule avp="VPLMN-LIPA-Allowed" required="false" max="1"/>
                 <rule avp="Relay-Node-Indicator" required="false" max="1"/>
                 <rule avp="MDT-User-Consent" required="false" max="1"/>
+		<rule avp="Subscribed-VSRVCC" required="false" max="1"/>
+		<rule avp="ProSe-Subscription-Data" required="false"/>
+		<rule avp="Subscription-Data-Flags" required="false"/>
+		<rule avp="Adjacent-Access-Restriction-Data" required="false"/>
+		<rule avp="DL-Buffering-Suggested-Packet-Count" required="false"/>
+		<rule avp="IMSI-Group-Id" required="false"/>
+		<rule avp="UE-Usage-Type" required="false"/>
+		<rule avp="AESE-Communication-Pattern" required="false"/>
+		<rule avp="Monitoring-Event-Configuration" required="false"/>
+		<rule avp="Emergency-Info" required="false"/>
+		<rule avp="V2X-Subscription-Data" required="false"/>
+		<rule avp="V2X-Subscription-Data-Nr" required="false"/>
+		<rule avp="eDRX-Cycle-Length" required="false"/>
+		<rule avp="External-Identifier" required="false"/>
+		<rule avp="Active-Time" required="false"/>
+		<rule avp="Service-Gap-Time" required="false"/>
+		<rule avp="Broadcast-Location-Assistance-Data-Types" required="false"/>
+		<rule avp="Aerial-UE-Subscription-Information" required="false"/>
+		<rule avp="Core-Network-Restrictions" required="false"/>
+		<rule avp="Paging-Time-Window" required="false"/>
+		<rule avp="Subscribed-ARPI" required="false"/>
+		<rule avp="IAB-Operation-Permission" required="false"/>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>
@@ -448,7 +476,7 @@
                 <rule avp="Notification-To-UE-User" required="false" max="1"/>
                 <rule avp="External-Client" required="false"/>
                 <rule avp="PLMN-Client" required="false"/>
-                <rule avp="TGPP-Service-Type" required="false"/>
+                <rule avp="Service-Type" required="false"/>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>avp>
@@ -500,7 +528,7 @@
             </data>
         </avp>
 
-        <avp name="TGPP-Service-Type" code="1483" must="M,V" may-encrypt="N" vendor-id="10415">
+        <avp name="Service-Type" code="1483" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="Grouped">
                 <rule avp="ServiceTypeIdentity" required="true" max="1"/>
                 <rule avp="GMLC-Restriction" required="false" max="1"/>
@@ -553,6 +581,8 @@
         <avp name="APN-Configuration-Profile" code="1429" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="Grouped">
                 <rule avp="Context-Identifier" required="true" max="1"/>
+                <rule avp="Additional-Context-Identifier" required="true"/>
+                <rule avp="Third-Context-Identifier" required="true"/>
                 <rule avp="All-APN-Configurations-Included-Indicator" required="true" max="1"/>
                 <rule avp="APN-Configuration" required="true"/>
                 <rule avp="AVP" required="false"/>
@@ -560,6 +590,14 @@
         </avp>
 
         <avp name="Context-Identifier" code="1423" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="Additional-Context-Identifier" code="1683" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="Third-Context-Identifier" code="1719" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
             <data type="Unsigned32"/>
         </avp>
 
@@ -587,7 +625,83 @@
                 <rule avp="APN-OI-Replacement" required="false" max="1"/>
                 <rule avp="SIPTO-Permission" required="false" max="1"/>
                 <rule avp="LIPA-Permission" required="false" max="1"/>
+                <rule avp="Restoration-Priority" required="false" max="1"/>
+                <rule avp="SIPTO-Local-Network-Permission" required="false" max="1"/>
+                <rule avp="WLAN-offloadability" required="false" max="1"/>
+                <rule avp="Non-IP-PDN-Type-Indicator" required="false" max="1"/>
+                <rule avp="Non-IP-Data-Delivery-Mechanism" required="false" max="1"/>
+		<rule avp="SCEF-ID" required="false"/>
+		<rule avp="SCEF-Realm" required="false"/>
+                <rule avp="Preferred-Data-Mode" required="false" max="1"/>
+                <rule avp="PDN-Connection-Continuity" required="false" max="1"/>
+                <rule avp="RDS-Indicator" required="false" max="1"/>
+                <rule avp="Interworking-5GS-Indicator" required="false" max="1"/>
+                <rule avp="Ethernet-PDN-Type-Indicator" required="false" max="1"/>
                 <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+	<avp name="Ethernet-PDN-Type-Indicator" code="1707" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="FALSE"/>
+                <item code="1" name="TRUE"/>
+            </data>
+        </avp>
+
+	<avp name="Interworking-5GS-Indicator" code="1706" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="NOT-SUBSCRIBED"/>
+                <item code="1" name="SUBSCRIBED"/>
+            </data>
+        </avp>
+
+        <avp name="Non-IP-Data-Delivery-Mechanism" code="1682" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="PDN-Connection-Continuity" code="1690" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="Preferred-Data-Mode" code="1686" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="Restoration-Priority" code="1663" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+	<avp name="RDS-Indicator" code="1697" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="DISABLED"/>
+                <item code="1" name="ENABLED"/>
+            </data>
+        </avp>
+
+        <avp name="SIPTO-Local-Network-Permission" code="1665" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+	<avp name="WLAN-offloadability" code="1667" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="WLAN-offloadability-EUTRAN" required="false"/>
+                <rule avp="WLAN-offloadability-UTRAN" required="false"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <avp name="WLAN-offloadability-EUTRAN" code="1668" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="WLAN-offloadability-UTRAN" code="1669" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+	<avp name="Non-IP-PDN-Type-Indicator" code="1681" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="FALSE"/>
+                <item code="1" name="TRUE"/>
             </data>
         </avp>
 
@@ -697,9 +811,215 @@
 
         <avp name="MDT-Configuration" code="1622" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="Grouped">
-                <rule avp="QoS-Class-Identifier" required="true" max="1"/>
-                <rule avp="Allocation-Retention-Priority" required="true" max="1"/>
+                <rule avp="Job-Type" required="true" max="1"/>
+                <rule avp="Area-Scope" required="false"/>
+                <rule avp="List-Of-Measurements" required="false"/>
+                <rule avp="Reporting-Trigger" required="false"/>
+                <rule avp="Report-Interval" required="false"/>
+                <rule avp="Report-Amount" required="false"/>
+                <rule avp="Event-Threshold-RSRP" required="false"/>
+                <rule avp="Event-Threshold-RSRQ" required="false"/>
+                <rule avp="Logging-Interval" required="false"/>
+                <rule avp="Logging-Duration" required="false"/>
+                <rule avp="Measurement-Period-LTE" required="false"/>
+                <rule avp="Measurement-Period-UMTS" required="false"/>
+                <rule avp="Collection-Period- RRM-LTE" required="false"/>
+                <rule avp="Collection-Period-RRM-UMTS" required="false"/>
+                <rule avp="Positioning-Method" required="false"/>
+                <rule avp="Measurement-Quantity" required="false"/>
+                <rule avp="Event-Threshold-Event-1F" required="false"/>
+                <rule avp="Event-Threshold-Event-1I" required="false"/>
+                <rule avp="MDT-Allowed-PLMN-Id" required="false"/>
+                <rule avp="MBSFN-Area" required="false"/>
                 <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <avp name="MDT-Allowed-PLMN-Id" code="1671" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString"/>
+        </avp>
+
+	<avp name="Event-Threshold-Event-1F" code="1661" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Integer32"/>
+	</avp>
+
+	<avp name="Event-Threshold-Event-1I" code="1662" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Integer32"/>
+	</avp>
+
+        <avp name="Positioning-Method" code="1659" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Measurement-Quantity" code="1660" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString"/>
+        </avp>
+
+	<avp name="Measurement-Period-LTE" code="1655" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="1024 ms"/>
+                <item code="2" name="2048 ms"/>
+                <item code="4" name="5120 ms"/>
+                <item code="5" name="10240 ms"/>
+                <item code="6" name="1 min"/>
+            </data>
+        </avp>
+
+	<avp name="Measurement-Period-UMTS" code="1656" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="1000 ms"/>
+                <item code="1" name="2000 ms"/>
+                <item code="2" name="3000 ms"/>
+                <item code="3" name="4000 ms"/>
+                <item code="4" name="6000 ms"/>
+                <item code="5" name="8000 ms"/>
+                <item code="6" name="12000 ms"/>
+                <item code="7" name="16000 ms"/>
+                <item code="8" name="20000 ms"/>
+                <item code="9" name="24000 ms"/>
+                <item code="10" name="28000 ms"/>
+                <item code="11" name="32000 ms"/>
+                <item code="12" name="64000 ms"/>
+            </data>
+        </avp>
+
+	<avp name="Collection-Period-RRM-LTE" code="1657" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="100 ms"/>
+                <item code="1" name="1000 ms"/>
+                <item code="2" name="1024 ms"/>
+                <item code="3" name="1280 ms"/>
+                <item code="4" name="2048 ms"/>
+                <item code="5" name="2560 ms"/>
+                <item code="6" name="5120 ms"/>
+                <item code="7" name="10000 ms"/>
+                <item code="8" name="10240 ms"/>
+                <item code="9" name="1 min"/>
+            </data>
+        </avp>
+
+	<avp name="Collection-Period-RRM-UMTS" code="1658" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="100 ms"/>
+                <item code="1" name="250 ms"/>
+                <item code="2" name="500 ms"/>
+                <item code="3" name="1000 ms"/>
+                <item code="4" name="2000 ms"/>
+                <item code="5" name="3000 ms"/>
+                <item code="6" name="4000 ms"/>
+                <item code="6" name="6000 ms"/>
+            </data>
+        </avp>
+
+        <avp name="Event-Threshold-RSRP" code="1629" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="Event-Threshold-RSRQ" code="1630" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+	<avp name="Logging-Interval" code="1631" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="1280"/>
+                <item code="1" name="2560"/>
+                <item code="2" name="5120"/>
+                <item code="3" name="10240"/>
+                <item code="4" name="20480"/>
+                <item code="5" name="30720"/>
+                <item code="6" name="40960"/>
+                <item code="7" name="61440"/>
+            </data>
+        </avp>
+
+	<avp name="Logging-Duration" code="1632" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="600"/>
+                <item code="1" name="1200"/>
+                <item code="2" name="2400"/>
+                <item code="3" name="3600"/>
+                <item code="4" name="5400"/>
+                <item code="5" name="7200"/>
+            </data>
+        </avp>
+
+	<avp name="MBSFN-Area" code="1694" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Grouped">
+		<rule avp="MBSFN-Area-ID" required="false"/>
+		<rule avp="Carrier-Frequency" required="false"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <avp name="MBSFN-Area-ID" code="1695" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="Carrier-Frequency" code="1696" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+	<avp name="Area-Scope" code="1624" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Grouped">
+		<rule avp="Cell-Global-Identity" required="false"/>
+		<rule avp="E-UTRAN-Cell-Global-Identity" required="true"/>
+		<rule avp="Routing-Area-Identity" required="false"/>
+		<rule avp="Location-Area-Identity" required="false"/>
+		<rule avp="Tracking-Area-Identity" required="false"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <avp name="List-Of-Measurements" code="1625" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="Reporting-Trigger" code="1626" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+	<avp name="Job-Type" code="1623" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="Immediate-MDT-only"/>
+                <item code="1" name="Logged-MDT-only"/>
+                <item code="2" name="Trace-only"/>
+                <item code="3" name="Immediate-MDT-and-Trace"/>
+                <item code="4" name="RLF-reports-only"/>
+                <item code="5" name="RCEF-reports-only"/>
+                <item code="6" name="Logged-MBSFN-MDT"/>
+            </data>
+        </avp>
+
+	<avp name="Report-Interval" code="1627" must="V" must-not="N" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="250"/>
+                <item code="1" name="500"/>
+                <item code="2" name="1000"/>
+                <item code="3" name="2000"/>
+                <item code="4" name="3000"/>
+                <item code="5" name="4000"/>
+                <item code="6" name="6000"/>
+                <item code="7" name="8000"/>
+                <item code="8" name="12000"/>
+                <item code="9" name="16000"/>
+                <item code="10" name="20000"/>
+                <item code="11" name="24000"/>
+                <item code="12" name="28000"/>
+                <item code="13" name="32000"/>
+                <item code="14" name="64000"/>
+            </data>
+        </avp>
+
+	<avp name="Report-Amount" code="1628" must="V" must-not="N" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="1"/>
+                <item code="1" name="2"/>
+                <item code="2" name="4"/>
+                <item code="3" name="8"/>
+                <item code="4" name="16"/>
+                <item code="5" name="32"/>
+                <item code="6" name="64"/>
+                <item code="7" name="infinity"/>
             </data>
         </avp>
 
@@ -732,6 +1052,10 @@
                 <rule avp="AMBR" required="false" max="1"/>
                 <rule avp="SIPTO-Permission" required="false" max="1"/>
                 <rule avp="LIPA-Permission" required="false" max="1"/>
+                <rule avp="Restoration-Priority" required="false" max="1"/>
+                <rule avp="SIPTO-Local-Network-Permission" required="false" max="1"/>
+                <rule avp="Non-IP-Data-Delivery-Mechanism" required="false" max="1"/>
+		<rule avp="SCEF-ID" required="false"/>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>
@@ -771,6 +1095,7 @@
                 <rule avp="CSG-Id" required="true" max="1"/>
                 <rule avp="Expiration-Date" required="false" max="1"/>
                 <rule avp="Service-Selection" required="false"/>
+		<rule avp="Visited-PLMN-Id" required="false"/>
                 <rule avp="AVP" required="false"/>
             </data>
         </avp>
@@ -944,6 +1269,10 @@
             <data type="Unsigned32"/>
         </avp>
 
+        <avp name="AIR-Flags" code="1679" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
         <avp name="ULA-Flags" code="1406" must="M,V" may-encrypt="N" vendor-id="10415">
             <data type="Unsigned32"/>
         </avp>
@@ -977,6 +1306,689 @@
             </data>
         </avp>
 
+	<avp name="IDA-Flags" code="1441" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="DSR-Flags" code="1421" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="DSA-Flags" code="1422" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Monitoring-Event-Report" code="3123" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="SCEF-Reference-ID" required="true"/>
+		<rule avp="SCEF-Reference-ID-Ext" required="false"/>
+		<rule avp="SCEF-ID" required="true"/>
+		<rule avp="Reachability-Information" required="false"/>
+		<rule avp="EPS-Location-Information" required="false" max="1"/>
+		<rule avp="Monitoring-Type" required="false"/>
+		<rule avp="Loss-Of-Connectivity-Reason" required="false"/>
+		<rule avp="Idle-Status-Indication" required="false"/>
+		<rule avp="Maximum-UE-Availability-Time" required="false" max="1"/>
+		<rule avp="PDN-Connectivity-Status-Report" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Reachability-Information" code="3140" must="M" may="P" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Maximum-UE-Availability-Time" code="3329" must="M" may="P" vendor-id="10415">
+	    <data type="Time"/>
+	</avp>
+
+	<avp name="Monitoring-Event-Config-Status" code="3142" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Service-Report" required="false"/>
+		<rule avp="SCEF-Reference-ID" required="true"/>
+		<rule avp="SCEF-ID" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Service-Report" code="3152" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Service-Result" required="false"/>
+		<rule avp="Node-Type" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Node-Type" code="3153" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Service-Result" code="3146" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Vendor-Id" required="false"/>
+		<rule avp="Service-Result-Code" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Service-Result-Code" code="3147" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Idle-Status-Indication" code="4322" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Idle-Status-Timestamp" required="true"/>
+		<rule avp="Active-Time" required="true"/>
+		<rule avp="Subscribed-Periodic-RAU-TAU-Timer" required="false" max="1"/>
+		<rule avp="eDRX-Cycle-Length" required="false"/>
+		<rule avp="DL-Buffering-Suggested-Packet-Count" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Loss-Of-Connectivity-Reason" code="3162" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Local-Time-Zone" code="1649" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Time-Zone" required="true"/>
+		<rule avp="Daylight-Saving-Time" required="true"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Time-Zone" code="1642" must="V" must-not="M" may-encrypt="N"  vendor-id="10415">
+	    <data type="UTF8String"/>
+	</avp>
+
+	<avp name="Daylight-Saving-Time" code="1650" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Enumerated">
+		<item code="0" name="NO_ADJUSTMENT"/>
+		<item code="1" name="PLUS_ONE_HOUR_ADJUSTMENT"/>
+		<item code="2" name="PLUS_TWO_HOURS_ADJUSTMENT"/>
+	    </data>
+	</avp>
+
+	<avp name="EPS-User-State" code="1495" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="MME-User-State" required="false"/>
+		<rule avp="SGSN-User-State" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="MME-User-State" code="1497" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="User-State" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="SGSN-User-State" code="1498" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="User-State" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="User-State" code="1499" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Enumerated">
+		<item code="0" name="DETACHED"/>
+		<item code="1" name="ATTACHED_NOT_REACHABLE_FOR_PAGING"/>
+		<item code="2" name="ATTACHED_REACHABLE_FOR_PAGING"/>
+		<item code="3" name="CONNECTED_NOT_REACHABLE_FOR_PAGING"/>
+		<item code="4" name="CONNECTED_REACHABLE_FOR_PAGING"/>
+		<item code="5" name="RESERVED"/>
+	    </data>
+	</avp>
+
+	<avp name="IMS-Voice-Over-PS-Sessions-Supported" code="1902" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Enumerated">
+		<item code="0" name="NOT_SUPPORTED"/>
+		<item code="1" name="SUPPORTED"/>
+	    </data>
+	</avp>
+
+	<avp name="IDR-Flags" code="1490" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Reset-ID" code="1670" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Alert-Reason" code="1434" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Enumerated">
+		<item code="0" name="UE_PRESENT"/>
+		<item code="1" name="UE_MEMORY_AVAILABLE"/>
+	    </data>
+	</avp>
+
+	<avp name="IAB-Operation-Permission" code="1709" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Enumerated">
+		<item code="0" name="IAB_OPERATION_ALLOWED"/>
+		<item code="1" name="IAB_OPERATION_NOTALLOWED"/>
+	    </data>
+	</avp>
+
+	<avp name="EPS-Location-Information" code="1496" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="MME-Location-Information" required="true"/>
+		<rule avp="SGSN-Location-Information" required="true"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+        <avp name="SGSN-Location-Information" code="1601" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Cell-Global-Identity" required="false"/>
+		<rule avp="Location-Area-Identity" required="false"/>
+		<rule avp="Service-Area-Identity" required="false"/>
+		<rule avp="Routing-Area-Identity" required="false"/>
+		<rule avp="Geographical-Information" required="false"/>
+		<rule avp="Geodetic-Information" required="false"/>
+		<rule avp="Current-Location-Retrieved" required="false"/>
+		<rule avp="Age-Of-Location-Information" required="false"/>
+		<rule avp="User-CSG-Information" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Location-Global-Identity" code="1606" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Service-Global-Identity" code="1607" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Routing-Global-Identity" code="1605" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Cell-Global-Identity" code="1604" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="MME-Location-Information" code="1600" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="E-UTRAN-Cell-Global-Identity" required="true"/>
+		<rule avp="Tracking-Area-Identity" required="false"/>
+		<rule avp="Geographical-Information" required="false"/>
+		<rule avp="Geodetic-Information" required="false"/>
+		<rule avp="Current-Location-Retrieved" required="false"/>
+		<rule avp="Age-Of-Location-Information" required="false"/>
+		<rule avp="User-CSG-Information" required="false"/>
+		<rule avp="eNodeB-ID" required="false"/>
+		<rule avp="Extended-eNodeB-ID" required="false"/>
+		<rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="eNodeB-ID" code="4008" must="M,V" may="P"  may-encrypt="Y" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Extended-eNodeB-ID" code="4013" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Age-Of-Location-Information" code="1611" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned64"/>
+	</avp>
+
+	<avp name="E-UTRAN-Cell-Global-Identity" code="1602" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Tracking-Area-Identity" code="1603" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Routing-Area-Identity" code="1605" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+    </avp>
+
+	<avp name="Location-Area-Identity" code="1606" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+    </avp>
+
+	<avp name="Geographical-Information" code="1608" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Geodetic-Information" code="1609" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Current-Location-Retrieved" code="1610" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Enumerated">
+		<item code="0" name="ACTIVE-LOCATION-RETRIEVAL"/>
+	    </data>
+	</avp>
+
+	<avp name="TGPP-Charging-Characteristics" code="13" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
+	    <data type="UTF8String"/>
+	</avp>
+
+	<avp name="Equivalent-PLMN-List" code="1637" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Visited-PLMN-Id" required="true"/>
+	    </data>
+	</avp>
+
+	<avp name="MME-Number-for-MT-SMS" code="1645" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="SMS-Register-Request" code="1648" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Enumerated">
+		<item code="0" name="SMS_REGISTRATION_REQUIRED"/>
+		<item code="1" name="SMS_REGISTRATION_NOT_PREFERRED"/>
+	    </data>
+	</avp>
+
+	<avp name="SGs-MME-Identity" code="1664" must="V" must-not="M" may-encrypt="N"  vendor-id="10415">
+	    <data type="UTF8String"/>
+	</avp>
+
+	<avp name="Coupled-Node-Diameter-ID" code="1666" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="DiameterIdentity"/>
+	</avp>
+
+	<avp name="Adjacent-PLMNs" code="1672" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Visited-PLMN-Id" required="true"/>
+	    </data>
+	</avp>
+
+	<avp name="Supported-Services" code="3143" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Supported-Monitoring-Events" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Supported-Monitoring-Events" code="3144" must="M,V" may-encrypt="N" vendor-id="10415" >
+	    <data type="Unsigned64"/>
+	</avp>
+
+	<avp name="A-MSISDN" code="1643" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="ProSe-Subscription-Data" code="3701" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="ProSe-Permission" required="true"/>
+	    </data>
+	</avp>
+
+	<avp name="ProSe-Permission" code="3702" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Emergency-Services" code="1538" must="V" must-not="M,P" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Broadcast-Location-Assistance-Data-Types" code="1700" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned64"/>
+	</avp>
+
+	<avp name="Aerial-UE-Subscription-Information" code="1699" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="eDRX-Related-RAT" code="1705" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+	        <rule avp="RAT-Type" required="false" mmax="1"/>
+	        <rule avp="AVP" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Core-Network-Restrictions" code="1704" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Maximum-UE-AvailabilityTime" code="3329" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Time"/>
+	</avp>
+
+	<avp name="Last-UE-Activity-Time" code="1494" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Time"/>
+	</avp>
+
+        <avp name="Active-Time" code="4324" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Service-Gap-Time" code="1698" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Subscription-Data-Flags" code="1654" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Adjacent-Access-Restriction-Data" code="1673" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Visited-PLMN-Id" required="true"/>
+		<rule avp="Access-Restriction-Data" required="true"/>
+	    </data>
+	</avp>
+
+	<avp name="DL-Buffering-Suggested-Packet-Count" code="1674" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Integer32"/>
+	</avp>
+
+	<avp name="IMSI-Group-Id" code="1675" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Group-Service-Id" required="true"/>
+		<rule avp="Group-PLMN-Id" required="true"/>
+		<rule avp="Local-Group-Id" required="true"/>
+	    </data>
+	</avp>
+
+	<avp name="Group-Service-Id" code="1676" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Group-PLMN-Id" code="1677" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Local-Group-Id" code="1678" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="UE-Usage-Type" code="1680" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="AESE-Communication-Pattern" code="3113" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="SCEF-Reference-ID" required="false"/>
+		<rule avp="SCEF-Reference-ID-Ext" required="false"/>
+		<rule avp="SCEF-ID" required="true"/>
+		<rule avp="SCEF-Reference-ID-for-Deletion" required="false"/>
+		<rule avp="SCEF-Reference-ID-for-Deletion-Ext" required="false"/>
+		<rule avp="Communication-Pattern-Set" required="false"/>
+		<rule avp="MTC-Provider-Info" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="SCEF-Reference-ID" code="3124" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+	<avp name="SCEF-Reference-ID-for-Deletion" code="3126" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="SCEF-Reference-ID-Ext" code="3186" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned64"/>
+	</avp>
+
+	<avp name="SCEF-Reference-ID-for-Deletion-Ext" code="3187" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned64"/>
+	</avp>
+
+	<avp name="SCEF-ID" code="3125" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="DiameterIdentity"/>
+	</avp>
+
+	<avp name="Communication-Pattern-Set" code="3114" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Periodic-Communication-Indicator" required="false"/>
+		<rule avp="Communication-Duration-Time" required="false"/>
+		<rule avp="Periodic-Time" required="false"/>
+		<rule avp="Scheduled-Communication-Time" required="false"/>
+		<rule avp="Stationary-Indication" required="false"/>
+		<rule avp="Reference-ID-Validity-Time" required="false"/>
+		<rule avp="Traffic-Profile" required="false"/>
+		<rule avp="Battery-Indicator" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="MTC-Provider-Info" code="3178" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="MTC-Provider-ID" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="MTC-Provider-ID" code="3179" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="UTF8String"/>
+	</avp>
+
+	<avp name="Periodic-Communication-Indicator" code="3115" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Communication-Duration-Time" code="3116" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Periodic-Time" code="3117" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Stationary-Indication" code="3119" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Reference-ID-Validity-Time" code="3148" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Time"/>
+	</avp>
+
+	<avp name="Traffic-Profile" code="3183" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Battery-Indicator" code="3185" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Scheduled-Communication-Time" code="3118" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Day-Of-Week-Mask" required="false"/>
+		<rule avp="Time-Of-Day-Start" required="false"/>
+		<rule avp="Time-Of-Day-End" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Day-Of-Week-Mask" code="563" vendor-id="10415" may="P" must-not="M">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Time-Of-Day-Start" code="561" vendor-id="10415" may="P" must-not="M">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Time-Of-Day-End" code="562" vendor-id="10415" may="P" must-not="M">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Monitoring-Event-Configuration" code="3122" must="M" may="P" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="SCEF-Reference-ID" required="false"/>
+		<rule avp="SCEF-Reference-ID-Ext" required="false"/>
+		<rule avp="SCEF-ID" required="true"/>
+		<rule avp="Monitoring-Type" required="true"/>
+		<rule avp="SCEF-Reference-ID-for-Deletion" required="false"/>
+		<rule avp="SCEF-Reference-ID-for-Deletion-Ext" required="false"/>
+		<rule avp="Maximum-Number-of-Reports" required="false"/>
+		<rule avp="Monitoring-Duration" required="false"/>
+		<rule avp="Charged-Party" required="false"/>
+		<rule avp="UE-Reachability-Configuration" required="false"/>
+		<rule avp="Location-Information-Configuration" required="false"/>
+		<rule avp="SCEF-Realm" required="false"/>
+		<rule avp="External-Identifier" required="false"/>
+		<rule avp="MTC-Provider-Info" required="false"/>
+		<rule avp="PDN-Connectivity-Status-Configuration" required="false"/>
+	    </data>
+	</avp>
+
+        <avp name="PDN-Connectivity-Status-Configuration" code="3180" vendor-id="10415" must="V" must-not="M" may-encrypt="N">
+	    <data type="Grouped">
+		<rule avp="Service-Selection" required="true" max="1"/>
+	    </data>
+	</avp>
+
+	<avp name="External-Identifier" code="3111" must="V,M" may-encrypt="N" vendor-id="10415">
+	    <data type="UTF8String"/>
+	</avp>
+
+	<avp name="SCEF-Realm" code="1684" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="DiameterIdentity"/>
+	</avp>
+
+	<avp name="Monitoring-Type" code="3127" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Maximum-Number-of-Reports" code="3128" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Monitoring-Duration" code="3148" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Time"/>
+	</avp>
+
+	<avp name="Charged-Party" code="857" must="V,M" may="-" vendor-id="10415">
+	    <data type="UTF8String"/>
+	</avp>
+
+	<avp name="UE-Reachability-Configuration" code="3129" vendor-id="10415" must="M,V" may-encrypt="N">
+	    <data type="Grouped">
+		<rule avp="Reachability-Type" required="true"/>
+		<rule avp="Maximum-Response-Time" required="true"/>
+	    </data>
+	</avp>
+
+	<avp name="Reachability-Type" code="3132" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Maximum-Response-Time" code="3134" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Location-Information-Configuration" code="3135" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="MONTE-Location-Type" required="true"/>
+		<rule avp="Accuracy" required="true"/>
+		<rule avp="Periodic-Time" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="MONTE-Location-Type" code="3136" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Accuracy" code="3137" must="M,V" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Emergency-Info" code="1687" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="MIP6-Agent-Info" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="V2X-Subscription-Data" code="1688" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="V2X-Permission" required="false"/>
+	  	<rule avp="UE-PC5-AMBR" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="V2X-Permission" code="1689" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="UE-PC5-AMBR" code="1693" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="V2X-Subscription-Data-Nr" code="1710" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="V2X-Permission" required="false"/>
+		<rule avp="UE-PC5-AMBR" required="false"/>
+		<rule avp="UE-PC5-QoS" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="UE-PC5-QoS" code="1711" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+	 	<rule avp="PC5-QoS-Flow" required="true"/>
+		<rule avp="PC5-Link-AMBR" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="PC5-Link-AMBR" code="1718" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Integer32"/>
+	</avp>
+
+	<avp name="PC5-QoS-Flow" code="1712" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="FiveQI" required="true"/>
+		<rule avp="PC5-Flow-Bitrates" required="false"/>
+		<rule avp="PC5-Range" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="FiveQI" code="1713" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Integer32"/>
+	</avp>
+
+	<avp name="PC5-Range" code="1717" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Integer32"/>
+	</avp>
+
+	<avp name="PC5-Flow-Bitrates" code="1714" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Guaranteed-Flow-Bitrates" required="false"/>
+		<rule avp="Maximum-Flow-Bitrates" required="false"/>
+	    </data>
+	</avp>
+
+	<avp name="Guaranteed-Flow-Bitrates" code="1715" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Integer32"/>
+	</avp>
+
+	<avp name="Maximum-Flow-Bitrates" code="1716" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Integer32"/>
+	</avp>
+
+	<avp name="eDRX-Cycle-Length" code="1691" vendor-id="10415" must="V" must-not="M" may-encrypt="N">
+	    <data type="Grouped">
+		<rule avp="RAT-Type" required="true" max="1"/>
+		<rule avp="eDRX-Cycle-Length-Value" required="true"/>
+	    </data>
+	</avp>
+
+	<avp name="eDRX-Cycle-Length-Value" code="1692" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
+	<avp name="Paging-Time-Window" code="1701" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Grouped">
+		<rule avp="Operation-Mode" required="true"/>
+		<rule avp="Paging-Time-Window-Length" required="true"/>
+	    </data>
+	</avp>
+
+	<avp name="Subscribed-ARPI" code="1708" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Operation-Mode" code="1702" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="Unsigned32"/>
+	</avp>
+
+	<avp name="Paging-Time-Window-Length" code="1703" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
+	    <data type="OctetString"/>
+	</avp>
+
         <avp name="Specific-APN-Info" code="1472" vendor-id="10415" must="M,V" may-encrypt="N">
             <data type="Grouped">
                 <rule avp="Service-Selection" required="true" max="1"/>
@@ -1008,44 +2020,54 @@
             </data>
         </avp>
 
-        <avp name="MIP-Home-Agent-Address" code="334" must="M" must-not="V" vendor-id="10415">
-            <data type="Address"/>
-        </avp>
-
-        <!-- RFC 4004 -->
-        <avp name="MIP-Home-Agent-Host" code="348" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
-            <data type="Grouped">
-                <rule avp="Destination-Realm" required="true" max="1"/>
-                <rule avp="Destination-Host" required="true" max="1"/>
-                <rule avp="AVP" required="false"/>
-            </data>
-        </avp>
-
-        <!-- RFC 5447 Diameter Mobile IPv6: Support for Network Access Server to Diameter Server Interaction -->
-        <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
-            <data type="Grouped">
-                <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
-                <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>
-                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1"/>
-                <rule avp="AVP" required="false"/>
-            </data>
-        </avp>
-
-        <avp name="Service-Selection" code="493" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
-            <data type="UTF8String"/>
-        </avp>
-
         <avp name="Visited-Network-Identifier" code="600" must="M,V" may-encrypt="N" vendor-id="10415">
-            <data type="OctetString"/>
-        </avp>
-
-        <avp name="MIP6-Home-Link-Prefix" code="125" vendor-id="10415">
             <data type="OctetString"/>
         </avp>
 
         <avp name="User-Id" code="1444" must="V" must-not="M" may-encrypt="N" vendor-id="10415">
             <data type="UTF8String"/>
         </avp>
+        <avp name="Service-Selection" code="493" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="0">
+            <data type="UTF8String"/>
+    </avp>
+    <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="-">
+                <data type="Grouped">
+                    <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
+                    <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>
+                    <rule avp="MIP6-Home-Link-Prefix" required="false" max="1"/>
+                    <rule avp="AVP" required="false"/>
+                </data>
+            </avp>
+
+            <avp name="MIP6-Home-Link-Prefix" code="125">
+                <data type="OctetString"/>
+            </avp>
+
+            <avp name="MIP-Home-Agent-Address" code="334" must="M" must-not="V">
+                <data type="Address"/>
+            </avp>
+
+            <avp name="MIP-Home-Agent-Host" code="348" must="M" may="P" must-not="V" may-encrypt="Y">
+                <data type="Grouped">
+                    <rule avp="Destination-Realm" required="true" max="1"/>
+                    <rule avp="Destination-Host" required="true" max="1"/>
+                    <rule avp="AVP" required="false"/>
+                </data>
+            </avp>
+        <avp name="Subscription-Data-Deletion" code="1685" must="V" must-not="M" may-encrypt="N">
+  <data type="Grouped">
+    <rule avp="DSR-Flags" required="true" max="1"/>
+    <rule avp="SCEF-ID" required="false" max="1"/>
+    <rule avp="Context-Identifier" required="false"/>
+    <rule avp="Trace-Reference" required="false" max="1"/>
+    <rule avp="TS-Code" required="false"/>
+    <rule avp="SS-Code" required="false"/>
+    <rule avp="AVP" required="false"/>
+  </data>
+</avp>
+
+
 
     </application>
 </diameter>
+

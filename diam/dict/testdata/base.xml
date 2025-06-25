@@ -471,7 +471,7 @@
 			<data type="Unsigned64"/>
 		</avp>
 
-		<avp name="OC-OLR" code="623" must-not="V">
+		<avp name="OC-OLR" code="623" must-not="M,V">
 			<data type="Grouped">
 				<rule avp="OC-Sequence-Number" required="true" max="1"/>
 				<rule avp="OC-Report-Type" required="true" max="1"/>

@@ -18,6 +18,7 @@ var testDicts = []string{
 	"./testdata/tgpp_swx.xml",
 	"./testdata/tgpp_s13.xml",
 	"./testdata/tgpp_s6c.xml",
+	"./testdata/tgpp_cx.xml",
 	"./testdata/tgpp_sh.xml"}
 
 func TestNewParser(t *testing.T) {

@@ -94,5 +94,8 @@ func (addr Address) String() string {
 	if ip6 := net.IP(addr).To16(); ip6 != nil {
 		return fmt.Sprintf("Address{%s},Padding:%d", net.IP(addr), addr.Padding())
 	}
+	if len(addr) == 0 {
+		return ""
+	}
 	return fmt.Sprintf("Address{%#v}, Type{%#v} Padding:%d", addr[2:], addr[:2], addr.Padding())
 }

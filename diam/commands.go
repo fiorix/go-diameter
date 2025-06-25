@@ -16,14 +16,19 @@ const (
 	CancelLocation            = 317
 	CapabilitiesExchange      = 257
 	CreditControl             = 272
+	DeleteSubscriberData      = 320
 	DeviceWatchdog            = 280
 	DisconnectPeer            = 282
+	InsertSubscriberData      = 319
+	LocationInfo              = 302
 	MEIdentityCheck           = 324
+	MultimediaAuth            = 303
 	MultimediaAuthentication  = 303
 	Notify                    = 323
 	ProfileUpdate             = 307
 	PurgeUE                   = 321
 	PushNotifications         = 309
+	PushProfile               = 305
 	ReAuth                    = 258
 	RegistrationTermination   = 304
 	ReportSMDeliveryStatus    = 8388649
@@ -34,9 +39,8 @@ const (
 	SpendingLimit             = 8388635
 	SubscribeNotifications    = 308
 	UpdateLocation            = 316
+	UserAuthorization         = 300
 	UserData                  = 306
-	InsertSubscriberData      = 319
-	DeleteSubscriberData      = 320
 )
 
 // Short Command Names
@@ -59,16 +63,24 @@ const (
 	CLR = "CLR"
 	DPA = "DPA"
 	DPR = "DPR"
+	DSA = "DSA"
+	DSR = "DSR"
 	DWA = "DWA"
 	DWR = "DWR"
 	ECA = "ECA"
 	ECR = "ECR"
+	IDA = "IDA"
+	IDR = "IDR"
+	LIA = "LIA"
+	LIR = "LIR"
 	MAA = "MAA"
 	MAR = "MAR"
 	NOA = "NOA"
 	NOR = "NOR"
 	PNA = "PNA"
 	PNR = "PNR"
+	PPA = "PPA"
+	PPR = "PPR"
 	PUA = "PUA"
 	PUR = "PUR"
 	RAA = "RAA"
@@ -89,12 +101,10 @@ const (
 	SRR = "SRR"
 	STA = "STA"
 	STR = "STR"
+	UAA = "UAA"
+	UAR = "UAR"
 	UDA = "UDA"
 	UDR = "UDR"
 	ULA = "ULA"
 	ULR = "ULR"
-	IDR = "IDR"
-	IDA = "IDA"
-	DSR = "DSR"
-	DSA = "DSA"
 )

@@ -1,9 +1,9 @@
 # Diameter Base Protocol
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/fiorix/go-diameter)](https://goreportcard.com/report/github.com/fiorix/go-diameter)
+[![Go Report Card](https://goreportcard.com/badge/github.com/deb-2025/go-diameter)](https://goreportcard.com/report/github.com/deb-2025/go-diameter)
 [![Test Status](https://github.com/fiorix/go-diameter/actions/workflows/test.yaml/badge.svg)](https://github.com/fiorix/go-diameter/actions/workflows/test.yaml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/deb-2025/go-diameter.svg)](https://pkg.go.dev/github.com/deb-2025/go-diameter)
-[![Latest](https://img.shields.io/github/v/tag/fiorix/go-diameter.svg?sort=semver&style=flat-square&label=latest)](https://github.com/fiorix/go-diameter/tags)
+[![Latest](https://img.shields.io/github/v/tag/deb-2025/go-diameter.svg?sort=semver&style=flat-square&label=latest)](https://github.com/deb-2025/go-diameter/tags)
 
 Package [go-diameter](https://pkg.go.dev/github.com/deb-2025/go-diameter) is an
 implementation of the

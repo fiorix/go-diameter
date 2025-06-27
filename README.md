@@ -29,6 +29,7 @@ See the API documentation at https://pkg.go.dev/github.com/deb-2025/go-diameter
   	* 3GPP S6a specific commands and AVPs from
   	  	[RFC 5516](https://tools.ietf.org/html/rfc5516) and
   	  	[TS 129 272](http://www.etsi.org/deliver/etsi_ts/129200_129299/129272/10.09.00_60/ts_129272v100900p.pdf)
+	* 3GPP Cx, Sh, S13 commands and AVPs
 - Human readable AVP representation (for debugging)
 - TLS, IPv4 and IPv6 support for both clients and servers
 - Stack based on [net/http](https://pkg.go.dev/net/http) for simplicity

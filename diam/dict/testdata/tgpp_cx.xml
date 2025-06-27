@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+  <application id="16777216" type="auth" name="TGPP CX">
+    <vendor id="10415" name="TGPP"/>
+    <command code="300" short="UA" name="User-Authorization">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Host" required="false" max="1" pointer="true"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="true" max="1"/>
+        <rule avp="OC-Supported-Features" required="false" max="1" pointer="true"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Public-Identity" required="true" max="1"/>
+        <rule avp="Visited-Network-Identifier" required="true" max="1"/>
+        <rule avp="User-Authorization-Type" required="false" max="1" pointer="true"/>
+        <rule avp="UAR-Flags" required="false" max="1" pointer="true"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+        <rule avp="Experimental-Result" required="false" max="1" pointer="true"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="OC-Supported-Features" required="false" max="1" pointer="true"/>
+        <rule avp="OC-OLR" required="false" max="1" pointer="true"/>
+        <rule avp="Load" required="false"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Server-Name" required="false" max="1" pointer="true"/>
+        <rule avp="Server-Capabilities" required="false" max="1" pointer="true"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Failed-AVP" required="false" max="1" pointer="true"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </answer>
+    </command>
+    <command code="301" short="SA" name="Server-Assignment">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Host" required="false" max="1" pointer="true"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1" pointer="true"/>
+        <rule avp="OC-Supported-Features" required="false" max="1" pointer="true"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Public-Identity" required="false"/>
+        <rule avp="Wildcarded-Public-Identity" required="false" max="1" pointer="true"/>
+        <rule avp="Server-Name" required="true" max="1"/>
+        <rule avp="Server-Assignment-Type" required="true" max="1"/>
+        <rule avp="User-Data-Already-Available" required="true" max="1"/>
+        <rule avp="SCSCF-Restoration-Info" required="false" max="1" pointer="true"/>
+        <rule avp="Multiple-Registration-Indication" required="false" max="1" pointer="true"/>
+        <rule avp="Session-Priority" required="false" max="1" pointer="true"/>
+        <rule avp="SAR-Flags" required="false" max="1" pointer="true"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+        <rule avp="Experimental-Result" required="false" max="1" pointer="true"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1" pointer="true"/>
+        <rule avp="OC-Supported-Features" required="false" max="1" pointer="true"/>
+        <rule avp="OC-OLR" required="false" max="1" pointer="true"/>
+        <rule avp="Load" required="false"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="User-Data" required="false"/>
+        <rule avp="Charging-Information" required="false"/>
+        <rule avp="Associated-Identities" required="false"/>
+        <rule avp="Loose-Route-Indication" required="false"/>
+        <rule avp="SAssociated-Registered-IdentitiesCSCF-Restoration-Info" required="false"/>
+        <rule avp="Associated-Registered-Identities" required="false"/>
+        <rule avp="Server-Name" required="false" max="1" pointer="true"/>
+        <rule avp="Wildcarded-Public-Identity" required="false" max="1" pointer="true"/>
+        <rule avp="Priviledged-Sender-Indication" required="false"/>
+        <rule avp="Allowed-WAF-WWSF-Identities" required="false"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Failed-AVP" required="false" max="1" pointer="true"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </answer>
+    </command>
+    <command code="302" short="LI" name="Location-Info">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Host" required="false" max="1" pointer="true"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="Originating-Request" required="false" max="1" pointer="true"/>
+        <rule avp="OC-Supported-Features" required="false" max="1" pointer="true"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Public-Identity" required="true" max="1"/>
+        <rule avp="User-Authorization-Type" required="false" max="1" pointer="true"/>
+        <rule avp="Session-Priority" required="false" max="1" pointer="true"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+        <rule avp="Experimental-Result" required="false" max="1" pointer="true"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="OC-Supported-Features" required="false" max="1" pointer="true"/>
+        <rule avp="OC-OLR" required="false" max="1" pointer="true"/>
+        <rule avp="Load" required="false"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Server-Name" required="false" max="1" pointer="true"/>
+        <rule avp="Server-Capabilities" required="false" max="1" pointer="true"/>
+        <rule avp="Wildcarded-Public-Identity" required="false" max="1" pointer="true"/>
+        <rule avp="LIA-Flags" required="false"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Failed-AVP" required="false" max="1" pointer="true"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </answer>
+    </command>
+    <command code="303" short="MA" name="Multimedia-Auth">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="Destination-Host" required="false" max="1" pointer="true"/>
+        <rule avp="User-Name" required="true" max="1"/>
+        <rule avp="OC-Supported-Features" required="false" max="1" pointer="true"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Public-Identity" required="true" max="1"/>
+        <rule avp="SIP-Auth-Data-Item" required="true" max="1"/>
+        <rule avp="SIP-Number-Auth-Items" required="true" max="1"/>
+        <rule avp="Server-Name" required="true" max="1"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+        <rule avp="Experimental-Result" required="false" max="1" pointer="true"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="false" max="1" pointer="true"/>
+        <rule avp="OC-Supported-Features" required="false" max="1" pointer="true"/>
+        <rule avp="OC-OLR" required="false" max="1" pointer="true"/>
+        <rule avp="Load" required="false"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Public-Identity" required="false" max="1" pointer="true"/>
+        <rule avp="SIP-Number-Auth-Items" required="false" max="1" pointer="true"/>
+        <rule avp="SIP-Auth-Data-Item" required="false"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Failed-AVP" required="false" max="1" pointer="true"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </answer>
+    </command>
+    <command code="304" short="RT" name="Registration-Termination">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="true" max="1"/>
+        <rule avp="Associated-Identities" required="false"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Public-Identity" required="false"/>
+        <rule avp="Deregistration-Reason" required="true" max="1"/>
+        <rule avp="RTR-Flags" required="false" max="1" pointer="true"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+        <rule avp="Experimental-Result" required="false" max="1" pointer="true"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Associated-Identities" required="false"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="Identity-with-Emergency-Registration" required="false"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Failed-AVP" required="false" max="1" pointer="true"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </answer>
+    </command>
+    <command code="305" short="PP" name="Push-Profile">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Host" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="User-Name" required="true" max="1"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="User-Data" required="false"/>
+        <rule avp="Charging-Information" required="false"/>
+        <rule avp="SIP-Auth-Data-Item" required="false"/>
+        <rule avp="Allowed-WAF-WWSF-Identities" required="false"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="DRMP" required="false" max="1" pointer="true"/>
+        <rule avp="Vendor-Specific-Application-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="false" max="1" pointer="true"/>
+        <rule avp="Experimental-Result" required="false" max="1" pointer="true"/>
+        <rule avp="Auth-Session-State" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Supported-Features" required="false"/>
+        <rule avp="AVP" required="false"/>
+        <rule avp="Failed-AVP" required="false" max="1" pointer="true"/>
+        <rule avp="Proxy-Info" required="false"/>
+        <rule avp="Route-Record" required="false"/>
+      </answer>
+    </command>
+
+  <avp name="Session-Id" code="263" must="M" may="P" must-not="V" may-encrypt="Y">
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="DRMP" code="301" must-not="V">
+    <data type="Enumerated"  >
+      <item code="0" name="PRIORITY_0"/>
+      <item code="1" name="PRIORITY_1"/>
+      <item code="2" name="PRIORITY_2"/>
+      <item code="3" name="PRIORITY_3"/>
+      <item code="4" name="PRIORITY_4"/>
+      <item code="5" name="PRIORITY_5"/>
+      <item code="6" name="PRIORITY_6"/>
+      <item code="7" name="PRIORITY_7"/>
+      <item code="8" name="PRIORITY_8"/>
+      <item code="9" name="PRIORITY_9"/>
+      <item code="10" name="PRIORITY_10"/>
+      <item code="11" name="PRIORITY_11"/>
+      <item code="12" name="PRIORITY_12"/>
+      <item code="13" name="PRIORITY_13"/>
+      <item code="14" name="PRIORITY_14"/>
+      <item code="15" name="PRIORITY_15"/>
+    </data>
+  </avp>
+  <avp name="Vendor-Specific-Application-Id" code="260" must="M" may="P" must-not="V" may-encrypt="N" >
+    <data type="Grouped"  >
+      <rule avp="Vendor-Id" required="false" max="1"/>
+      <rule avp="Auth-Application-Id" required="false" max="1"/>
+      <rule avp="Acct-Application-Id" required="false" max="1"/>
+    </data>
+  </avp>
+  <avp name="Auth-Session-State" code="277" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="Enumerated"  >
+      <item code="0" name="STATE_MAINTAINED"/>
+      <item code="1" name="NO_STATE_MAINTAINED"/>
+    </data>
+  </avp>
+  <avp name="Origin-Host" code="264" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="DiameterIdentity"/>
+  </avp>
+  <avp name="Origin-Realm" code="296" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="DiameterIdentity"/>
+  </avp>
+  <avp name="Destination-Host" code="293" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="DiameterIdentity"/>
+  </avp>
+  <avp name="Destination-Realm" code="283" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="DiameterIdentity"/>
+  </avp>
+  <avp name="Supported-Features" code="628" must="V" vendor-id="10415" may-encrypt="N" >
+    <data type="Grouped"  >
+      <rule avp="Vendor-Id" required="true" max="1"/>
+      <rule avp="Feature-List-ID" required="true" max="1"/>
+      <rule avp="Feature-List" required="true" max="1"/>
+    </data>
+  </avp>
+  <avp name="User-Name" code="1" must="M" may="P" must-not="V" may-encrypt="Y" >
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="OC-Supported-Features" code="621" must-not="V">
+    <data type="Grouped"  >
+      <rule avp="OC-Feature-Vector" required="false" max="1"/>
+      <rule avp="AVP" required="false"/>
+    </data>
+  </avp>
+		<avp name="OC-Feature-Vector" code="622" must-not="V">
+			<data type="Unsigned64"/>
+		</avp>
+  <avp name="User-Identity" code="700" must="M,V" vendor-id="10415" may="-" must-not="-" may-encrypt="N" >
+    <data type="Grouped"  >
+      <rule avp="Public-Identity" required="false" max="1" pointer="true"/>
+      <rule avp="MSISDN" required="false" max="1" pointer="true"/>
+      <rule avp="External-Identifier" required="false" max="1" pointer="true"/>
+    </data>
+  </avp>
+  <avp name="Public-Identity" code="601" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="MSISDN" code="701" must="M,V" vendor-id="10415" may="-" must-not="-" may-encrypt="N" >
+    <data type="OctetString"  />
+  </avp>
+  <avp name="External-Identifier" code="3111" must="M,V" vendor-id="10415" may="-" must-not="-" may-encrypt="N" >
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="Proxy-Info" code="284" must="M" may="-" must-not="P,V" may-encrypt="N">
+    <data type="Grouped"  >
+      <rule avp="Proxy-Host" required="true" max="1"/>
+      <rule avp="Proxy-State" required="true" max="1"/>
+    </data>
+  </avp>
+  <avp name="Proxy-Host" code="280" must="M" may="-" must-not="P,V" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+  </avp>
+  <avp name="Proxy-State" code="33" must="M" may="-" must-not="P,V" may-encrypt="N">
+    <data type="OctetString"  />
+  </avp>
+  <avp name="Route-Record" code="282" must="M" may="-" must-not="P,V" may-encrypt="N">
+    <data type="DiameterIdentity"/>
+  </avp>
+  <avp name="Visited-Network-Identifier" code="600" must="M,V" vendor-id="10415" may="-" must-not="-" may-encrypt="N" >
+    <data type="OctetString"  />
+  </avp>
+  <avp name="User-Authorization-Type" code="623" must="M,V" vendor-id="10415" may="-" must-not="-" may-encrypt="N">
+    <data type="Enumerated"  >
+      <item code="0" name="REGISTRATION"/>
+      <item code="1" name="DEREGISTRATION"/>
+      <item code="2" name="CAPABILITIES"/>
+    </data>
+  </avp>
+  <avp name="UAR-Flags" code="637" must="V" vendor-id="10415" must-not="M" may="-" may-encrypt="N">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Experimental-Result" code="297" must="M" may="P" must-not="V" may-encrypt="N">
+    <data type="Grouped"  >
+      <rule avp="Vendor-Id" required="true" max="1"/>
+      <rule avp="Experimental-Result-Code" required="true" max="1"/>
+    </data>
+  </avp>
+  <avp name="Experimental-Result-Code" code="298" must="M" may="P" must-not="V" may-encrypt="N">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Vendor-Id" code="266" must="M" may-encrypt="-" >
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="OC-OLR" code="623" must-not="M,V">
+    <data type="Grouped"  >
+      <rule avp="OC-Sequence-Number" required="true" max="1"/>
+      <rule avp="OC-Report-Type" required="true" max="1"/>
+      <rule avp="OC-Reduction-Percentage" required="false" max="1"/>
+      <rule avp="OC-Validity-Duration" required="false" max="1"/>
+      <rule avp="AVP" required="false"/>
+    </data>
+  </avp>
+  <avp name="OC-Sequence-Number" code="624" must-not="V">
+    <data type="Unsigned64"/>
+  </avp>
+  <avp name="OC-Validity-Duration" code="625" must-not="V">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="OC-Report-Type" code="626" must-not="V">
+    <data type="Enumerated"  >
+      <item code="0" name="HOST_REPORT"/>
+      <item code="1" name="REALM_REPORT"/>
+    </data>
+  </avp>
+  <avp name="OC-Reduction-Percentage" code="627" must-not="V">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Load" code="650" must-not="V">
+    <data type="Grouped"  >
+      <rule avp="Load-Type" required="false" max="1"/>
+      <rule avp="Load-Value" required="false" max="1"/>
+      <rule avp="SourceID" required="false" max="1"/>
+      <rule avp="AVP" required="false"/>
+    </data>
+  </avp>
+  <avp name="Load-Value" code="652" must-not="V">
+    <data type="Unsigned64"/>
+  </avp>
+  <avp name="Load-Type" code="651" must-not="V">
+    <data type="Enumerated"  >
+      <item code="0" name="HOST"/>
+      <item code="1" name="PEER"/>
+    </data>
+  </avp>
+  <avp name="Server-Name" code="602" must="M,V" vendor-id="10415" may="-" must-not="-" may-encrypt="-">
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="Server-Assignment-Type" code="614" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="Enumerated"  >
+      <item code="0" name="NO_ASSIGNMENT"/>
+      <item code="1" name="REGISTRATION"/>
+      <item code="2" name="RE_REGISTRATION"/>
+      <item code="3" name="UNREGISTERED_USER"/>
+      <item code="4" name="TIMEOUT_DEREGISTRATION"/>
+      <item code="5" name="USER_DEREGISTRATION"/>
+      <item code="6" name="TIMEOUT_DEREGISTRATION_STORE_SERVER_NAME"/>
+      <item code="7" name="USER_DEREGISTRATION_STORE_SERVER_NAME"/>
+      <item code="8" name="ADMINISTRATIVE_DEREGISTRATION"/>
+      <item code="9" name="AUTHENTICATION_FAILURE"/>
+      <item code="10" name="AUTHENTICATION_TIMEOUT"/>
+      <item code="11" name="DEREGISTRATION_TOO_MUCH_DATA"/>
+      <item code="12" name="AAA_USER_DATA_REQUEST"/>
+      <item code="13" name="PGW_UPDATE"/>
+      <item code="14" name="RESTORATION"/>
+    </data>
+  </avp>
+  <avp name="User-Data-Already-Available" code="624" must="M,V" vendor-id="10415" may="-" must-not="-" may-encrypt="N">
+    <data type="Enumerated"  >
+      <item code="0" name="USER_DATA_NOT_AVAILABLE"/>
+      <item code="1" name="USER_DATA_ALREADY_AVAILABLE"/>
+    </data>
+  </avp>
+  <avp name="SCSCF-Restoration-Info" code="639" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Grouped"  >
+      <avp name="User-Name" required="true"/>
+      <avp name="Restoration-Info" required="true" />
+      <avp name="Registration-Time-Out" required="false"/>
+      <avp name="SIP-Authentication-Scheme" required="false"/>
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="Restoration-Info" code="649" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Grouped"  >
+      <avp name="Path" required="true"/>
+      <avp name="Contact" required="true"/>
+      <avp name="Initial-CSeq-Sequence-Number" required="false"/>
+      <avp name="Call-ID-SIP-Header" required="false"/>
+      <avp name="Subscription-Info" required="false"/>
+      <avp name="P-CSCF-Subscription-Info" required="false"/>
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="Path" code="640" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="OctetString"  />
+  </avp>
+  <avp name="Contact" code="641" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="OctetString"  />
+  </avp>
+  <avp name="Call-ID-SIP-Header" code="643" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="OctetString"  />
+  </avp>
+  <avp name="Subscription-Info" code="642" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Grouped"  >
+      <avp name="Call-ID-SIP-Header" required="true"/>
+      <avp name="From-SIP-Header" required="true"/>
+      <avp name="To-SIP-Header" required="true"/>
+      <avp name="Record-Route" required="true"/>
+      <avp name="Contact" required="true"/>
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="From-SIP-Header" code="644" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="OctetString"  />
+  </avp>
+  <avp name="To-SIP-Header" code="645" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="OctetString"  />
+  </avp>
+  <avp name="Record-Route" code="646" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="OctetString"  />
+  </avp>
+  <avp name="P-CSCF-Subscription-Info" code="660" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Grouped"  >
+      <avp name="Call-ID-SIP-Header" required="true"/>
+      <avp name="From-SIP-Header" required="true"/>
+      <avp name="To-SIP-Header" required="true"/>
+      <avp name="Contact" required="true"/>
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="Registration-Time-Out" code="661" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Time"/>
+  </avp>
+  <avp name="SIP-Authentication-Scheme" code="608" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="Multiple-Registration-Indication" code="648" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Enumerated"  >
+      <item code="0" name="NOT_MULTIPLE_REGISTRATION"/>
+      <item code="1" name="MULTIPLE_REGISTRATION"/>
+    </data>
+  </avp>
+  <avp name="SAR-Flags" code="655" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Charging-Information" code="618" must="M,V" vendor-id="10415" may-encrypt="N"  >
+    <data type="Grouped"  >
+      <avp name="Primary-Event-Charging-Function-Name" required="false"/>
+      <avp name="Secondary-Event-Charging-Function-Name" required="false"/>
+      <avp name="Primary-Charging-Collection-Function-Name" required="false"/>
+      <avp name="Secondary-Charging-Collection-Function-Name" required="false"/>
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="Primary-Event-Charging-Function-Name" code="619" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="DiameterURI"  />
+  </avp>
+  <avp name="Secondary-Event-Charging-Function-Name" code="620" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="DiameterURI"  />
+  </avp>
+  <avp name="Primary-Charging-Collection-Function-Name" code="621" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="DiameterURI"  />
+  </avp>
+  <avp name="Secondary-Charging-Collection-Function-Name" code="622" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="DiameterURI"  />
+  </avp>
+  <avp name="SIP-Auth-Data-Item" code="612" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="Grouped"  >
+      <rule avp="SIP-Item-Number" required="false" max="1"/>
+      <rule avp="SIP-Authentication-Scheme" required="false" max="1"/>
+      <rule avp="SIP-Authenticate" required="false" max="1"/>
+      <rule avp="SIP-Authorization" required="false" max="1"/>
+      <rule avp="Confidentiality-Key" required="false" max="1"/>
+      <rule avp="Integrity-Key" required="false" max="1"/>
+      <rule avp="AVP" required="false"/>
+    </data>
+  </avp>
+  <avp name="SIP-Item-Number" code="613" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="SIP-Authentication-Scheme" code="608" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="SIP-Authenticate" code="609" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="OctetString"  />
+  </avp>
+  <avp name="SIP-Authorization" code="610" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="OctetString"  />
+  </avp>
+  <avp name="Confidentiality-Key" code="625" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="OctetString"  />
+  </avp>
+  <avp name="Integrity-Key" code="626" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="OctetString"  />
+  </avp>
+  <avp name="SIP-Number-Auth-Items" code="607" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="User-Data" code="606" must="M,V" vendor-id="10415" may-encrypt="-" >
+    <data type="OctetString"  />
+  </avp>
+  <avp name="Associated-Identities" code="632" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Grouped"  >
+      <avp name="User-Name" required="false" />
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="Associated-Registered-Identities" code="647" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Grouped"  >
+      <avp name="User-Name" required="false" />
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="Loose-Route-Indication" code="638" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Enumerated"  >
+      <item code="0" name="LOOSE_ROUTE_NOT_REQUIRED"/>
+      <item code="1" name="LOOSE_ROUTE_REQUIRED"/>
+    </data>
+  </avp>
+  <avp name="Priviledged-Sender-Indication" code="652" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Enumerated"  >
+      <item code="0" name="NOT_PRIVILEDGED_SENDER"/>
+      <item code="1" name="PRIVILEDGED_SENDER"/>
+    </data>
+  </avp>
+  <avp name="Allowed-WAF-WWSF-Identities" code="656" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Grouped"  >
+      <avp name="WebRTC-Authentication-Function-Name" required="false" />
+      <avp name="WebRTC-Web-Server-Function-Name" required="false" />
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="WebRTC-Authentication-Function-Name" code="657" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="WebRTC-Web-Server-Function-Name" code="658" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="Originating-Request" code="633" must="M,V" vendor-id="10415" may-encrypt="N">
+    <data type="Enumerated"  >
+      <item code="0" name="ORIGINATING"/>
+    </data>
+  </avp>
+  <avp name="LIA-Flags" code="653" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Wildcarded-Public-Identity" code="634" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="Deregistration-Reason" code="615" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="Grouped"  >
+      <rule avp="Reason-Code" required="true"/>
+      <rule avp="Reason-Info" required="false"/>
+      <rule avp="AVP" required="false"/>
+    </data>
+  </avp>
+  <avp name="Reason-Code" code="616" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="Enumerated"  >
+      <item code="0" name="PERMANENT_TERMINATION"/>
+      <item code="1" name="NEW_SERVER_ASSIGNMENT"/>
+      <item code="2" name="SERVER_CHANGE"/>
+      <item code="3" name="REMOVE_S_CSCF"/>
+    </data>
+  </avp>
+  <avp name="Reason-Info" code="617" must="M,V" vendor-id="10415" may-encrypt="N" >
+    <data type="UTF8String"  />
+  </avp>
+  <avp name="RTR-Flags" code="659" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Identity-with-Emergency-Registration" code="651" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Grouped"  >
+      <avp name="User-Name" required="true"/>
+      <avp name="Public-Identity" required="true"/>
+      <avp name="AVP" required="false" />
+    </data>
+  </avp>
+  <avp name="Result-Code" code="268" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Session-Priority" code="650" must="V" vendor-id="10415" may="-" must-not="M" may-encrypt="N">
+    <data type="Enumerated"  >
+      <item code="0" name="PRIORITY-0" httpValue="PRIORITY-0"/>
+      <item code="1" name="PRIORITY-1" httpValue="PRIORITY-1"/>
+      <item code="2" name="PRIORITY-2" httpValue="PRIORITY-2"/>
+      <item code="3" name="PRIORITY-3" httpValue="PRIORITY-3"/>
+      <item code="4" name="PRIORITY-4" httpValue="PRIORITY-4"/>
+    </data>
+  </avp>
+  <avp name="Server-Capabilities" code="603" must="V,M" vendor-id="10415" may="P" must-not="-" may-encrypt="N" >
+    <data type="Grouped"  >
+      <rule avp="Mandatory-Capability" required="false"/>
+      <rule avp="Optional-Capability" required="false"/>
+      <rule avp="Server-Name" required="false"/>
+      <rule avp="AVP" required="false"/>
+    </data>
+  </avp>
+  <avp name="Mandatory-Capability" code="604" must="V,M" vendor-id="10415" may="-" must-not="-" may-encrypt="N" >
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Optional-Capability" code="605" must="V,M" vendor-id="10415" may="P" must-not="-" may-encrypt="N" >
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Failed-AVP" code="279" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="Grouped"/>
+  </avp>
+  <avp name="SourceID" code="649" must-not="V">
+    <data type="DiameterIdentity"/>
+  </avp>
+  <avp name="Auth-Application-Id" code="258" must="M" may="P" must-not="V" may-encrypt="-">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Feature-List-ID" code="629" must="V" vendor-id="10415" may-encrypt="N" >
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Feature-List" code="630" must="V" vendor-id="10415" may-encrypt="N" >
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Acct-Application-Id" code="259" must="M" may="P" must-not="V" may-encrypt="N">
+    <data type="Unsigned32"  />
+  </avp>
+  <avp name="Initial-CSeq-Sequence-Number" code="654" must="V" vendor-id="10415" must-not="M" may-encrypt="N">
+    <data type="Unsigned32"  />
+  </avp>
+  </application>
+</diameter>

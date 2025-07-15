@@ -40,6 +40,14 @@ type Parser struct {
 	command map[codeIdx]*Command  // Command index
 	mu      sync.Mutex            // Protects all maps
 	once    sync.Once
+
+	// Strict indicates whether an error should be returned when one  or more
+	// AVPs are invalid/empty and cannot be properly decoded.
+	//
+	// Defaults to true. When set to false, all decoding errors found during the
+	// parsing process will be stored in the Message's DecodeErr field which is
+	// accessible from a request handler.
+	Strict bool
 }
 
 type codeIdx struct {
@@ -62,6 +70,7 @@ type appIdTypeIdx struct {
 // NewParser allocates a new Parser optionally loading dictionary XML files.
 func NewParser(filename ...string) (*Parser, error) {
 	p := new(Parser)
+	p.Strict = true
 	var err error
 	for _, f := range filename {
 		if err = p.LoadFile(f); err != nil {

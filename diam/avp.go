@@ -14,6 +14,9 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 )
 
+// Used to signal that parsing should not stop.
+type DecodeError error
+
 // AVP is a Diameter attribute-value-pair.
 type AVP struct {
 	Code     uint32        // Code of this AVP
@@ -91,7 +94,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	}
 	a.Data, err = datatype.Decode(dictAVP.Data.Type, payload)
 	if err != nil {
-		return err
+		return DecodeError(fmt.Errorf("%s(%d): %v", dictAVP.Name, dictAVP.Code, err))
 	}
 	// Handle grouped AVPs.
 	if a.Data.Type() == datatype.GroupedType {
@@ -100,7 +103,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 			application, dictionary,
 		)
 		if err != nil {
-			return err
+			return DecodeError(fmt.Errorf("%s(%d): Grouped{%v}", dictAVP.Name, dictAVP.Code, err))
 		}
 	}
 	return nil

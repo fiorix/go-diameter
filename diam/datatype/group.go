@@ -11,7 +11,9 @@ type Grouped []byte
 
 // DecodeGrouped decodes a Grouped data type from byte array.
 func DecodeGrouped(b []byte) (Type, error) {
-	return Grouped(b), nil
+	d := make([]byte, len(b))
+	copy(d, b)
+	return Grouped(d), nil
 }
 
 // Serialize implements the Type interface.

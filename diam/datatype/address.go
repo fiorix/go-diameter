@@ -16,6 +16,8 @@ type Address []byte
 
 // DecodeAddress decodes an Address data type from byte array.
 func DecodeAddress(b []byte) (Type, error) {
+	d := make([]byte, len(b))
+	copy(d, b)
 	if len(b) < 3 {
 		return nil, fmt.Errorf("Not enough data to make an Address from byte[%d] = %+v", len(b), b)
 	}
@@ -32,9 +34,9 @@ func DecodeAddress(b []byte) (Type, error) {
 			return nil, errors.New("Invalid length for IPv6")
 		}
 	default:
-		return Address(b), nil
+		return Address(d), nil
 	}
-	return Address(b[2:]), nil
+	return Address(d[2:]), nil
 }
 
 // Serialize implements the Type interface.

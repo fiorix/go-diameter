@@ -154,6 +154,27 @@ func TestRule(t *testing.T) {
 	}
 }
 
+// TestFindAVPWithVendorNoInfiniteRecursion tests that FindAVPWithVendor does not
+// cause infinite recursion when searching for a non-existent AVP with a specific vendor ID.
+// This is a regression test for issue where FindAVPWithVendor would recursively call
+// FindAVP which calls FindAVPWithVendor, causing a stack overflow.
+func TestFindAVPWithVendorNoInfiniteRecursion(t *testing.T) {
+	// Search for a non-existent AVP code with a specific vendor ID.
+	// Before the fix, this would cause infinite recursion and stack overflow.
+	// The appid 4 has parent lookups (4 -> 1 -> 0), so this tests the full path.
+	avp, err := Default.FindAVPWithVendor(4, uint32(99999), 12345)
+	if err == nil {
+		t.Error("Expected error for non-existent AVP")
+	}
+	// Should return an Unknown AVP instead of crashing
+	if avp == nil {
+		t.Error("Expected Unknown AVP to be returned")
+	}
+	if avp != nil && avp.Name != "Unknown-99999-12345" {
+		t.Errorf("Expected Unknown AVP name, got: %s", avp.Name)
+	}
+}
+
 func BenchmarkFindAVPName(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		Default.FindAVP(0, "Session-Id")

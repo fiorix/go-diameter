@@ -50,7 +50,7 @@ cat $dict | "$SED" \
 	-ne 's/.*command code="\(.*\)" .* name="\(.*\)".*/\2 = \1/p' \
 	| sort -u >> $src
 
-echo ')\n// Short Command Names\nconst (\n' >> $src
+printf ')\n// Short Command Names\nconst (\n' >> $src
 
 cat $dict | "$SED" \
 	-e 's/-//g' \
@@ -81,7 +81,7 @@ cat $dict | "$SED" \
     -ne 's/\s*<application\s*id="\([0-9]*\)".*name="\(.*\)".*/\U\2_APP_ID = \1/p' \
     | sort -u | sort -nk 3 >> $src
 
-echo ')\n' >> $src
+printf ')\n' >> $src
 go fmt $src
 
 ## Generate avp/codes.go
@@ -106,7 +106,7 @@ cat $dict | "$SED" \
 	-ne 's/.*avp name="\(.*\)" code="\([0-9]*\)".*/\1 = \2/p' \
 	| LC_COLLATE=C sort -u $SORT_FLAG_IGNORE_CASE >> $src
 
-echo ')\n' >> $src
+printf ')\n' >> $src
 
 go fmt $src
 

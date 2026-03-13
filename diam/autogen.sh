@@ -104,6 +104,7 @@ cat $dict | "$SED" \
 	-e 's/-Id\([-"s]\)/-ID\1/g' \
 	-e 's/-//g' \
 	-ne 's/.*avp name="\(.*\)" code="\([0-9]*\)".*/\1 = \2/p' \
+	| "$SED" -e 's/^[0-9]/X&/' \
 	| LC_COLLATE=C sort -u $SORT_FLAG_IGNORE_CASE >> $src
 
 printf ')\n' >> $src
@@ -139,6 +140,7 @@ func init() {
 		{"Gx Charging Control", gxcreditcontrolXML},
 		{"Network Access Server", networkaccessserverXML},
 		{"TGPP", tgpprorfXML},
+		{"TGPP_Rx", tgpprxXML},
 		{"TGPP_S6a", tgpps6aXML},
 		{"TGPP_Swx", tgppswxXML},
 	}

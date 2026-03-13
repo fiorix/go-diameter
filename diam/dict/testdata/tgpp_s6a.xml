@@ -396,6 +396,92 @@
             </answer>
         </command>
 
+        <command code="320" short="DS" name="Delete-Subscriber-Data">
+            <!--
+              < Delete-Subscriber-Data-Request> ::= < Diameter Header: 320, REQ, PXY, 16777251 >
+                < Session-Id >
+                [ DRMP ]
+                [ Vendor-Specific-Application-Id ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                { Destination-Host }
+                { Destination-Realm }
+                { User-Name }
+                *[ Supported-Features ]
+                { DSR-Flags }
+                [ SCEF-ID ]
+                *[ Context-Identifier ]
+                [ Trace-Reference ]
+                *[ TS-Code ]
+                *[ SS-Code ]
+                *[ AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <request>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Destination-Host" required="true" max="1" />
+                <rule avp="Destination-Realm" required="true" max="1" />
+                <rule avp="User-Name" required="true" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="DSR-Flags" required="true" max="1" />
+                <rule avp="Context-Identifier" required="false" />
+                <rule avp="Trace-Reference" required="false" max="1" />
+                <rule avp="TS-Code" required="false" />
+                <rule avp="SS-Code" required="false" />
+                <rule avp="AVP" required="false" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </request>
+            <!--
+              < Delete-Subscriber-Data-Answer> ::= < Diameter Header: 320, PXY, 16777251 >
+                < Session-Id >
+                [ DRMP ]
+                [ Vendor-Specific-Application-Id ]
+                *[ Supported-Features ]
+                [ Result-Code ]
+                [ Experimental-Result ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                [ DSA-Flags ]
+                *[ AVP ]
+                [ Failed-AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <answer>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="DRMP" required="false" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Supported-Features" required="false" />
+                <rule avp="Result-Code" required="false" max="1" />
+                <rule avp="Experimental-Result" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="DSA-Flags" required="false" max="1" />
+                <rule avp="AVP" required="false" />
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </answer>
+        </command>
+
+        <avp name="DSR-Flags" code="1421" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
+        <avp name="DSA-Flags" code="1422" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Unsigned32"/>
+        </avp>
+
         <avp name="Subscription-Data" code="1400" vendor-id="10415" must="M,V" may-encrypt="N">
             <data type="Grouped">
                 <rule avp="Subscriber-Status" required="false" max="1"/>

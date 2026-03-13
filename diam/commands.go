@@ -15,9 +15,11 @@ const (
 	CancelLocation            = 317
 	CapabilitiesExchange      = 257
 	CreditControl             = 272
+	DeleteSubscriberData      = 320
 	DeviceWatchdog            = 280
 	DisconnectPeer            = 282
 	InsertSubscriberData      = 319
+	MEIdentityCheck           = 324
 	MultimediaAuthentication  = 303
 	Notify                    = 323
 	PurgeUE                   = 321
@@ -48,8 +50,12 @@ const (
 	CLR = "CLR"
 	DPA = "DPA"
 	DPR = "DPR"
+	DSA = "DSA"
+	DSR = "DSR"
 	DWA = "DWA"
 	DWR = "DWR"
+	ECA = "ECA"
+	ECR = "ECR"
 	IDA = "IDA"
 	IDR = "IDR"
 	MAA = "MAA"

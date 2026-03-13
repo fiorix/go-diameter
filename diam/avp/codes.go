@@ -8,7 +8,10 @@ package avp
 
 // Diameter AVP types.
 const (
+	AbortCause                                 = 500
+	AcceptableServiceInfo                      = 526
 	AccessNetworkChargingAddress               = 501
+	AccessNetworkChargingIdentifier            = 502
 	AccessNetworkChargingIdentifierGx          = 1022
 	AccessNetworkChargingIdentifierValue       = 503
 	AccessNetworkInformation                   = 1263
@@ -45,14 +48,18 @@ const (
 	AddressDomain                              = 898
 	AddresseeType                              = 1208
 	AddressType                                = 899
+	AFApplicationIdentifier                    = 504
 	AFChargingIdentifier                       = 505
 	AFCorrelationInformation                   = 1276
+	AFRequestedData                            = 551
+	AFSignallingProtocol                       = 529
 	AllAPNConfigurationsIncludedIndicator      = 1428
 	AllocationRetentionPriority                = 1034
 	AlternateChargedPartyAddress               = 1280
 	AMBR                                       = 1435
 	ANGWAddress                                = 1050
 	ANID                                       = 1504
+	ANTrusted                                  = 1503
 	AoCCostInformation                         = 2053
 	AoCFormat                                  = 2310
 	AoCInformation                             = 2054
@@ -104,6 +111,7 @@ const (
 	CalledAssertedIdentity                     = 1250
 	CalledPartyAddress                         = 832
 	CalledStationID                            = 30
+	CalleeInformation                          = 565
 	CallingPartyAddress                        = 831
 	CallingStationID                           = 31
 	CancellationType                           = 1420
@@ -145,6 +153,7 @@ const (
 	CLRFlags                                   = 1638
 	CNIPMulticastDistribution                  = 921
 	CNOperatorSelectionEntity                  = 3421
+	CodecData                                  = 524
 	CompleteDataListIncludedIndicator          = 1468
 	ConfidentialityKey                         = 625
 	ConfigurationToken                         = 78
@@ -156,6 +165,7 @@ const (
 	ContentProviderID                          = 2117
 	ContentSize                                = 1206
 	ContentType                                = 826
+	ContentVersion                             = 552
 	ContextIdentifier                          = 1423
 	CostInformation                            = 423
 	CostUnit                                   = 424
@@ -174,6 +184,8 @@ const (
 	DeliveryReportRequested                    = 1216
 	DeliveryStatus                             = 2104
 	DeregistrationReason                       = 615
+	DesiredMaxLatency                          = 567
+	DesiredMaxLoss                             = 568
 	DestinationHost                            = 293
 	DestinationInterface                       = 2002
 	DestinationRealm                           = 283
@@ -183,6 +195,8 @@ const (
 	DomainName                                 = 1200
 	DRMContent                                 = 1221
 	DRMP                                       = 301
+	DSAFlags                                   = 1422
+	DSRFlags                                   = 1421
 	DynamicAddressFlag                         = 2051
 	DynamicAddressFlagExtension                = 2068
 	EarlyMediaDescription                      = 1272
@@ -192,6 +206,7 @@ const (
 	EnvelopeStartTime                          = 1269
 	ePDGAddress                                = 3425
 	EPSSubscribedQoSProfile                    = 1431
+	EquipmentStatus                            = 1445
 	ErrorDiagnostic                            = 1614
 	ErrorMessage                               = 281
 	ErrorReportingHost                         = 294
@@ -212,6 +227,12 @@ const (
 	ExtendedGBRUL                              = 2851
 	ExtendedMaxRequestedBWDL                   = 554
 	ExtendedMaxRequestedBWUL                   = 555
+	ExtendedMaxSupportedBWDL                   = 556
+	ExtendedMaxSupportedBWUL                   = 557
+	ExtendedMinDesiredBWDL                     = 558
+	ExtendedMinDesiredBWUL                     = 559
+	ExtendedMinRequestedBWDL                   = 560
+	ExtendedMinRequestedBWUL                   = 561
 	ExternalClient                             = 1479
 	ExtPDPAddress                              = 1621
 	ExtPDPType                                 = 1620
@@ -228,7 +249,11 @@ const (
 	FlowDirection                              = 1080
 	FlowInformation                            = 1058
 	FlowLabel                                  = 1057
+	FlowNumber                                 = 509
 	Flows                                      = 510
+	FlowStatus                                 = 511
+	FlowUsage                                  = 512
+	FLUSIdentifier                             = 566
 	ForwardingPending                          = 3415
 	FramedAppletalkLink                        = 37
 	FramedAppletalkNetwork                     = 38
@@ -247,8 +272,10 @@ const (
 	FramedRoute                                = 22
 	FramedRouting                              = 10
 	FromAddress                                = 2708
+	GCSIdentifier                              = 538
 	GERANVector                                = 1416
 	GGSNAddress                                = 847
+	GLIIdentifier                              = 580
 	GMLCAddress                                = 2405
 	GMLCNumber                                 = 1474
 	GMLCRestriction                            = 1481
@@ -258,6 +285,7 @@ const (
 	GSUPoolReference                           = 457
 	GuaranteedBitrateDL                        = 1025
 	GuaranteedBitrateUL                        = 1026
+	HFCNodeIdentifier                          = 579
 	HomogeneousSupportofIMSVoiceOverPSSessions = 1493
 	HostIPAddress                              = 257
 	HPLMNODB                                   = 1418
@@ -269,6 +297,8 @@ const (
 	IMSApplicationReferenceIdentifier          = 2601
 	IMSChargingIdentifier                      = 841
 	IMSCommunicationServiceIdentifier          = 1281
+	IMSContentIdentifier                       = 563
+	IMSContentType                             = 564
 	IMSEmergencyIndicator                      = 2322
 	IMSInformation                             = 876
 	IMSIUnauthenticatedFlag                    = 2308
@@ -285,6 +315,7 @@ const (
 	InterfaceType                              = 2006
 	InterOperatorIdentifier                    = 838
 	IPCANType                                  = 1027
+	IPDomainID                                 = 537
 	IPRealmDefaultIndication                   = 2603
 	ISUPCause                                  = 3416
 	ISUPCauseDiagnostics                       = 3422
@@ -308,7 +339,11 @@ const (
 	LCSPrivacyException                        = 1475
 	LCSRequestorID                             = 1239
 	LCSRequestorIDString                       = 1240
+	LineType                                   = 581
 	LIPAPermission                             = 1618
+	Load                                       = 650
+	LoadType                                   = 651
+	LoadValue                                  = 652
 	LocalGWInsertedIndication                  = 2604
 	LocalSequenceNumber                        = 2063
 	LocationEstimate                           = 1242
@@ -324,9 +359,13 @@ const (
 	LoginTCPPort                               = 16
 	LowBalanceIndication                       = 2020
 	LowPriorityIndicator                       = 2602
+	MAInformation                              = 570
+	MAInformationAction                        = 571
 	MandatoryCapability                        = 604
 	MaxRequestedBandwidthDL                    = 515
 	MaxRequestedBandwidthUL                    = 516
+	MaxSupportedBandwidthDL                    = 543
+	MaxSupportedBandwidthUL                    = 544
 	MBMS2G3GIndicator                          = 907
 	MBMSChargedParty                           = 2323
 	MBMSGWAddress                              = 2307
@@ -335,15 +374,26 @@ const (
 	MBMSServiceType                            = 906
 	MBMSSessionIdentity                        = 908
 	MBMSUserServiceType                        = 1225
+	MCPTTIdentifier                            = 547
+	MCVideoIdentifier                          = 562
 	MDTConfiguration                           = 1622
 	MDTUserConsent                             = 1634
+	MediaComponentDescription                  = 517
+	MediaComponentNumber                       = 518
+	MediaComponentStatus                       = 549
 	MediaInitiatorFlag                         = 882
 	MediaInitiatorParty                        = 1288
+	MediaSubComponent                          = 519
+	MediaType                                  = 520
 	MessageBody                                = 889
 	MessageClass                               = 1213
 	MessageID                                  = 1210
 	MessageSize                                = 1212
 	MessageType                                = 1211
+	MinDesiredBandwidthDL                      = 545
+	MinDesiredBandwidthUL                      = 546
+	MinRequestedBandwidthDL                    = 534
+	MinRequestedBandwidthUL                    = 535
 	MIP6AgentInfo                              = 486
 	MIP6FeatureVector                          = 124
 	MIP6HomeLinkPrefix                         = 125
@@ -359,6 +409,7 @@ const (
 	MMTelSServiceType                          = 2031
 	MOLR                                       = 1485
 	MonitoringKey                              = 1066
+	MPSIdentifier                              = 528
 	MPSPriority                                = 1616
 	MSCAddress                                 = 3417
 	MSISDN                                     = 701
@@ -371,10 +422,15 @@ const (
 	NASPortID                                  = 87
 	NASPortType                                = 61
 	NeighbourNodeAddress                       = 2705
+	NetLocAccessSupport                        = 2824
 	NetworkAccessMode                          = 1417
 	NetworkCallReferenceNumber                 = 3418
 	NetworkRequestSupport                      = 1024
 	NextTariff                                 = 2057
+	NGAPCause                                  = 575
+	NGAPGroup                                  = 576
+	NGAPValue                                  = 577
+	NID                                        = 569
 	NNIInformation                             = 2703
 	NNIType                                    = 2704
 	NodeFunctionality                          = 862
@@ -452,6 +508,7 @@ const (
 	PositioningData                            = 1245
 	Precedence                                 = 1010
 	PreemptionCapability                       = 1047
+	PreemptionControlInfo                      = 553
 	PreemptionVulnerability                    = 1048
 	PreferredAoCCurrency                       = 2315
 	PresenceReportingAreaIdentifier            = 2821
@@ -460,6 +517,7 @@ const (
 	Priority                                   = 1209
 	PriorityIndication                         = 3006
 	PriorityLevel                              = 1046
+	PrioritySharingIndicator                   = 550
 	ProductName                                = 269
 	Prompt                                     = 76
 	ProxyHost                                  = 280
@@ -479,6 +537,7 @@ const (
 	QuotaHoldingTime                           = 871
 	RAI                                        = 909
 	RAND                                       = 1447
+	RANNASReleaseCause                         = 2819
 	RateElement                                = 2058
 	RATFrequencySelectionPriorityID            = 1440
 	RatingGroup                                = 432
@@ -503,6 +562,7 @@ const (
 	RedirectServer                             = 434
 	RedirectServerAddress                      = 435
 	RedirectSupport                            = 1086
+	ReferenceID                                = 4202
 	ReferenceNumber                            = 3007
 	RefundInformation                          = 2022
 	RegionalSubscriptionZoneCode               = 1446
@@ -520,18 +580,24 @@ const (
 	RequestedPartyAddress                      = 1251
 	RequestedServiceUnit                       = 437
 	RequestedUTRANGERANAuthenticationInfo      = 1409
+	RequiredAccessInfo                         = 536
 	RequiredMBMSBearerCapabilities             = 901
+	ReservationPriority                        = 458
 	RestrictionFilterRule                      = 438
 	ResultCode                                 = 268
 	ResynchronizationInfo                      = 1411
+	RetryInterval                              = 541
 	RevalidationTime                           = 1042
 	RoamingRestrictedDueToUnsupportedFeature   = 1457
 	RoleOfNode                                 = 829
 	RouteHeaderReceived                        = 3403
 	RouteHeaderTransmitted                     = 3404
 	RouteRecord                                = 282
+	RRBandwidth                                = 521
+	RSBandwidth                                = 522
 	RuleActivationTime                         = 1043
 	RuleDeactivationTime                       = 1044
+	RxRequestType                              = 533
 	ScaleFactor                                = 2059
 	SDPAnswerTimestamp                         = 1275
 	SDPMediaComponent                          = 843
@@ -546,11 +612,13 @@ const (
 	ServerAssignmentType                       = 614
 	ServerCapabilities                         = 603
 	ServerName                                 = 602
+	ServiceAuthorizationInfo                   = 548
 	ServiceContextID                           = 461
 	ServiceDataContainer                       = 2040
 	ServiceID                                  = 855
 	ServiceIdentifier                          = 439
 	ServiceInformation                         = 873
+	ServiceInfoStatus                          = 527
 	ServiceMode                                = 2032
 	ServiceParameterInfo                       = 440
 	ServiceParameterType                       = 441
@@ -561,6 +629,7 @@ const (
 	ServiceSpecificType                        = 1257
 	ServiceType                                = 6
 	ServiceTypeIdentity                        = 1484
+	ServiceURN                                 = 525
 	ServingNode                                = 2401
 	ServingNodeType                            = 2047
 	SessionBinding                             = 270
@@ -573,10 +642,13 @@ const (
 	SGSNNumber                                 = 1489
 	SGWAddress                                 = 2067
 	SGWChange                                  = 2065
+	SharingKeyDL                               = 539
+	SharingKeyUL                               = 540
 	SIPAuthDataItem                            = 612
 	SIPAuthenticate                            = 609
 	SIPAuthenticationScheme                    = 608
 	SIPAuthorization                           = 610
+	SIPForkingIndication                       = 523
 	SIPItemNumber                              = 613
 	SIPMethod                                  = 824
 	SIPNumberAuthItems                         = 607
@@ -600,7 +672,10 @@ const (
 	SMStatus                                   = 2014
 	SMUserDataHeader                           = 2015
 	SoftwareVersion                            = 1403
+	SourceID                                   = 649
+	SpecificAction                             = 513
 	SpecificAPNInfo                            = 1472
+	SponsoredConnectivityData                  = 530
 	SponsorIdentity                            = 531
 	SRES                                       = 1454
 	SSCode                                     = 1476
@@ -631,6 +706,7 @@ const (
 	TariffInformation                          = 2060
 	TariffTimeChange                           = 451
 	TariffXML                                  = 2306
+	TCPSourcePort                              = 2843
 	TDFIPAddress                               = 1091
 	Teleservice                                = 3413
 	TeleserviceList                            = 1486
@@ -639,6 +715,7 @@ const (
 	TerminationCause                           = 295
 	TFTFilter                                  = 1012
 	TFTPacketFilterInformation                 = 1013
+	TGPP2MEID                                  = 1471
 	TGPPAAAServerName                          = 318
 	TGPPChargingCharacteristics                = 13
 	TGPPChargingID                             = 2
@@ -694,8 +771,11 @@ const (
 	TunnelServerAuthID                         = 91
 	TunnelServerEndpoint                       = 67
 	TunnelType                                 = 64
+	TWANIdentifier                             = 29
 	TWANUserLocationInfo                       = 2714
 	TypeNumber                                 = 1204
+	UDPSourcePort                              = 2806
+	UELocalIPAddress                           = 2805
 	UESRVCCCapability                          = 1615
 	ULAFlags                                   = 1406
 	ULRFlags                                   = 1405
@@ -732,5 +812,9 @@ const (
 	VolumeQuotaThreshold                       = 869
 	VPLMNDynamicAddressAllowed                 = 1432
 	VPLMNLIPAAllowed                           = 1617
+	WirelineUserLocationInfo                   = 578
+	X5GMMCause                                 = 573
+	X5GSMCause                                 = 574
+	X5GSRANNASReleaseCause                     = 572
 	XRES                                       = 1448
 )

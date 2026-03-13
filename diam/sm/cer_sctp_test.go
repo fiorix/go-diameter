@@ -9,5 +9,6 @@ package sm
 import "testing"
 
 func TestHandleCER_VS_AuthSCTP(t *testing.T) {
+	requireSCTP(t)
 	testHandleCER_VS_Auth(t, "sctp")
 }

@@ -8,5 +8,6 @@ package sm
 import "testing"
 
 func TestS6aClientServerSCTP(t *testing.T) {
+	requireSCTP(t)
 	testS6aClientServer("sctp", t)
 }

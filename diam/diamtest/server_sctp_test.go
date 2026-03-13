@@ -6,9 +6,23 @@
 
 package diamtest
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/fiorix/go-diameter/v4/diam"
+)
+
+func requireSCTP(t *testing.T) {
+	t.Helper()
+	ln, err := diam.MultistreamListen("sctp", "127.0.0.1:0")
+	if err != nil {
+		t.Skipf("SCTP not available: %v", err)
+	}
+	ln.Close()
+}
 
 func TestNewServerSCTP(t *testing.T) {
+	requireSCTP(t)
 	srv := NewServerNetwork("sctp", nil, nil)
 	srv.Close()
 }

@@ -15,7 +15,17 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/diamtest"
 )
 
+func requireSCTP(t *testing.T) {
+	t.Helper()
+	ln, err := diam.MultistreamListen("sctp", "127.0.0.1:0")
+	if err != nil {
+		t.Skipf("SCTP not available: %v", err)
+	}
+	ln.Close()
+}
+
 func TestCapabilitiesExchangeSCTP(t *testing.T) {
+	requireSCTP(t)
 	errc := make(chan error, 1)
 
 	smux := diam.NewServeMux()
@@ -47,6 +57,7 @@ func TestCapabilitiesExchangeSCTP(t *testing.T) {
 }
 
 func TestCapabilitiesExchangeSCTP_TLS(t *testing.T) {
+	requireSCTP(t)
 	errc := make(chan error, 1)
 
 	cert, err := tls.LoadX509KeyPair("testdata/example-cert.pem", "testdata/example-key.pem")

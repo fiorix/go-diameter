@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fiorix/go-diameter/v4/diam"
 	"github.com/fiorix/go-diameter/v4/examples/s6a_proxy/protos"
 	"github.com/fiorix/go-diameter/v4/examples/s6a_proxy/service"
 	"google.golang.org/grpc"
@@ -20,9 +21,14 @@ const TEST_LOOPS = 33
 // TestS6aProxyService creates a mock S6a Diameter server, S6a S6a Proxy service
 // and runs tests using GRPC client: GRPC Client <--> GRPC Server <--> S6a SCTP Diameter Server
 func TestS6aProxyService(t *testing.T) {
+	ln, err := diam.MultistreamListen("sctp", "127.0.0.1:0")
+	if err != nil {
+		t.Skipf("SCTP not available: %v", err)
+	}
+	ln.Close()
 
 	diamAddr := fmt.Sprintf("127.0.0.1:%d", 30000+rand.Intn(1000))
-	err := StartTestS6aServer("sctp", diamAddr)
+	err = StartTestS6aServer("sctp", diamAddr)
 	if err != nil {
 		t.Fatal(err)
 		return

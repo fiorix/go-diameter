@@ -68,6 +68,9 @@ type Settings struct {
 	//
 	// Deprecated: HostIPAddress is depreciated, use HostIPAddresses instead
 	HostIPAddress datatype.Address
+
+	// Dict is an optional dictionary parser. If nil, dict.Default is used.
+	Dict *dict.Parser
 }
 
 var (
@@ -89,15 +92,20 @@ type StateMachine struct {
 }
 
 // New creates and initializes a new StateMachine for clients or servers.
+// If settings.Dict is nil, dict.Default is used.
 func New(settings *Settings) *StateMachine {
 	if len(settings.HostIPAddresses) == 0 && len(settings.HostIPAddress) > 0 {
 		settings.HostIPAddresses = []datatype.Address{settings.HostIPAddress}
+	}
+	dp := settings.Dict
+	if dp == nil {
+		dp = dict.Default
 	}
 	sm := &StateMachine{
 		cfg:           settings,
 		mux:           diam.NewServeMux(),
 		hsNotifyc:     make(chan diam.Conn, 10),
-		supportedApps: PrepareSupportedApps(dict.Default),
+		supportedApps: PrepareSupportedApps(dp),
 	}
 	sm.mux.Handle("CER", handleCER(sm))
 	sm.mux.Handle("DWR", handshakeOK(handleDWR(sm)))

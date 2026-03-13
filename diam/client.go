@@ -120,6 +120,14 @@ func DialTLSExt(
 	return dialTLS(srv, certFile, keyFile, timeout)
 }
 
+// DialTLSConfig is the same as DialTLS, but accepts a tls.Config for
+// customizing TLS behavior such as server certificate verification.
+// If tlsConfig is nil, the default behavior (InsecureSkipVerify: true) is used.
+func DialTLSConfig(addr, certFile, keyFile string, handler Handler, dp *dict.Parser, tlsConfig *tls.Config) (Conn, error) {
+	srv := &Server{Network: "tcp", Addr: addr, Handler: handler, Dict: dp, TLSConfig: tlsConfig}
+	return dialTLS(srv, certFile, keyFile, 0)
+}
+
 // dialTLS net TCP wrapper
 func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn, error) {
 	var err error

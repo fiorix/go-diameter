@@ -124,12 +124,13 @@ retry:
 		goto retry
 	} else {
 		if codeU32, isUint32 := code.(uint32); isUint32 {
-			avp, err = p.FindAVP(origAppID, codeU32)
-			if err != nil {
-				return MakeUnknownAVP(origAppID, codeU32, vendorID), err
+			if vendorID != UndefinedVendorID {
+				avp, err = p.FindAVP(origAppID, codeU32)
+				if err == nil {
+					return avp, nil
+				}
 			}
-
-			return avp, nil
+			return MakeUnknownAVP(origAppID, codeU32, vendorID), err
 		}
 	}
 

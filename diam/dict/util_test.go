@@ -154,6 +154,19 @@ func TestRule(t *testing.T) {
 	}
 }
 
+func TestFindAVPWithVendorNoInfiniteRecursion(t *testing.T) {
+	// Looking up a non-existent AVP with a specific vendor ID should return
+	// an Unknown AVP instead of causing infinite recursion between
+	// FindAVPWithVendor and FindAVP.
+	avp, _ := Default.FindAVPWithVendor(4, uint32(99999), 12345)
+	if avp == nil {
+		t.Fatal("Expected Unknown AVP, got nil")
+	}
+	if avp.Name != "Unknown-99999-12345" {
+		t.Fatalf("Expected Unknown-99999-12345 AVP, got %s", avp.Name)
+	}
+}
+
 func BenchmarkFindAVPName(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		Default.FindAVP(0, "Session-Id")

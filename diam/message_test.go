@@ -296,6 +296,39 @@ func TestMessageContext(t *testing.T) {
 	t.Logf("%#v", got)
 }
 
+func TestMessageDeleteAVP(t *testing.T) {
+	m := NewRequest(CapabilitiesExchange, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("test"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("localhost"))
+	m.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(10415))
+	m.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(13))
+
+	lenBefore := m.Header.MessageLength
+	n := m.DeleteAVP(avp.SupportedVendorID, 0)
+	if n != 2 {
+		t.Fatalf("Expected 2 removed AVPs, got %d", n)
+	}
+	if len(m.AVP) != 2 {
+		t.Fatalf("Expected 2 remaining AVPs, got %d", len(m.AVP))
+	}
+	if m.Header.MessageLength >= lenBefore {
+		t.Fatalf("MessageLength should have decreased: %d >= %d", m.Header.MessageLength, lenBefore)
+	}
+}
+
+func TestMessageDeleteAVPNotFound(t *testing.T) {
+	m := NewRequest(CapabilitiesExchange, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("test"))
+
+	n := m.DeleteAVP(9999, 0)
+	if n != 0 {
+		t.Fatalf("Expected 0 removed AVPs, got %d", n)
+	}
+	if len(m.AVP) != 1 {
+		t.Fatalf("Expected 1 remaining AVP, got %d", len(m.AVP))
+	}
+}
+
 func BenchmarkReadMessage(b *testing.B) {
 	reader := bytes.NewReader(testMessage)
 	for n := 0; n < b.N; n++ {

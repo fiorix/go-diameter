@@ -67,6 +67,8 @@ func readerBufferSlice(buf *bytes.Buffer, l int) []byte {
 // dictionary to parse it.
 func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	buf := newReaderBuffer()
+	// Safe to pool: all datatype decoders (OctetString, Address, Grouped, etc.)
+	// copy their bytes out of the buffer before it is returned to the pool.
 	defer putReaderBuffer(buf)
 	m := &Message{dictionary: dictionary}
 	cmd, stream, err := m.readHeader(reader, buf)
@@ -248,6 +250,24 @@ func (m *Message) AddAVP(a *AVP) {
 func (m *Message) InsertAVP(a *AVP) {
 	m.AVP = append([]*AVP{a}, m.AVP...)
 	m.Header.MessageLength += uint32(a.Len())
+}
+
+// DeleteAVP removes all AVPs matching the given code and vendor ID from the
+// Message. It returns the number of AVPs removed. It is not safe for
+// concurrent calls.
+func (m *Message) DeleteAVP(code, vendorID uint32) int {
+	n := 0
+	filtered := m.AVP[:0]
+	for _, a := range m.AVP {
+		if a.Code == code && a.VendorID == vendorID {
+			m.Header.MessageLength -= uint32(a.Len())
+			n++
+		} else {
+			filtered = append(filtered, a)
+		}
+	}
+	m.AVP = filtered
+	return n
 }
 
 var writerBufferPool sync.Pool

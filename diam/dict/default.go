@@ -24,6 +24,7 @@ func init() {
 		{"TGPP", tgpprorfXML},
 		{"TGPP_Rx", tgpprxXML},
 		{"TGPP_S6a", tgpps6aXML},
+		{"TGPP_S13", tgpps13XML},
 		{"TGPP_Swx", tgppswxXML},
 	}
 	var err error

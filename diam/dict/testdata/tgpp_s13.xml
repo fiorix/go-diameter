@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+    <!--
+        3GPP TS 29.272 Section 7 (S13/S13' interface)
+        ME-Identity-Check procedure
+    -->
+    <application id="16777252" type="auth" name="TGPP S13">
+        <vendor id="10415" name="TGPP"/>
+
+        <command code="324" short="EC" name="ME-Identity-Check">
+            <!--
+              < ME-Identity-Check-Request> ::= < Diameter Header: 324, REQ, PXY, 16777252 >
+                < Session-Id >
+                [ Vendor-Specific-Application-Id ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                [ Destination-Host ]
+                { Destination-Realm }
+                { Terminal-Information }
+                { User-Name }
+                *[ AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <request>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Destination-Host" required="false" max="1" />
+                <rule avp="Destination-Realm" required="true" max="1" />
+                <rule avp="Terminal-Information" required="true" max="1" />
+                <rule avp="User-Name" required="true" max="1" />
+                <rule avp="AVP" required="false" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </request>
+            <!--
+              < ME-Identity-Check-Answer> ::= < Diameter Header: 324, PXY, 16777252 >
+                < Session-Id >
+                [ Vendor-Specific-Application-Id ]
+                [ Result-Code ]
+                [ Experimental-Result ]
+                { Auth-Session-State }
+                { Origin-Host }
+                { Origin-Realm }
+                [ Equipment-Status ]
+                *[ AVP ]
+                [ Failed-AVP ]
+                *[ Proxy-Info ]
+                *[ Route-Record ]
+            -->
+            <answer>
+                <rule avp="Session-Id" required="true" max="1" />
+                <rule avp="Vendor-Specific-Application-Id" required="false" max="1" />
+                <rule avp="Result-Code" required="false" max="1" />
+                <rule avp="Experimental-Result" required="false" max="1" />
+                <rule avp="Auth-Session-State" required="true" max="1" />
+                <rule avp="Origin-Host" required="true" max="1" />
+                <rule avp="Origin-Realm" required="true" max="1" />
+                <rule avp="Equipment-Status" required="false" max="1" />
+                <rule avp="AVP" required="false" />
+                <rule avp="Failed-AVP" required="false" max="1" />
+                <rule avp="Proxy-Info" required="false" />
+                <rule avp="Route-Record" required="false" />
+            </answer>
+        </command>
+
+        <avp name="Terminal-Information" code="1401" vendor-id="10415" must="M,V" may-encrypt="N">
+            <data type="Grouped">
+                <rule avp="IMEI" required="false" max="1"/>
+                <rule avp="TGPP2-MEID" required="false" max="1"/>
+                <rule avp="Software-Version" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+
+        <avp name="IMEI" code="1402" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String"/>
+        </avp>
+
+        <avp name="TGPP2-MEID" code="1471" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Software-Version" code="1403" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="UTF8String"/>
+        </avp>
+
+        <avp name="Equipment-Status" code="1445" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="WHITELISTED"/>
+                <item code="1" name="BLACKLISTED"/>
+                <item code="2" name="GREYLISTED"/>
+            </data>
+        </avp>
+    </application>
+</diameter>

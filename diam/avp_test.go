@@ -148,6 +148,29 @@ func TestEncodeAVPWithoutData(t *testing.T) {
 	}
 }
 
+func TestDecodeAVPVbitShortLength(t *testing.T) {
+	// AVP with Vbit set but length < 12 should return error, not panic.
+	data := []byte{
+		0x00, 0x00, 0x00, 0x01, // Code
+		0x80, 0x00, 0x00, 0x08, // Flags (Vbit set), Length=8
+	}
+	_, err := DecodeAVP(data, 1, dict.Default)
+	if err == nil {
+		t.Fatal("Expected error for AVP with Vbit and length < 12")
+	}
+}
+
+func TestDecodeAVPEmptyPayloadNoVendor(t *testing.T) {
+	// AVP with no vendor and length=8 (empty payload) should not crash.
+	data := []byte{
+		0x00, 0x00, 0x01, 0x08, // Code: Origin-Host (264)
+		0x40, 0x00, 0x00, 0x08, // Flags (Mbit), Length=8
+	}
+	_, err := DecodeAVP(data, 1, dict.Default)
+	// May return a decode error for empty data, but must not panic.
+	_ = err
+}
+
 func BenchmarkDecodeAVP(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		DecodeAVP(testAVP[0], 1, dict.Default)

@@ -24,11 +24,16 @@ See the API documentation at https://pkg.go.dev/github.com/fiorix/go-diameter/v4
 - Embedded dictionaries:
   	* Base Protocol [RFC 6733](https://tools.ietf.org/html/rfc6733)
   	* Credit Control [RFC 4006](http://tools.ietf.org/html/rfc4006)
+  	* Gx Credit Control
   	* Network Access Server [RFC 7155](http://tools.ietf.org/html/rfc7155)
-  	* 3GPP specific AVPs from [TS 32.299 version 12.7.0](http://www.etsi.org/deliver/etsi_ts/132200_132299/132299/12.07.00_60/ts_132299v120700p.pdf)
+  	* 3GPP Ro/Rf specific AVPs from [TS 32.299 version 12.7.0](http://www.etsi.org/deliver/etsi_ts/132200_132299/132299/12.07.00_60/ts_132299v120700p.pdf)
   	* 3GPP S6a specific commands and AVPs from
   	  	[RFC 5516](https://tools.ietf.org/html/rfc5516) and
   	  	[TS 129 272](http://www.etsi.org/deliver/etsi_ts/129200_129299/129272/10.09.00_60/ts_129272v100900p.pdf)
+  	* 3GPP S13 (EIR) ME-Identity-Check commands and AVPs
+  	* 3GPP Rx policy and charging control
+  	* 3GPP SWx commands and AVPs
+  	* Diameter Sy policy control
 - Human readable AVP representation (for debugging)
 - TLS, IPv4 and IPv6 support for both clients and servers
 - Stack based on [net/http](https://pkg.go.dev/net/http) for simplicity
@@ -41,20 +46,9 @@ See the API documentation at https://pkg.go.dev/github.com/fiorix/go-diameter/v4
 
 The easiest way to get started is by trying out the client and server example programs.
 
-With Go 1.11 and newer (preferred), you can start the client and server already:
-
 ```
-export GO111MODULE=on
-go run github.com/fiorix/go-diameter/v4/examples/server
-go run github.com/fiorix/go-diameter/v4/examples/client -hello
-```
-
-Without modules, use standard procedure:
-
-```
-go get github.com/fiorix/go-diameter/examples/...
-go run github.com/fiorix/go-diameter/examples/server
-go run github.com/fiorix/go-diameter/examples/client -hello
+go run github.com/fiorix/go-diameter/v4/examples/server@latest
+go run github.com/fiorix/go-diameter/v4/examples/client@latest -hello
 ```
 
 Source code is your best friend. Check out other examples and test cases.

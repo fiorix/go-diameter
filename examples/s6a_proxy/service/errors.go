@@ -11,7 +11,7 @@ import (
 func Errorf(code codes.Code, format string, a ...interface{}) error {
 	msg := fmt.Sprintf(format, a...)
 	log.Printf("RPC [%s] %s", code, msg)
-	return status.Errorf(code, msg)
+	return status.Errorf(code, "%s", msg)
 }
 
 func Error(code codes.Code, err error) error {

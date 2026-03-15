@@ -135,7 +135,69 @@ func (p *Parser) Load(r io.Reader) error {
 			}
 		}
 	}
+	// Pre-merge inherited AVPs so that lookups for child apps resolve in a
+	// single map access instead of walking the parent chain at runtime.
+	p.mergeInheritedAVPs()
 	return nil
+}
+
+// mergeInheritedAVPs copies AVP entries from ancestor applications into
+// each child application's index. This eliminates the runtime fallback
+// loop in FindAVPByCode: every lookup becomes a single map access.
+//
+// For each application that has a parent chain (via parentAppIds) or
+// inherits from the base app (id=0), entries are copied only if the
+// child does not already define an AVP with the same code and vendorID.
+func (p *Parser) mergeInheritedAVPs() {
+	// Collect all distinct app IDs that have AVPs.
+	apps := make(map[uint32]bool)
+	for idx := range p.avpcode {
+		apps[idx.appID] = true
+	}
+
+	// For each app, walk its parent chain and copy missing entries.
+	for appID := range apps {
+		if appID == 0 {
+			continue // base app has no parents
+		}
+		// Build the ancestor chain: e.g. for app 4 → [1, 0]
+		var ancestors []uint32
+		cur := appID
+		for {
+			parent, hasParent := parentAppIds[cur]
+			if hasParent {
+				ancestors = append(ancestors, parent)
+				cur = parent
+			} else if cur != 0 {
+				ancestors = append(ancestors, 0)
+				break
+			} else {
+				break
+			}
+		}
+
+		// Copy AVPs from each ancestor (nearest first) into this app.
+		for _, ancestorID := range ancestors {
+			for idx, avp := range p.avpcode {
+				if idx.appID != ancestorID {
+					continue
+				}
+				childIdx := codeIdx{appID, idx.code, idx.vendorID}
+				if _, exists := p.avpcode[childIdx]; !exists {
+					p.avpcode[childIdx] = avp
+				}
+			}
+			for idx, avp := range p.avpname {
+				if idx.appID != ancestorID {
+					continue
+				}
+				childIdx := nameIdx{appID, idx.name, idx.vendorID}
+				if _, exists := p.avpname[childIdx]; !exists {
+					p.avpname[childIdx] = avp
+				}
+			}
+		}
+	}
 }
 
 func updateType(a *AVP) error {

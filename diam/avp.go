@@ -17,6 +17,15 @@ import (
 // Used to signal that parsing should not stop.
 type DecodeError error
 
+// Pre-allocated sentinel errors for the hot decode path.
+// Using errors.New avoids fmt.Errorf formatting overhead on error paths.
+var (
+	errAVPHeaderTooShort   = errors.New("not enough data to decode AVP header")
+	errAVPDataTooShort     = errors.New("not enough data to decode AVP")
+	errAVPVendorTooShort   = errors.New("not enough data to decode AVP with Vendor-ID")
+	errAVPSerializeNilData = errors.New("failed to serialize AVP: Data is nil")
+)
+
 // AVP is a Diameter attribute-value-pair.
 type AVP struct {
 	Code     uint32        // Code of this AVP
@@ -55,18 +64,17 @@ func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, 
 // It uses the given application id and dictionary for decoding the bytes.
 func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.Parser) error {
 	if len(data) < 8 {
-		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", len(data))
+		return errAVPHeaderTooShort
 	}
 	a.Code = binary.BigEndian.Uint32(data[0:4])
 	a.Flags = data[4]
 	a.Length = int(uint24to32(data[5:8]))
 	if len(data) < a.Length {
-		return fmt.Errorf("Not enough data to decode AVP: %d != %d",
-			len(data), a.Length)
+		return errAVPDataTooShort
 	}
 	data = data[:a.Length] // this cuts padded bytes off
 	if len(data) < 8 {
-		return fmt.Errorf("Not enough data to decode AVP header: %d bytes", len(data))
+		return errAVPHeaderTooShort
 	}
 
 	var hdrLength int
@@ -74,7 +82,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	// Read VendorId when required.
 	if a.Flags&avp.Vbit == avp.Vbit {
 		if a.Length < 12 {
-			return fmt.Errorf("Not enough data to decode AVP with Vendor-ID: length %d < 12", a.Length)
+			return errAVPVendorTooShort
 		}
 		a.VendorID = binary.BigEndian.Uint32(data[8:12])
 		payload = data[12:]
@@ -84,29 +92,24 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 		hdrLength = 8
 	}
 	// Find this code in the dictionary.
-	dictAVP, err := dictionary.FindAVPWithVendor(application, a.Code, a.VendorID)
+	dictAVP, err := dictionary.FindAVPByCode(application, a.Code, a.VendorID)
 	if err != nil && dictAVP == nil {
 		return err
 	}
 	bodyLen := a.Length - hdrLength
 	if n := len(payload); n < bodyLen {
-		return fmt.Errorf(
-			"Not enough data to decode AVP: %d != %d",
-			hdrLength, n,
-		)
+		return errAVPDataTooShort
 	}
-	a.Data, err = datatype.Decode(dictAVP.Data.Type, payload)
-	if err != nil {
-		return DecodeError(fmt.Errorf("%s(%d): %v", dictAVP.Name, dictAVP.Code, err))
-	}
-	// Handle grouped AVPs.
-	if a.Data.Type() == datatype.GroupedType {
-		a.Data, err = DecodeGrouped(
-			a.Data.(datatype.Grouped),
-			application, dictionary,
-		)
+	// Handle grouped AVPs directly to avoid an intermediate copy.
+	if dictAVP.Data.Type == datatype.GroupedType {
+		a.Data, err = DecodeGroupedFromBytes(payload, application, dictionary)
 		if err != nil {
 			return DecodeError(fmt.Errorf("%s(%d): Grouped{%v}", dictAVP.Name, dictAVP.Code, err))
+		}
+	} else {
+		a.Data, err = datatype.Decode(dictAVP.Data.Type, payload)
+		if err != nil {
+			return DecodeError(fmt.Errorf("%s(%d): %v", dictAVP.Name, dictAVP.Code, err))
 		}
 	}
 	return nil
@@ -116,7 +119,7 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 // It requires at least the Code, Flags and Data fields set.
 func (a *AVP) Serialize() ([]byte, error) {
 	if a.Data == nil {
-		return nil, errors.New("Failed to serialize AVP: Data is nil")
+		return nil, errAVPSerializeNilData
 	}
 	b := make([]byte, a.Len())
 	err := a.SerializeTo(b)
@@ -129,12 +132,12 @@ func (a *AVP) Serialize() ([]byte, error) {
 // SerializeTo writes the byte sequence that represents this AVP to a byte array.
 func (a *AVP) SerializeTo(b []byte) error {
 	if a.Data == nil {
-		return errors.New("Failed to serialize AVP: Data is nil")
+		return errAVPSerializeNilData
 	}
 	binary.BigEndian.PutUint32(b[0:4], a.Code)
 	b[4] = a.Flags
 	hl := a.headerLen()
-	copy(b[5:8], uint32to24(uint32(hl+a.Data.Len())))
+	putUint24(b[5:8], uint32(hl+a.Data.Len()))
 	if a.Flags&avp.Vbit == avp.Vbit {
 		binary.BigEndian.PutUint32(b[8:12], a.VendorID)
 	}

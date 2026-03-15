@@ -24,8 +24,13 @@ type GroupedAVP struct {
 
 // DecodeGrouped decodes a Grouped AVP from a datatype.Grouped (byte array).
 func DecodeGrouped(data datatype.Grouped, application uint32, dictionary *dict.Parser) (*GroupedAVP, error) {
+	return DecodeGroupedFromBytes([]byte(data), application, dictionary)
+}
+
+// DecodeGroupedFromBytes decodes a Grouped AVP directly from a raw byte slice,
+// avoiding the intermediate datatype.Grouped copy.
+func DecodeGroupedFromBytes(b []byte, application uint32, dictionary *dict.Parser) (*GroupedAVP, error) {
 	g := &GroupedAVP{}
-	b := []byte(data)
 	var errs []string
 	for n := 0; n < len(b); {
 		avp, err := DecodeAVP(b[n:], application, dictionary)
@@ -35,7 +40,6 @@ func DecodeGrouped(data datatype.Grouped, application uint32, dictionary *dict.P
 		g.AVP = append(g.AVP, avp)
 		n += avp.Len()
 	}
-	// TODO: handle nested groups?
 	if len(errs) > 0 {
 		return g, fmt.Errorf("%s", strings.Join(errs, "; "))
 	}

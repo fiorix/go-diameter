@@ -7417,7 +7417,7 @@ var tgppswxXML = `<?xml version="1.0" encoding="UTF-8"?>
     -->
     <application id="16777265" type="auth" name="TGPP SWX">
         <vendor id="10415" name="TGPP"/>
-        <command code="303" short="MA" name="Multimedia-Authentication">
+        <command code="303" short="MA" name="Multimedia-Auth">
             <request>
                 <!-- http://www.qtc.jp/3GPP/Specs/29273-920.pdf Section 8.2.2.1 -->
                 <rule avp="Session-Id" required="true" max="1"/>

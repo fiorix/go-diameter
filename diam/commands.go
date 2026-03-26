@@ -20,7 +20,7 @@ const (
 	DisconnectPeer            = 282
 	InsertSubscriberData      = 319
 	MEIdentityCheck           = 324
-	MultimediaAuthentication  = 303
+	MultimediaAuth            = 303
 	Notify                    = 323
 	PurgeUE                   = 321
 	ReAuth                    = 258
@@ -79,3 +79,6 @@ const (
 	ULA = "ULA"
 	ULR = "ULR"
 )
+
+// Deprecated: Use MultimediaAuth instead.
+const MultimediaAuthentication = MultimediaAuth

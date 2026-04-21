@@ -181,6 +181,7 @@ func (c *conn) serve() {
 				c.rwc.RemoteAddr().String(), err, buf)
 		}
 		c.rwc.Close()
+		c.notifyClientGone()
 	}()
 	if tlsConn, ok := c.rwc.(*tls.Conn); ok {
 		if err := tlsConn.Handshake(); err != nil {
@@ -205,8 +206,9 @@ func (c *conn) serve() {
 			}
 			break
 		}
-		// Handle messages in this goroutine.
-		serverHandler{c.server}.ServeDIAM(c.writer, m)
+		// Handle messages concurrently so a slow handler does not
+		// block reading subsequent messages from the connection.
+		go serverHandler{c.server}.ServeDIAM(c.writer, m)
 	}
 }
 

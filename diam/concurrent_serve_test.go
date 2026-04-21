@@ -12,8 +12,8 @@ import (
 )
 
 // cerPayload builds a minimal CER payload usable by the test mux.
-func cerPayload(t *testing.T) []byte {
-	t.Helper()
+func cerPayload(tb testing.TB) []byte {
+	tb.Helper()
 	msg := NewRequest(257, 0, dict.Default)
 	msg.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	msg.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
@@ -22,7 +22,7 @@ func cerPayload(t *testing.T) []byte {
 	msg.NewAVP(avp.ProductName, 0, 0, datatype.UTF8String("test"))
 	b, err := msg.Serialize()
 	if err != nil {
-		t.Fatalf("serialize: %v", err)
+		tb.Fatalf("serialize: %v", err)
 	}
 	return b
 }
@@ -224,7 +224,7 @@ func runDispatchBenchmark(b *testing.B, maxConcurrent int, handlerLatency time.D
 			ln.Close()
 			b.Fatal(err)
 		}
-		payload := cerPayload(&testing.T{})
+		payload := cerPayload(b)
 
 		b.StartTimer()
 		for j := 0; j < total; j++ {

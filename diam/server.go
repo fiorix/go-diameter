@@ -279,6 +279,13 @@ type response struct {
 func (w *response) Write(b []byte) (int, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
+	return w.writeLocked(b)
+}
+
+// writeLocked performs the write, assuming w.mu is already held.
+// Serializes access to the underlying (TCP or SCTP) connection so
+// concurrently-dispatched handlers do not interleave bytes.
+func (w *response) writeLocked(b []byte) (int, error) {
 	if w.conn.server.WriteTimeout > 0 {
 		w.conn.rwc.SetWriteDeadline(time.Now().Add(w.conn.server.WriteTimeout))
 	}
@@ -299,11 +306,13 @@ func (w *response) Write(b []byte) (int, error) {
 // WriteStream of MultistreamWriter interface
 func (w *response) WriteStream(b []byte, stream uint) (int, error) {
 	// TODO - SetWriteDeadline is not currently supported
+	w.mu.Lock()
+	defer w.mu.Unlock()
 	if msc, isMulti := w.conn.rwc.(MultistreamConn); isMulti {
 		// don't use buffered writer for muti-streamming writes it'll mix up streams
 		return msc.WriteStream(b, stream)
 	}
-	return w.Write(b)
+	return w.writeLocked(b)
 }
 
 // CurrentWriterStream of MultistreamWriter interface

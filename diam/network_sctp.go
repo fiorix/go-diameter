@@ -110,6 +110,9 @@ func NewSCTPConn(sctpConn *sctp.SCTPConn) MultistreamConn {
 		return nil
 	}
 	sctpConn.SubscribeEvents(sctp.SCTP_EVENT_DATA_IO)
+	// Disable Nagle-like buffering so small Diameter messages are sent immediately.
+	noDelay := 1
+	sctpConn.Setsockopt(sctp.SCTP_NODELAY, uintptr(unsafe.Pointer(&noDelay)), unsafe.Sizeof(noDelay))
 	return &SCTPConn{SCTPConn: sctpConn, s: &streams{}, currStream: InvalidStreamID, writerStream: InvalidStreamID}
 }
 
@@ -389,13 +392,14 @@ func (d sctpSingleStreamDialer) Dial(network, address string) (net.Conn, error) 
 		return nil, err
 	}
 
-	return sctp.DialSCTPExt(
+	conn, err := sctp.DialSCTPExt(
 		network,
 		d.LocalAddr,
 		sctpAddr,
 		sctp.InitMsg{
 			NumOstreams:  MaxOutboundSCTPStreams,
 			MaxInstreams: MaxInboundSCTPStreams})
+	return NewSCTPConn(conn), err
 }
 
 // Accept implements the Accept method in the listener interface for sctpListener (see: MultistreamListen).

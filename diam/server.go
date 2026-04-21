@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -192,6 +193,15 @@ func (c *conn) serve() {
 	for {
 		m, err := c.readMessage()
 		if err != nil {
+			// RFC 6733 §6.2: unknown command → answer with 3001 + E-bit,
+			// keep the connection open.
+			if errors.Is(err, ErrCommandUnsupported) && m != nil &&
+				m.Header.CommandFlags&RequestFlag == RequestFlag {
+				ans := m.Answer(CommandUnsupported)
+				ans.Header.CommandFlags |= ErrorFlag
+				ans.WriteTo(c.writer)
+				continue
+			}
 			c.rwc.Close()
 			// Report errors to the channel, except EOF.
 			if err != io.EOF && err != io.ErrUnexpectedEOF {

@@ -64,6 +64,11 @@ func readerBufferSlice(buf *bytes.Buffer, l int) []byte {
 }
 
 // ReadMessage reads a binary stream from the reader and uses the given
+// ErrCommandUnsupported is returned by ReadMessage when the message
+// contains an unknown command code. The Message is fully parsed so
+// the caller can build a proper 3001 answer per RFC 6733 §6.2.
+var ErrCommandUnsupported = errors.New("diameter: command unsupported")
+
 // dictionary to parse it.
 func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	buf := newReaderBuffer()
@@ -78,6 +83,10 @@ func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	m.stream = stream
 	if err = m.readBody(reader, buf, cmd, stream); err != nil {
 		return m, err
+	}
+	if cmd == nil {
+		// Header decoded OK but command not in dictionary.
+		return m, ErrCommandUnsupported
 	}
 	if dictionary.Strict {
 		return m, m.DecodeErr
@@ -113,7 +122,9 @@ func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command,
 		m.Header.CommandCode,
 	)
 	if err != nil {
-		return nil, stream, err
+		// Unknown command: return nil cmd (no IO error) so the
+		// body can still be drained and an answer sent per RFC 6733.
+		return nil, stream, nil
 	}
 	return cmd, stream, nil
 }
@@ -130,6 +141,11 @@ func (m *Message) readBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, st
 	}
 	if err != nil {
 		return fmt.Errorf("readBody Error: %v, %d bytes read", err, n)
+	}
+	if cmd == nil {
+		// Unknown command: decode AVPs best-effort with no pre-alloc hint.
+		m.AVP = make([]*AVP, 0, 4)
+		return m.decodeAVPs(b)
 	}
 	n = m.maxAVPsFor(cmd)
 	if n == 0 {

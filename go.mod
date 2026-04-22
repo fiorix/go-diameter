@@ -6,7 +6,7 @@ require (
 	github.com/golang/glog v1.2.5
 	github.com/golang/protobuf v1.5.4
 	github.com/ishidawataru/sctp v0.0.0-20251114114122-19ddcbc6aae2
-	google.golang.org/grpc v1.79.2
+	google.golang.org/grpc v1.79.3
 )
 
 require (

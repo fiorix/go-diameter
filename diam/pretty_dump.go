@@ -218,7 +218,10 @@ func dataValueToString(data datatype.Type) string {
 		if ip6 := net.IP(addr).To16(); ip6 != nil {
 			return fmt.Sprintf("%s", net.IP(addr))
 		}
-		return fmt.Sprintf("%#v, %#v", addr[2:], addr[:2])
+		if len(addr) < 2 {
+			return fmt.Sprintf("%#v", []byte(addr))
+		}
+		return fmt.Sprintf("%s (family: %#v)", addr[2:], []byte(addr[:2]))
 
 	case datatype.IPv4Type:
 		addr := string(data.(datatype.IPv4))

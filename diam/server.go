@@ -207,8 +207,9 @@ func (c *conn) serve() {
 	for {
 		m, err := c.readMessage()
 		if err != nil {
-			c.rwc.Close()
 			// Report errors to the channel, except EOF.
+			// Connection close is handled by the defer above,
+			// after draining in-flight handlers via hwg.Wait().
 			if err != io.EOF && err != io.ErrUnexpectedEOF {
 				h := c.server.Handler
 				if h == nil {

@@ -680,14 +680,15 @@ func (srv *Server) ListenAndServe() error {
 	if e != nil {
 		return e
 	}
+	defer l.Close()
 	return srv.Serve(l)
 }
 
 // Serve accepts incoming connections on the Listener l, creating a
-// new service goroutine for each.  The service goroutines read requests and
+// new service goroutine for each. The service goroutines read requests and
 // then call srv.Handler to reply to them.
+// The caller is responsible for closing l when Serve returns.
 func (srv *Server) Serve(l net.Listener) error {
-	defer l.Close()
 	var tempDelay time.Duration // how long to sleep on accept failure
 	for {
 		rw, e := l.Accept()
@@ -788,6 +789,7 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 		return err
 	}
 	tlsListener := tls.NewListener(conn, config)
+	defer tlsListener.Close()
 	return srv.Serve(tlsListener)
 }
 

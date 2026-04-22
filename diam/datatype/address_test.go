@@ -7,6 +7,7 @@ package datatype
 import (
 	"bytes"
 	"net"
+	"strings"
 	"testing"
 )
 
@@ -167,10 +168,11 @@ func TestAddressIPv6_Generic(t *testing.T) {
 }
 
 func TestAddressE164_Generic(t *testing.T) {
-	var addressBytes []byte
-	addressType := []byte{0x0, 0x8}
+	// E.164 Address keeps the 2-byte family prefix (0x0008) in the slice
+	// so it can round-trip back to the wire verbatim.
+	addressType := []byte{0x00, 0x08}
 	addressValue := []byte("48602007060")
-	addressBytes = make([]byte, len(addressType)+len(addressValue))
+	addressBytes := make([]byte, len(addressType)+len(addressValue))
 	copy(addressBytes[:2], addressType)
 	copy(addressBytes[2:], addressValue)
 	address := Address(addressBytes)
@@ -201,9 +203,28 @@ func TestDecodeAddressE164(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// The family prefix is kept in the slice; the value is after it.
+	addr := address.(Address)
+	if len(addr) < 2 {
+		t.Fatalf("Address too short: %d bytes", len(addr))
+	}
+	if got := string(addr[2:]); got != "48602007060" {
+		t.Fatalf("Unexpected value. Want 48602007060, have %q", got)
+	}
 	if address.Padding() != 3 {
 		t.Fatalf("Unexpected padding. Want 3, have %d",
 			address.Padding())
+	}
+	if address.Len() != 13 {
+		t.Fatalf("Unexpected len. Want 13, have %d", address.Len())
+	}
+	// Round-trip: serialize should produce the original wire bytes.
+	if v := address.Serialize(); !bytes.Equal(v, b) {
+		t.Fatalf("Round-trip failed. Want 0x%x, have 0x%x", b, v)
+	}
+	// #201: String() must not embed raw family bytes inside the value.
+	if s := address.String(); strings.Contains(s, "\x00\x08") {
+		t.Fatalf("String() leaks raw family bytes into output: %q", s)
 	}
 }
 

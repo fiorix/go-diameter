@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fiorix/go-diameter/v4/diam/avp"
+	"github.com/fiorix/go-diameter/v4/diam/datatype"
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 )
 
@@ -193,14 +195,34 @@ func (c *conn) serve() {
 	for {
 		m, err := c.readMessage()
 		if err != nil {
-			// RFC 6733 §6.2: unknown command → answer with 3001 + E-bit,
-			// keep the connection open.
-			if errors.Is(err, ErrCommandUnsupported) && m != nil &&
-				m.Header.CommandFlags&RequestFlag == RequestFlag {
-				ans := m.Answer(CommandUnsupported)
-				ans.Header.CommandFlags |= ErrorFlag
-				ans.WriteTo(c.writer)
-				continue
+			// RFC 6733 §6.2: unknown command.
+			// For requests, if the server has an Origin-Host and
+			// Origin-Realm configured, reply with a fully-compliant
+			// 3001 answer (E-bit set, mandatory AVPs present) and
+			// keep the connection open. Without an identity, we can
+			// only emit a non-compliant answer, so fall back to the
+			// historical behavior of closing the connection.
+			// Unknown answers (R-bit cleared) are logged and dropped
+			// since there is nothing meaningful to respond with.
+			if errors.Is(err, ErrCommandUnsupported) && m != nil {
+				if m.Header.CommandFlags&RequestFlag == RequestFlag {
+					if c.server.OriginHost != "" && c.server.OriginRealm != "" {
+						ans := m.Answer(CommandUnsupported)
+						ans.Header.CommandFlags |= ErrorFlag
+						ans.NewAVP(avp.OriginHost, avp.Mbit, 0, c.server.OriginHost)
+						ans.NewAVP(avp.OriginRealm, avp.Mbit, 0, c.server.OriginRealm)
+						if _, werr := ans.WriteTo(c.writer); werr != nil {
+							break
+						}
+						continue
+					}
+					// No identity configured: fall through and close.
+				} else {
+					// Unknown answer: log and discard; stay open.
+					log.Printf("diam: discarding unknown answer (cmd=%d) from %s",
+						m.Header.CommandCode, c.rwc.RemoteAddr())
+					continue
+				}
 			}
 			c.rwc.Close()
 			// Report errors to the channel, except EOF.
@@ -573,6 +595,16 @@ type Server struct {
 	WriteTimeout time.Duration // maximum duration before timing out write of the response
 	TLSConfig    *tls.Config   // optional TLS config, used by ListenAndServeTLS
 	LocalAddr    net.Addr      // optional Local Address to bind dailer's (Dail...) socket to
+
+	// OriginHost and OriginRealm are used to build the server's identity
+	// in protocol-level answers generated directly by the transport layer
+	// (e.g. 3001 DIAMETER_COMMAND_UNSUPPORTED per RFC 6733 §6.2). If
+	// either is empty the server cannot form a compliant answer and will
+	// fall back to closing the connection on unknown command codes. The
+	// higher-level state machine in diam/sm sets these from its
+	// Settings before calling Serve.
+	OriginHost  datatype.DiameterIdentity
+	OriginRealm datatype.DiameterIdentity
 }
 
 // serverHandler delegates to either the server's Handler or DefaultServeMux.

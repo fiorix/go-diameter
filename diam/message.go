@@ -63,12 +63,12 @@ func readerBufferSlice(buf *bytes.Buffer, l int) []byte {
 	return make([]byte, l)
 }
 
-// ReadMessage reads a binary stream from the reader and uses the given
 // ErrCommandUnsupported is returned by ReadMessage when the message
 // contains an unknown command code. The Message is fully parsed so
 // the caller can build a proper 3001 answer per RFC 6733 §6.2.
 var ErrCommandUnsupported = errors.New("diameter: command unsupported")
 
+// ReadMessage reads a binary stream from the reader and uses the given
 // dictionary to parse it.
 func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	buf := newReaderBuffer()

@@ -15,6 +15,13 @@ import (
 // helper: start a server with ALL handler, return listener + handled channel
 func startTestServer(t *testing.T) (net.Listener, chan *Message) {
 	t.Helper()
+	return startTestServerWithIdentity(t, "", "")
+}
+
+// helper: like startTestServer but with an Origin-Host/Realm configured,
+// so the server can emit RFC-compliant 3001 answers for unknown commands.
+func startTestServerWithIdentity(t *testing.T, host, realm datatype.DiameterIdentity) (net.Listener, chan *Message) {
+	t.Helper()
 	handled := make(chan *Message, 10)
 	mux := NewServeMux()
 	mux.HandleFunc("ALL", func(c Conn, m *Message) {
@@ -29,7 +36,7 @@ func startTestServer(t *testing.T) (net.Listener, chan *Message) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	srv := &Server{Handler: mux}
+	srv := &Server{Handler: mux, OriginHost: host, OriginRealm: realm}
 	go srv.Serve(ln)
 	return ln, handled
 }
@@ -166,7 +173,9 @@ func TestUnknownAVP_InsideGrouped(t *testing.T) {
 
 // Test 5: Unknown command code — should get 3001 answer with E-bit, NOT kill connection
 func TestUnknownCommand(t *testing.T) {
-	ln, handled := startTestServer(t)
+	ln, handled := startTestServerWithIdentity(t,
+		datatype.DiameterIdentity("srv.example.net"),
+		datatype.DiameterIdentity("example.net"))
 	defer ln.Close()
 
 	conn, err := net.Dial("tcp", ln.Addr().String())
@@ -219,7 +228,20 @@ func TestUnknownCommand(t *testing.T) {
 	if uint32(rc) != CommandUnsupported {
 		t.Errorf("Result-Code: got %d, want %d", rc, CommandUnsupported)
 	}
-	t.Logf("Got correct 3001 answer with E-bit for unknown command 9999")
+	// RFC 6733 §7.2 <answer-message> requires Origin-Host and Origin-Realm.
+	ohAVP, err := findFromAVP(ans.AVP, avp.OriginHost, false)
+	if err != nil || len(ohAVP) == 0 {
+		t.Error("answer missing Origin-Host AVP (RFC 6733 §7.2)")
+	} else if got, want := string(ohAVP[0].Data.(datatype.DiameterIdentity)), "srv.example.net"; got != want {
+		t.Errorf("Origin-Host: got %q, want %q", got, want)
+	}
+	orAVP, err := findFromAVP(ans.AVP, avp.OriginRealm, false)
+	if err != nil || len(orAVP) == 0 {
+		t.Error("answer missing Origin-Realm AVP (RFC 6733 §7.2)")
+	} else if got, want := string(orAVP[0].Data.(datatype.DiameterIdentity)), "example.net"; got != want {
+		t.Errorf("Origin-Realm: got %q, want %q", got, want)
+	}
+	t.Logf("Got RFC-compliant 3001 answer with E-bit for unknown command 9999")
 
 	// Connection should still be alive — send another valid message
 	conn.SetReadDeadline(time.Time{}) // clear deadline
@@ -305,5 +327,72 @@ func TestUnknownAVP_RawBytes_NonStandardVendor(t *testing.T) {
 	}
 	if !found {
 		t.Error("Unknown vendor AVP 77777/99999 not found in parsed message")
+	}
+}
+
+// Test: Unknown command ANSWER (R-bit=0) must not kill the connection.
+// Per RFC 6733 §6.2 spirit: no response to send, just discard.
+func TestUnknownCommand_Answer(t *testing.T) {
+	ln, handled := startTestServer(t)
+	defer ln.Close()
+
+	conn, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	// Prove the connection works.
+	sendMsg(t, conn, buildCER())
+	expectHandled(t, handled, "initial CER")
+
+	// Build an "answer" with an unknown command code (R-bit cleared).
+	m := NewMessage(9999, 0, 0, 0, 0, dict.Default) // flags=0 → answer, not request
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("test.host"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test.realm"))
+	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(2001))
+	b, _ := m.Serialize()
+	if _, err := conn.Write(b); err != nil {
+		t.Fatalf("write unknown answer: %v", err)
+	}
+
+	// Server must not send a 3001 back for an answer, and must not close.
+	// Wait briefly then prove the connection is still alive with a valid CER.
+	time.Sleep(200 * time.Millisecond)
+	sendMsg(t, conn, buildCER())
+	expectHandled(t, handled, "follow-up after unknown answer")
+}
+
+// Test: without an Origin-Host/Realm configured, the server cannot build
+// a RFC-compliant 3001 answer. It must fall back to closing the
+// connection rather than emitting a non-compliant half-answer.
+func TestUnknownCommand_NoIdentityClosesConn(t *testing.T) {
+	ln, handled := startTestServer(t) // no identity
+	defer ln.Close()
+
+	conn, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	// Prove the connection works.
+	sendMsg(t, conn, buildCER())
+	expectHandled(t, handled, "initial CER")
+
+	// Send a request with an unknown command code.
+	m := NewRequest(9999, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("test.host"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test.realm"))
+	b, _ := m.Serialize()
+	if _, err := conn.Write(b); err != nil {
+		t.Fatalf("write unknown cmd: %v", err)
+	}
+
+	// Server must close the connection; our next read should yield EOF.
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	buf := make([]byte, 1)
+	if n, err := conn.Read(buf); err == nil {
+		t.Fatalf("expected EOF/closed connection, read %d bytes: 0x%x", n, buf[:n])
 	}
 }

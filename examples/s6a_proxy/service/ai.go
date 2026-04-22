@@ -112,15 +112,13 @@ func handleAIA(s *s6aProxy) diam.HandlerFunc {
 		}
 		ch, ok := s.sessions[sid]
 		if ok {
-			msc := c.Connection().(diam.MultistreamConn)
-			stream := msc.CurrentStream()
-			// Current diam.Server implementation reads & handles messages from a single thread/routine,
-			// so - the receiver stream should not change until the message is handled. The test server should also
-			// send responses on the the requests' streams
+			// Use the stream from the message, not the connection's current stream,
+			// since handlers may run concurrently.
+			stream := m.MessageStream()
 			if stream != msgStream {
 				panic(
-					fmt.Sprintf("STREAM %d From SessionID %q != conn stream %d; Conn: %+v\n",
-						msgStream, aia.SessionID, stream, msc))
+					fmt.Sprintf("STREAM %d From SessionID %q != msg stream %d\n",
+						msgStream, aia.SessionID, stream))
 			}
 			delete(s.sessions, sid)
 			s.sessionsMu.Unlock()

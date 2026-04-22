@@ -1,0 +1,26 @@
+# freeDiameterd config: base protocol only (CER/CEA/DWR/DPR).
+# Rendered via envsubst from the test scenario.
+
+Identity = "${FD_IDENTITY}";
+Realm    = "${FD_REALM}";
+
+Port     = ${FD_PORT};
+SecPort  = 0;
+No_SCTP;
+Prefer_TCP;
+# Bind to loopback only; peers run in the same pod netns.
+ListenOn = "127.0.0.1";
+
+# FreeDiameter insists a cert be configured even with No_TLS.
+TLS_Cred = "${FD_CERT_DIR}/cert.pem", "${FD_CERT_DIR}/key.pem";
+TLS_CA   = "${FD_CERT_DIR}/ca.pem";
+
+LoadExtension = "${FD_EXT_DIR}/dbg_msg_dumps.fdx" : "0x88";
+
+ConnectPeer = "${FD_PEER_IDENTITY}" {
+    ConnectTo = "127.0.0.1";
+    No_TLS;
+    No_SCTP;
+    Port = ${FD_PEER_PORT};
+    Realm = "${FD_REALM}";
+};

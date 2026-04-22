@@ -1,0 +1,26 @@
+# freeDiameterd config: loads test_app.fdx for echo interop against
+# diam-echo-{client,server}. ${TEST_APP_MODE} = server | client | both.
+# ${FD_PORT}, ${FD_PEER_PORT}, ${FD_IDENTITY}, ${FD_REALM},
+# ${FD_PEER_IDENTITY}, ${FD_CERT_DIR}, ${FD_EXT_DIR} must be set.
+
+Identity = "${FD_IDENTITY}";
+Realm    = "${FD_REALM}";
+Port     = ${FD_PORT};
+SecPort  = 0;
+No_SCTP;
+Prefer_TCP;
+# Bind to loopback only; peers run in the same pod netns.
+ListenOn = "127.0.0.1";
+TLS_Cred = "${FD_CERT_DIR}/cert.pem", "${FD_CERT_DIR}/key.pem";
+TLS_CA   = "${FD_CERT_DIR}/ca.pem";
+
+LoadExtension = "${FD_EXT_DIR}/dbg_msg_dumps.fdx" : "0x88";
+LoadExtension = "${FD_EXT_DIR}/test_app.fdx" : "${FD_TESTAPP_CONF}";
+
+ConnectPeer = "${FD_PEER_IDENTITY}" {
+    ConnectTo = "127.0.0.1";
+    No_TLS;
+    No_SCTP;
+    Port = ${FD_PEER_PORT};
+    Realm = "${FD_REALM}";
+};

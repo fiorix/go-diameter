@@ -125,7 +125,7 @@ func (s *Server) StartTLS() {
 
 // Close shuts down the server.
 func (s *Server) Close() {
-	s.Listener.Close()
+	s.Config.Close()
 }
 
 // localhostCert is a PEM-encoded TLS cert with SAN IPs

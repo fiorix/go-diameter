@@ -204,6 +204,9 @@ func (c *conn) serve() {
 		c.tlsState = &tls.ConnectionState{}
 		*c.tlsState = tlsConn.ConnectionState()
 	}
+	if cb := c.server.OnNewConnection; cb != nil {
+		cb(c.writer)
+	}
 	for {
 		m, err := c.readMessage()
 		if err != nil {
@@ -647,6 +650,22 @@ type Server struct {
 	// Handlers that mutate shared per-connection state must synchronize
 	// themselves.
 	MaxConcurrentHandlers int
+
+	// OnNewConnection, if non-nil, is invoked once per accepted connection
+	// after the transport is fully established (TLS handshake complete, if
+	// applicable) and before the read loop starts. It runs in the
+	// connection's serve goroutine, so long-running work will delay message
+	// processing on that connection. Type-assert to CloseNotifier to detect
+	// disconnection:
+	//
+	//	srv.OnNewConnection = func(c diam.Conn) {
+	//		log.Printf("up: %s", c.RemoteAddr())
+	//		go func() {
+	//			<-c.(diam.CloseNotifier).CloseNotify()
+	//			log.Printf("down: %s", c.RemoteAddr())
+	//		}()
+	//	}
+	OnNewConnection func(Conn)
 
 	mu        sync.Mutex
 	listeners map[net.Listener]struct{}

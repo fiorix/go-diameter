@@ -167,6 +167,24 @@ func dialTLS(srv *Server, certFile, keyFile string, timeout time.Duration) (Conn
 	return c.writer, nil
 }
 
+// Dial opens an outgoing connection using srv as the client configuration.
+// Honors srv.Network, srv.Addr, srv.Handler, srv.Dict, srv.LocalAddr,
+// srv.ReadTimeout and srv.WriteTimeout. The timeout argument bounds the
+// connect phase only; 0 means no connect timeout.
+//
+// If srv.Network is blank, "tcp" is used. If srv.Addr is blank, ":3868" is
+// used.
+func (srv *Server) Dial(timeout time.Duration) (Conn, error) {
+	return dial(srv, timeout)
+}
+
+// DialTLS opens an outgoing TLS connection using srv as the client
+// configuration. Honors the same srv fields as Dial, plus srv.TLSConfig.
+// certFile and keyFile are optional; when empty, srv.TLSConfig is used as-is.
+func (srv *Server) DialTLS(certFile, keyFile string, timeout time.Duration) (Conn, error) {
+	return dialTLS(srv, certFile, keyFile, timeout)
+}
+
 // NewConn is the same as Dial, but using an already open net.Conn.
 func NewConn(rw net.Conn, addr string, handler Handler, dp *dict.Parser) (Conn, error) {
 	srv := &Server{Addr: addr, Handler: handler, Dict: dp}

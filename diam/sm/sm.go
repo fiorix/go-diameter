@@ -71,6 +71,18 @@ type Settings struct {
 
 	// Dict is an optional dictionary parser. If nil, dict.Default is used.
 	Dict *dict.Parser
+
+	// OnCER, if non-nil, is invoked when a CER is received, before the
+	// state machine processes it. Useful for logging, metrics, or access
+	// control. The default handshake logic runs after OnCER returns.
+	// Closing the connection from the hook is honored and aborts the
+	// handshake.
+	OnCER diam.HandlerFunc
+
+	// OnDWR, if non-nil, is invoked when a DWR is received (after the
+	// peer has passed the handshake) before the state machine responds
+	// with DWA. Same semantics as OnCER.
+	OnDWR diam.HandlerFunc
 }
 
 var (
@@ -107,11 +119,26 @@ func New(settings *Settings) *StateMachine {
 		hsNotifyc:     make(chan diam.Conn, 1000),
 		supportedApps: PrepareSupportedApps(dp),
 	}
-	sm.mux.Handle("CER", handleCER(sm))
-	sm.mux.Handle("DWR", handshakeOK(handleDWR(sm)))
-	sm.mux.HandleIdx(baseCERIdx, handleCER(sm))
-	sm.mux.HandleIdx(baseDWRIdx, handleDWR(sm))
+	cerHandler := chainPreHook(settings.OnCER, handleCER(sm))
+	dwrHandler := chainPreHook(settings.OnDWR, handleDWR(sm))
+	sm.mux.Handle("CER", cerHandler)
+	sm.mux.Handle("DWR", handshakeOK(dwrHandler))
+	sm.mux.HandleIdx(baseCERIdx, cerHandler)
+	sm.mux.HandleIdx(baseDWRIdx, dwrHandler)
 	return sm
+}
+
+// chainPreHook returns a HandlerFunc that invokes pre (if non-nil) before
+// next. Used to install the Settings.OnCER / Settings.OnDWR hooks without
+// changing the default handler.
+func chainPreHook(pre diam.HandlerFunc, next diam.HandlerFunc) diam.HandlerFunc {
+	if pre == nil {
+		return next
+	}
+	return func(c diam.Conn, m *diam.Message) {
+		pre(c, m)
+		next(c, m)
+	}
 }
 
 // Settings return the Settings object used by this StateMachine.

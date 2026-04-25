@@ -1,3 +1,7 @@
+// Copyright 2013-2015 go-diameter authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 package diam
 
 import (
@@ -13,6 +17,9 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 )
 
+// PrettyDump returns a human-readable, indented representation of the
+// Message: header line, AVP column titles, and recursively formatted
+// grouped AVPs. Intended for logs and debugging, not for parsing.
 func (m *Message) PrettyDump() string {
 	var b bytes.Buffer
 	prettyDumpMessage(&b, m, 0)
@@ -89,8 +96,6 @@ func appIdToString(appId int) string {
 		return "Accounting"
 	case CHARGING_CONTROL_APP_ID:
 		return "Charging-Control"
-	//case TGPP_APP_ID:
-	//	return "TGPP_APP_ID"
 	case GX_CHARGING_CONTROL_APP_ID:
 		return "Gx"
 	case TGPP_S6A_APP_ID:

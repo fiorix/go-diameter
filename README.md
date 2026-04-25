@@ -40,7 +40,7 @@ See the API documentation at https://pkg.go.dev/github.com/fiorix/go-diameter/v4
 - Ships with sample client, server, snoop agent and benchmark tool
 - [State machines](http://tools.ietf.org/html/rfc6733#section-5.6) for CER/CEA and DWR/DWA for clients and servers
 - TCP and SCTP support. SCTP support relies on kernel SCTP implementation and external github.com/ishidawataru/sctp
-  package and is currently tested and enabled for Go 1.8+ and x86 Linux
+  package and is currently tested and enabled on Linux (Go 1.25 or later)
   
 ## Getting started
 
@@ -92,6 +92,6 @@ manually:
 ```
 
 You also have the option to run the test using a Linux VM through Docker (this
-is not mandatory). To do so, run `make test_docker`. Runing test on Linux  can 
+is not mandatory). To do so, run `make test_docker`. Running tests on Linux can
 be useful in case you add `sctp` tests. Note you will need to install
 docker and docker-compose.

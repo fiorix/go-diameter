@@ -75,7 +75,7 @@ func TestConcurrentServeThroughput(t *testing.T) {
 		t.Errorf("Lost %d messages", total-got)
 	}
 	if elapsed > 500*time.Millisecond {
-		t.Errorf("Too slow (%v) — handlers may still be sequential", elapsed)
+		t.Errorf("Too slow (%v); handlers may still be sequential", elapsed)
 	}
 }
 

@@ -111,11 +111,8 @@ func marshalStruct(m *Message, field reflect.Value) (error, []*AVP) {
 // marshal returns a AVP type of the field
 func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP) {
 	var data datatype.Type
-	var avps []*AVP // avps := make([]*AVP, 0, 8)
+	var avps []*AVP
 	fieldType := field.Type()
-
-	// log.Println(fieldAVP.Name, " begin ", field.Kind())
-	// defer log.Println(fieldAVP.Name, " end")
 
 	var t reflect.Type
 	switch field.Kind() {
@@ -130,15 +127,12 @@ func marshal(m *Message, field reflect.Value, fieldAVP *dict.AVP) (error, []*AVP
 
 		// 2.  []*diam.AVP
 		if fieldType == reflect.TypeOf(([]*AVP)(nil)) {
-			// s := reflect.New(fieldType) // a pointer to a slice
-			// s.Elem().Set(field)
 			avp := field.Interface().([]*AVP)
 			avps = append(avps, avp...)
 			return nil, avps
 		}
 
 		// 3. real array of diameter AVPs
-		// log.Print("Slice len:", field.Len())
 		for n := 0; n < field.Len(); n++ {
 			err, avp := marshal(m, field.Index(n), fieldAVP)
 			if err != nil {

@@ -26,8 +26,6 @@ var parentAppIds map[uint32]uint32 = map[uint32]uint32{
 // Apps return a list of all applications loaded in the Parser object.
 // Apps must never be called concurrently with LoadFile or Load.
 func (p *Parser) Apps() []*App {
-	//p.mu.Lock()
-	//defer p.mu.Unlock()
 	var apps []*App
 	for _, f := range p.file {
 		for _, app := range f.App {
@@ -82,8 +80,6 @@ func MakeUnknownAVP(appid, code, vendorID uint32) *AVP {
 //
 // FindAVPWithVendor must never be called concurrently with LoadFile or Load.
 func (p *Parser) FindAVPWithVendor(appid uint32, code interface{}, vendorID uint32) (*AVP, error) {
-	//p.mu.Lock()
-	//defer p.mu.Unlock()
 	var (
 		avp *AVP
 		ok  bool

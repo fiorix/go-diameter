@@ -14,8 +14,8 @@ import (
 type Time time.Time
 
 const rfc868offset = 2208988800 // Diff. between 1970 and 1900 in seconds.
-//UTC time is reckoned from 6h 28m 16s UTC on 7 February 2036 because overload happens
-const rfc2030offset = 2085978496 // 2085978496 comes from FFFFFFFF – 2208988800
+// UTC time is reckoned from 6h 28m 16s UTC on 7 February 2036 because overload happens.
+const rfc2030offset = 2085978496 // 0xFFFFFFFF - 2208988800
 
 // DecodeTime decodes a Time data type from byte array.
 func DecodeTime(b []byte) (Type, error) {

@@ -22,7 +22,6 @@ func (m *Message) PrettyDump() string {
 func prettyDumpMessage(w io.Writer, m *Message, depth int) {
 	requestFlag, errorFlag, proxyFlag, retransmittedFlag := flagsToString(m.Header)
 
-	// Print Header
 	fmt.Fprintf(w, "%s(%d) %s(%d) %s%s%s%s %d, %d\n",
 		cmdToString(m.Dictionary(), m.Header),
 		m.Header.CommandCode,
@@ -35,11 +34,9 @@ func prettyDumpMessage(w io.Writer, m *Message, depth int) {
 		m.Header.HopByHopID,
 		m.Header.EndToEndID)
 
-	// Print Titles
 	fmt.Fprintf(w, "  %-40s %8s %5s  %s %s %s  %-18s  %s\n",
 		"AVP", "Vendor", "Code", "V", "M", "P", "Type", "Value")
 
-	// Print AVPs
 	for _, a := range m.AVP {
 		prettyDumpAVP(w, m, a, depth)
 	}

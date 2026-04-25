@@ -16,3 +16,11 @@ func uint24to32(b []byte) uint32 {
 func uint32to24(n uint32) []byte {
 	return []byte{uint8(n >> 16), uint8(n >> 8), uint8(n)}
 }
+
+// putUint24 writes a uint32 as 3 bytes in big-endian order directly into b.
+// This avoids the []byte allocation that uint32to24 makes.
+func putUint24(b []byte, n uint32) {
+	b[0] = byte(n >> 16)
+	b[1] = byte(n >> 8)
+	b[2] = byte(n)
+}

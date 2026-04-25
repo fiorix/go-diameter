@@ -65,9 +65,9 @@ func (h *Header) Serialize() []byte {
 // SerializeTo serializes the header to a byte sequence in network byte order.
 func (h *Header) SerializeTo(b []byte) {
 	b[0] = h.Version
-	copy(b[1:4], uint32to24(h.MessageLength))
+	putUint24(b[1:4], h.MessageLength)
 	b[4] = h.CommandFlags
-	copy(b[5:8], uint32to24(h.CommandCode))
+	putUint24(b[5:8], h.CommandCode)
 	binary.BigEndian.PutUint32(b[8:12], h.ApplicationID)
 	binary.BigEndian.PutUint32(b[12:16], h.HopByHopID)
 	binary.BigEndian.PutUint32(b[16:20], h.EndToEndID)

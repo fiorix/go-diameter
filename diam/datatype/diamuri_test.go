@@ -52,3 +52,57 @@ func TestDecodeDiameterURI(t *testing.T) {
 		t.Fatalf("Unexpected string. Want 'hello, world', have %q", v)
 	}
 }
+
+func TestDiameterURI_Parse(t *testing.T) {
+	tests := []struct {
+		input     string
+		secure    bool
+		fqdn      string
+		port      uint16
+		transport string
+		protocol  string
+		wantErr   bool
+	}{
+		{"aaa://host.example.com", false, "host.example.com", 3868, "tcp", "diameter", false},
+		{"aaas://host.example.com", true, "host.example.com", 5868, "tcp", "diameter", false},
+		{"aaa://host.example.com:6666", false, "host.example.com", 6666, "tcp", "diameter", false},
+		{"aaas://host.example.com:5868;transport=tcp", true, "host.example.com", 5868, "tcp", "diameter", false},
+		{"aaa://host.example.com;transport=sctp", false, "host.example.com", 3868, "sctp", "diameter", false},
+		{"aaa://host.example.com:3868;transport=tcp;protocol=diameter", false, "host.example.com", 3868, "tcp", "diameter", false},
+		{"aaa://host.example.com;protocol=radius", false, "host.example.com", 3868, "tcp", "radius", false},
+		// Error cases
+		{"http://host.example.com", false, "", 0, "", "", true},
+		{"", false, "", 0, "", "", true},
+		{"aaa://", false, "", 0, "", "", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			uri := DiameterURI(tt.input)
+			p, err := uri.Parse()
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("expected error for %q", tt.input)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error for %q: %v", tt.input, err)
+			}
+			if p.Secure != tt.secure {
+				t.Errorf("Secure: got %v, want %v", p.Secure, tt.secure)
+			}
+			if p.FQDN != tt.fqdn {
+				t.Errorf("FQDN: got %q, want %q", p.FQDN, tt.fqdn)
+			}
+			if p.Port != tt.port {
+				t.Errorf("Port: got %d, want %d", p.Port, tt.port)
+			}
+			if p.Transport != tt.transport {
+				t.Errorf("Transport: got %q, want %q", p.Transport, tt.transport)
+			}
+			if p.Protocol != tt.protocol {
+				t.Errorf("Protocol: got %q, want %q", p.Protocol, tt.protocol)
+			}
+		})
+	}
+}

@@ -37,6 +37,12 @@ func DecodeGroupedFromBytes(b []byte, application uint32, dictionary *dict.Parse
 		if err != nil {
 			errs = append(errs, err.Error())
 		}
+		if avp == nil || avp.Data == nil {
+			// if we could not decode here and
+			// avp data is nil and the avp.len
+			// will try to de-reference it
+			break
+		}
 		g.AVP = append(g.AVP, avp)
 		n += avp.Len()
 	}

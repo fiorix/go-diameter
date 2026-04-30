@@ -367,3 +367,77 @@ func TestClient_Conn_LocalAddresses_Complex(t *testing.T) {
 		t.Fatalf("Wrong IP address found in list of local addresses, expected: %s, actual: %s", expected, actual)
 	}
 }
+
+func TestClient_InbandSecurityID_Default(t *testing.T) {
+	// Verify that the default (zero value) sends Inband-Security-Id=0 in CER.
+	var received uint32
+	mux := diam.NewServeMux()
+	mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {
+		a, _ := m.FindAVP(avp.InbandSecurityID, 0)
+		if a != nil {
+			received = uint32(a.Data.(datatype.Unsigned32))
+		}
+		// Send a valid CEA back.
+		cea := m.Answer(diam.Success)
+		cea.NewAVP(avp.OriginHost, avp.Mbit, 0, serverSettings.OriginHost)
+		cea.NewAVP(avp.OriginRealm, avp.Mbit, 0, serverSettings.OriginRealm)
+		cea.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP("127.0.0.1")))
+		cea.NewAVP(avp.VendorID, avp.Mbit, 0, serverSettings.VendorID)
+		cea.NewAVP(avp.ProductName, 0, 0, serverSettings.ProductName)
+		cea.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3))
+		cea.WriteTo(c)
+	})
+	srv := diamtest.NewServer(mux, dict.Default)
+	defer srv.Close()
+	cli := &Client{
+		Handler: New(clientSettings),
+		AcctApplicationID: []*diam.AVP{
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
+		},
+	}
+	c, err := cli.Dial(srv.Addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	if received != 0 {
+		t.Fatalf("Expected Inband-Security-Id=0, got %d", received)
+	}
+}
+
+func TestClient_InbandSecurityID_TLS(t *testing.T) {
+	// Verify that setting InbandSecurityID=1 sends that value in CER.
+	var received uint32
+	mux := diam.NewServeMux()
+	mux.HandleFunc("CER", func(c diam.Conn, m *diam.Message) {
+		a, _ := m.FindAVP(avp.InbandSecurityID, 0)
+		if a != nil {
+			received = uint32(a.Data.(datatype.Unsigned32))
+		}
+		cea := m.Answer(diam.Success)
+		cea.NewAVP(avp.OriginHost, avp.Mbit, 0, serverSettings.OriginHost)
+		cea.NewAVP(avp.OriginRealm, avp.Mbit, 0, serverSettings.OriginRealm)
+		cea.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP("127.0.0.1")))
+		cea.NewAVP(avp.VendorID, avp.Mbit, 0, serverSettings.VendorID)
+		cea.NewAVP(avp.ProductName, 0, 0, serverSettings.ProductName)
+		cea.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3))
+		cea.WriteTo(c)
+	})
+	srv := diamtest.NewServer(mux, dict.Default)
+	defer srv.Close()
+	cli := &Client{
+		Handler: New(clientSettings),
+		AcctApplicationID: []*diam.AVP{
+			diam.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(3)),
+		},
+		InbandSecurityID: 1,
+	}
+	c, err := cli.Dial(srv.Addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	if received != 1 {
+		t.Fatalf("Expected Inband-Security-Id=1, got %d", received)
+	}
+}

@@ -28,7 +28,7 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			return
 		}
 		cer := new(smparser.CER)
-		_, err := cer.Parse(m, smparser.Server)
+		_, err := cer.ParseWithSecurity(m, smparser.Server, c.TLS() != nil)
 		if err != nil {
 			err = errorCEA(sm, c, m, cer, err)
 			if err != nil {

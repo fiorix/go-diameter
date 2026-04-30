@@ -5,6 +5,7 @@
 package sm
 
 import (
+	"crypto/tls"
 	"testing"
 	"time"
 
@@ -527,6 +528,57 @@ func TestHandleCER_InbandSecurity(t *testing.T) {
 	case resp := <-mc:
 		if !testResultCode(resp, diam.NoCommonSecurity) {
 			t.Fatalf("Unexpected result code.\n%s", resp)
+		}
+	case err := <-mux.ErrorReports():
+		t.Fatal(err)
+	case <-time.After(time.Second):
+		t.Fatal("No message received")
+	}
+}
+
+func TestHandleCER_InbandSecurity_WithTLSConfig(t *testing.T) {
+	// When the server has TLSConfig set, it should accept
+	// Inband-Security-Id=1 and attempt TLS upgrade after CEA.
+	// Since we can't easily do a real TLS upgrade in a unit test
+	// (the client would also need to upgrade), we verify the server
+	// accepts the CER and sends a success CEA instead of rejecting.
+	tlsSettings := *serverSettings
+	tlsSettings.TLSConfig = &tls.Config{} // non-nil signals TLS capability
+	sm := New(&tlsSettings)
+	srv := diamtest.NewServer(sm, dict.Default)
+	defer srv.Close()
+	mc := make(chan *diam.Message, 1)
+	mux := diam.NewServeMux()
+	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
+		mc <- m
+	})
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cli.Close()
+	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, localhostAddress)
+	m.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(1))
+	m.NewAVP(avp.VendorID, avp.Mbit, 0, clientSettings.VendorID)
+	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
+	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
+	m.NewAVP(avp.FirmwareRevision, 0, 0, clientSettings.FirmwareRevision)
+	_, err = m.WriteTo(cli)
+	if err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case resp := <-mc:
+		// Should get a success CEA (not NO_COMMON_SECURITY)
+		if testResultCode(resp, diam.NoCommonSecurity) {
+			t.Fatal("Server rejected Inband-Security-Id=1 despite having TLSConfig")
+		}
+		if !testResultCode(resp, diam.Success) {
+			t.Fatalf("Expected success CEA.\n%s", resp)
 		}
 	case err := <-mux.ErrorReports():
 		t.Fatal(err)

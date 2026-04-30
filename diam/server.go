@@ -59,6 +59,20 @@ type CloseNotifier interface {
 	CloseNotify() <-chan struct{}
 }
 
+// TLSUpgrader is implemented by Conns that support upgrading a plain
+// connection to TLS after the CER/CEA exchange (RFC 6733 §6.2).
+// Use a type assertion to check if a Conn supports this:
+//
+//	if u, ok := conn.(diam.TLSUpgrader); ok {
+//	    err := u.StartTLS(tlsConfig)
+//	}
+type TLSUpgrader interface {
+	// StartTLS upgrades the underlying connection to TLS. On the server
+	// side, cfg is used as tls.Server config; on the client side as
+	// tls.Client config. Must be called before any further reads/writes.
+	StartTLS(cfg *tls.Config) error
+}
+
 // A liveSwitchReader is a switchReader that's safe for concurrent
 // reads and switches, if its mutex is held.
 type liveSwitchReader struct {
@@ -392,6 +406,30 @@ func (w *response) SetContext(ctx context.Context) {
 
 func (w *response) Connection() net.Conn {
 	return w.conn.rwc
+}
+
+// StartTLS upgrades the underlying plain TCP connection to TLS.
+// Implements the TLSUpgrader interface for RFC 6733 §6.2 in-band
+// TLS negotiation after CER/CEA exchange.
+func (w *response) StartTLS(cfg *tls.Config) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.conn.tlsState != nil {
+		return nil // already TLS
+	}
+	tlsConn := tls.Server(w.conn.rwc, cfg)
+	if err := tlsConn.Handshake(); err != nil {
+		return err
+	}
+	// Replace the underlying connection and reader.
+	w.conn.rwc = tlsConn
+	w.conn.sr.Lock()
+	w.conn.sr.r = tlsConn
+	w.conn.sr.Unlock()
+	w.conn.buf = bufio.NewReadWriter(bufio.NewReader(&w.conn.sr), bufio.NewWriter(tlsConn))
+	state := tlsConn.ConnectionState()
+	w.conn.tlsState = &state
+	return nil
 }
 
 // The HandlerFunc type is an adapter to allow the use of

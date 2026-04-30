@@ -20,6 +20,13 @@ type CER struct {
 	AuthApplicationID           []*diam.AVP               `avp:"Auth-Application-Id"`
 	VendorSpecificApplicationID []*diam.AVP               `avp:"Vendor-Specific-Application-Id"`
 	appID                       []uint32                  // List of supported application IDs.
+	requestedSecurity           uint32                    // Negotiated Inband-Security-Id value.
+}
+
+// RequestedSecurity returns the Inband-Security-Id value from the CER
+// (0=NO_INBAND_SECURITY, 1=TLS). Valid after a successful Parse.
+func (cer *CER) RequestedSecurity() uint32 {
+	return cer.requestedSecurity
 }
 
 // Parse parses and validates the given message, and returns nil when
@@ -29,7 +36,7 @@ type CER struct {
 // error. If all mandatory AVPs are present but no common application
 // is found, then it returns the failedAVP (with the application that
 // we don't support in our dictionary) and an error. Another cause
-// for error is the presence of Inband Security, we don't support that.
+// for error is the presence of Inband Security when TLS is not active.
 func (cer *CER) Parse(m *diam.Message, localRole Role) (failedAVP *diam.AVP, err error) {
 	return cer.ParseWithSecurity(m, localRole, false)
 }
@@ -38,6 +45,11 @@ func (cer *CER) Parse(m *diam.Message, localRole Role) (failedAVP *diam.AVP, err
 // tlsActive is true, Inband-Security-Id=1 (TLS) is accepted because
 // the transport is already secured — per RFC 6733 §5.3.1 the peer is
 // simply declaring its TLS capability which is already satisfied.
+//
+// When tlsActive is false and tlsConfig is available on the server,
+// Inband-Security-Id=1 signals that a TLS upgrade should occur after
+// CEA is sent (RFC 6733 §6.2). The caller should check
+// RequestedSecurity() after a successful parse.
 func (cer *CER) ParseWithSecurity(m *diam.Message, localRole Role, tlsActive bool) (failedAVP *diam.AVP, err error) {
 	if err = m.Unmarshal(cer); err != nil {
 		return nil, err
@@ -46,7 +58,9 @@ func (cer *CER) ParseWithSecurity(m *diam.Message, localRole Role, tlsActive boo
 		return nil, err
 	}
 	if cer.InbandSecurityID != nil {
-		if v := cer.InbandSecurityID.Data.(datatype.Unsigned32); v != 0 && !tlsActive {
+		v := uint32(cer.InbandSecurityID.Data.(datatype.Unsigned32))
+		cer.requestedSecurity = v
+		if v != 0 && !tlsActive {
 			return nil, ErrNoCommonSecurity
 		}
 	}

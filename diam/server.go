@@ -67,10 +67,15 @@ type CloseNotifier interface {
 //	    err := u.StartTLS(tlsConfig)
 //	}
 type TLSUpgrader interface {
-	// StartTLS upgrades the underlying connection to TLS. On the server
-	// side, cfg is used as tls.Server config; on the client side as
-	// tls.Client config. Must be called before any further reads/writes.
+	// StartTLS upgrades the underlying connection to TLS using
+	// server-side parameters (tls.Server). Must be called from within
+	// a handler before the next read.
 	StartTLS(cfg *tls.Config) error
+
+	// StartTLSClient upgrades the underlying connection to TLS using
+	// client-side parameters (tls.Client). Must be called from within
+	// a handler before the next read.
+	StartTLSClient(cfg *tls.Config) error
 }
 
 // A liveSwitchReader is a switchReader that's safe for concurrent
@@ -408,16 +413,38 @@ func (w *response) Connection() net.Conn {
 	return w.conn.rwc
 }
 
-// StartTLS upgrades the underlying plain TCP connection to TLS.
-// Implements the TLSUpgrader interface for RFC 6733 §6.2 in-band
-// TLS negotiation after CER/CEA exchange.
+// StartTLS upgrades the underlying plain TCP connection to TLS using
+// server-side parameters (tls.Server).
+//
+// Concurrency safety: StartTLS swaps the connection's underlying reader
+// and writer. It is only safe to call from within a message handler
+// (e.g. handleCER) before the serve loop reads the next message. The
+// serve loop blocks on the handler, so no concurrent read is in progress
+// at that point. Do NOT call StartTLS from a separate goroutine while
+// the connection is actively reading.
 func (w *response) StartTLS(cfg *tls.Config) error {
+	return w.startTLS(cfg, true)
+}
+
+// StartTLSClient upgrades the underlying plain TCP connection to TLS
+// using client-side parameters (tls.Client). Same concurrency
+// constraints as StartTLS apply.
+func (w *response) StartTLSClient(cfg *tls.Config) error {
+	return w.startTLS(cfg, false)
+}
+
+func (w *response) startTLS(cfg *tls.Config, server bool) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	if w.conn.tlsState != nil {
 		return nil // already TLS
 	}
-	tlsConn := tls.Server(w.conn.rwc, cfg)
+	var tlsConn *tls.Conn
+	if server {
+		tlsConn = tls.Server(w.conn.rwc, cfg)
+	} else {
+		tlsConn = tls.Client(w.conn.rwc, cfg)
+	}
 	if err := tlsConn.Handshake(); err != nil {
 		return err
 	}

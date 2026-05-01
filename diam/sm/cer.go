@@ -58,6 +58,12 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 		}
 		// RFC 6733 §6.2: If Inband-Security-Id=1 was negotiated and
 		// TLS is not already active, upgrade the connection now.
+		//
+		// Failure handling: if the TLS handshake fails after a success
+		// CEA has been sent, the connection is closed. Per RFC 6733 §6.2
+		// the TLS handshake begins immediately after CEA — both peers
+		// participate, so a handshake failure is observable by both sides.
+		// Sending a second (failure) CEA would violate the protocol.
 		if cer.RequestedSecurity() == 1 && !tlsActive {
 			u, ok := c.(diam.TLSUpgrader)
 			if !ok || sm.cfg.TLSConfig == nil {

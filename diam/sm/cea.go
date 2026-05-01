@@ -22,6 +22,8 @@ func handleCEA(sm *StateMachine, errc chan error) diam.HandlerFunc {
 		}
 		// RFC 6733 §6.2: If we requested Inband-Security-Id=1 and
 		// received a success CEA, upgrade to TLS on the client side.
+		// On failure the connection is closed — both peers observe the
+		// TLS handshake failure directly (no second CEA is possible).
 		if sm.cfg.TLSConfig != nil && c.TLS() == nil {
 			if u, ok := c.(diam.TLSUpgrader); ok {
 				if err := u.StartTLSClient(sm.cfg.TLSConfig); err != nil {

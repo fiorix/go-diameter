@@ -66,6 +66,11 @@ type CloseNotifier interface {
 //	if u, ok := conn.(diam.TLSUpgrader); ok {
 //	    err := u.StartTLS(tlsConfig)
 //	}
+//
+// If the TLS handshake fails after a success CEA has already been sent,
+// the connection must be closed. Both peers participate in the TLS
+// handshake so the failure is observable by both sides; sending a
+// second CEA would violate the Diameter protocol.
 type TLSUpgrader interface {
 	// StartTLS upgrades the underlying connection to TLS using
 	// server-side parameters (tls.Server). Must be called from within

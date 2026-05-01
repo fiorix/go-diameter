@@ -4,7 +4,11 @@
 
 package datatype
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 // DiameterURI data type.
 type DiameterURI OctetString
@@ -26,23 +30,23 @@ func (s DiameterURI) Parse() (*ParsedDiameterURI, error) {
 	raw := string(s)
 	p := &ParsedDiameterURI{Transport: "tcp", Protocol: "diameter"}
 	switch {
-	case len(raw) > 7 && raw[:7] == "aaas://":
+	case len(raw) > 7 && strings.EqualFold(raw[:7], "aaas://"):
 		p.Secure = true
 		p.Port = 5868
 		raw = raw[7:]
-	case len(raw) > 6 && raw[:6] == "aaa://":
+	case len(raw) > 6 && strings.EqualFold(raw[:6], "aaa://"):
 		p.Port = 3868
 		raw = raw[6:]
 	default:
 		return nil, fmt.Errorf("diamuri: invalid scheme in %q", string(s))
 	}
 	// Extract ";protocol=" (must come after ";transport=" per ABNF)
-	if i := indexOf(raw, ";protocol="); i >= 0 {
+	if i := strings.Index(raw, ";protocol="); i >= 0 {
 		p.Protocol = raw[i+10:]
 		raw = raw[:i]
 	}
 	// Extract ";transport="
-	if i := indexOf(raw, ";transport="); i >= 0 {
+	if i := strings.Index(raw, ";transport="); i >= 0 {
 		p.Transport = raw[i+11:]
 		raw = raw[:i]
 	}
@@ -52,21 +56,21 @@ func (s DiameterURI) Parse() (*ParsedDiameterURI, error) {
 	}
 	if raw[0] == '[' {
 		// IPv6 literal: [addr]:port
-		if end := indexOf(raw, "]"); end >= 0 {
+		if end := strings.Index(raw, "]"); end >= 0 {
 			p.FQDN = raw[1:end]
 			raw = raw[end+1:]
 		}
-	} else if i := lastIndexByte(raw, ':'); i >= 0 {
+	} else if i := strings.LastIndexByte(raw, ':'); i >= 0 {
 		p.FQDN = raw[:i]
 		portStr := raw[i+1:]
-		var port uint16
-		for _, c := range portStr {
-			if c < '0' || c > '9' {
-				return nil, fmt.Errorf("diamuri: invalid port in %q", string(s))
-			}
-			port = port*10 + uint16(c-'0')
+		if portStr == "" {
+			return nil, fmt.Errorf("diamuri: empty port in %q", string(s))
 		}
-		p.Port = port
+		port, err := strconv.ParseUint(portStr, 10, 16)
+		if err != nil {
+			return nil, fmt.Errorf("diamuri: invalid port in %q", string(s))
+		}
+		p.Port = uint16(port)
 		raw = ""
 	}
 	if p.FQDN == "" {
@@ -76,24 +80,6 @@ func (s DiameterURI) Parse() (*ParsedDiameterURI, error) {
 		return nil, fmt.Errorf("diamuri: missing FQDN in %q", string(s))
 	}
 	return p, nil
-}
-
-func indexOf(s, substr string) int {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return i
-		}
-	}
-	return -1
-}
-
-func lastIndexByte(s string, c byte) int {
-	for i := len(s) - 1; i >= 0; i-- {
-		if s[i] == c {
-			return i
-		}
-	}
-	return -1
 }
 
 // DecodeDiameterURI decodes a DiameterURI from byte array.

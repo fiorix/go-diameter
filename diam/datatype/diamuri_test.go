@@ -70,10 +70,16 @@ func TestDiameterURI_Parse(t *testing.T) {
 		{"aaa://host.example.com;transport=sctp", false, "host.example.com", 3868, "sctp", "diameter", false},
 		{"aaa://host.example.com:3868;transport=tcp;protocol=diameter", false, "host.example.com", 3868, "tcp", "diameter", false},
 		{"aaa://host.example.com;protocol=radius", false, "host.example.com", 3868, "tcp", "radius", false},
+		// Case-insensitive scheme (RFC 6733 §4.3)
+		{"AAA://host.example.com", false, "host.example.com", 3868, "tcp", "diameter", false},
+		{"AAAS://host.example.com", true, "host.example.com", 5868, "tcp", "diameter", false},
+		{"Aaa://host.example.com", false, "host.example.com", 3868, "tcp", "diameter", false},
 		// Error cases
 		{"http://host.example.com", false, "", 0, "", "", true},
 		{"", false, "", 0, "", "", true},
 		{"aaa://", false, "", 0, "", "", true},
+		{"aaa://host.example.com:", false, "", 0, "", "", true},      // empty port
+		{"aaa://host.example.com:99999", false, "", 0, "", "", true}, // port overflow
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {

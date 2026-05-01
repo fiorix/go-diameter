@@ -57,6 +57,7 @@ type Client struct {
 	AcctApplicationID           []*diam.AVP   // Acct applications
 	AuthApplicationID           []*diam.AVP   // Auth applications
 	VendorSpecificApplicationID []*diam.AVP   // Vendor specific applications
+	InbandSecurityID            uint32        // Inband-Security-Id for CER: 0=NO_INBAND_SECURITY (default), 1=TLS (RFC 6733 §5.3.1)
 }
 
 // Dial calls the address set as ip:port, performs a handshake and optionally
@@ -265,7 +266,7 @@ func (cli *Client) makeCER(hostIPAddresses []datatype.Address) *diam.Message {
 			m.AddAVP(a)
 		}
 	}
-	m.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(0))
+	m.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(cli.InbandSecurityID))
 	if cli.AcctApplicationID != nil {
 		for _, a := range cli.AcctApplicationID {
 			m.AddAVP(a)

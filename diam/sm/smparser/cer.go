@@ -31,6 +31,14 @@ type CER struct {
 // we don't support in our dictionary) and an error. Another cause
 // for error is the presence of Inband Security, we don't support that.
 func (cer *CER) Parse(m *diam.Message, localRole Role) (failedAVP *diam.AVP, err error) {
+	return cer.ParseWithSecurity(m, localRole, false)
+}
+
+// ParseWithSecurity is like Parse but accepts a tlsActive flag. When
+// tlsActive is true, Inband-Security-Id=1 (TLS) is accepted because
+// the transport is already secured — per RFC 6733 §5.3.1 the peer is
+// simply declaring its TLS capability which is already satisfied.
+func (cer *CER) ParseWithSecurity(m *diam.Message, localRole Role, tlsActive bool) (failedAVP *diam.AVP, err error) {
 	if err = m.Unmarshal(cer); err != nil {
 		return nil, err
 	}
@@ -38,7 +46,7 @@ func (cer *CER) Parse(m *diam.Message, localRole Role) (failedAVP *diam.AVP, err
 		return nil, err
 	}
 	if cer.InbandSecurityID != nil {
-		if v := cer.InbandSecurityID.Data.(datatype.Unsigned32); v != 0 {
+		if v := cer.InbandSecurityID.Data.(datatype.Unsigned32); v != 0 && !tlsActive {
 			return nil, ErrNoCommonSecurity
 		}
 	}

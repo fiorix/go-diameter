@@ -271,3 +271,32 @@ func TestCER_FailedVSAuthAppID(t *testing.T) {
 		t.Fatal("Unexpected error:", err)
 	}
 }
+
+func TestCER_InbandSecurity_TLSActive(t *testing.T) {
+	// When TLS is already active, Inband-Security-Id=1 should be accepted.
+	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
+	m.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(1))
+	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
+	cer := new(CER)
+	_, err := cer.ParseWithSecurity(m, Client, true)
+	if err != nil {
+		t.Fatalf("Expected no error when TLS active, got: %v", err)
+	}
+}
+
+func TestCER_InbandSecurity_NoTLS(t *testing.T) {
+	// When TLS is NOT active, Inband-Security-Id=1 should still be rejected.
+	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
+	m.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(1))
+	cer := new(CER)
+	_, err := cer.ParseWithSecurity(m, Server, false)
+	if err != ErrNoCommonSecurity {
+		t.Fatalf("Expected ErrNoCommonSecurity, got: %v", err)
+	}
+}

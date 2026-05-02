@@ -59,6 +59,30 @@ type CloseNotifier interface {
 	CloseNotify() <-chan struct{}
 }
 
+// TLSUpgrader is implemented by Conns that support upgrading a plain
+// connection to TLS after the CER/CEA exchange (RFC 6733 §6.2).
+// Use a type assertion to check if a Conn supports this:
+//
+//	if u, ok := conn.(diam.TLSUpgrader); ok {
+//	    err := u.StartTLS(tlsConfig)
+//	}
+//
+// If the TLS handshake fails after a success CEA has already been sent,
+// the connection must be closed. Both peers participate in the TLS
+// handshake so the failure is observable by both sides; sending a
+// second CEA would violate the Diameter protocol.
+type TLSUpgrader interface {
+	// StartTLS upgrades the underlying connection to TLS using
+	// server-side parameters (tls.Server). Must be called from within
+	// a handler before the next read.
+	StartTLS(cfg *tls.Config) error
+
+	// StartTLSClient upgrades the underlying connection to TLS using
+	// client-side parameters (tls.Client). Must be called from within
+	// a handler before the next read.
+	StartTLSClient(cfg *tls.Config) error
+}
+
 // A liveSwitchReader is a switchReader that's safe for concurrent
 // reads and switches, if its mutex is held.
 type liveSwitchReader struct {
@@ -392,6 +416,52 @@ func (w *response) SetContext(ctx context.Context) {
 
 func (w *response) Connection() net.Conn {
 	return w.conn.rwc
+}
+
+// StartTLS upgrades the underlying plain TCP connection to TLS using
+// server-side parameters (tls.Server).
+//
+// Concurrency safety: StartTLS swaps the connection's underlying reader
+// and writer. It is only safe to call from within a message handler
+// (e.g. handleCER) before the serve loop reads the next message. The
+// serve loop blocks on the handler, so no concurrent read is in progress
+// at that point. Do NOT call StartTLS from a separate goroutine while
+// the connection is actively reading.
+func (w *response) StartTLS(cfg *tls.Config) error {
+	return w.startTLS(cfg, true)
+}
+
+// StartTLSClient upgrades the underlying plain TCP connection to TLS
+// using client-side parameters (tls.Client). Same concurrency
+// constraints as StartTLS apply.
+func (w *response) StartTLSClient(cfg *tls.Config) error {
+	return w.startTLS(cfg, false)
+}
+
+func (w *response) startTLS(cfg *tls.Config, server bool) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.conn.tlsState != nil {
+		return nil // already TLS
+	}
+	var tlsConn *tls.Conn
+	if server {
+		tlsConn = tls.Server(w.conn.rwc, cfg)
+	} else {
+		tlsConn = tls.Client(w.conn.rwc, cfg)
+	}
+	if err := tlsConn.Handshake(); err != nil {
+		return err
+	}
+	// Replace the underlying connection and reader.
+	w.conn.rwc = tlsConn
+	w.conn.sr.Lock()
+	w.conn.sr.r = tlsConn
+	w.conn.sr.Unlock()
+	w.conn.buf = bufio.NewReadWriter(bufio.NewReader(&w.conn.sr), bufio.NewWriter(tlsConn))
+	state := tlsConn.ConnectionState()
+	w.conn.tlsState = &state
+	return nil
 }
 
 // The HandlerFunc type is an adapter to allow the use of

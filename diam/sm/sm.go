@@ -5,7 +5,6 @@
 package sm
 
 import (
-	"crypto/tls"
 	"fmt"
 
 	"github.com/fiorix/go-diameter/v4/diam"
@@ -84,11 +83,6 @@ type Settings struct {
 	// peer has passed the handshake) before the state machine responds
 	// with DWA. Same semantics as OnCER.
 	OnDWR diam.HandlerFunc
-
-	// TLSConfig is optional. When set, the server can accept
-	// Inband-Security-Id=1 in CER and perform a TLS upgrade after
-	// sending CEA (RFC 6733 §6.2). Leave nil to reject in-band TLS.
-	TLSConfig *tls.Config
 }
 
 var (

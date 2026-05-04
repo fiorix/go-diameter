@@ -72,8 +72,8 @@ func TestMakeGroupedAVP(t *testing.T) {
 	t.Logf("Message:\n%s", a)
 }
 
-func TestGroupAVPError(t *testing.T) {
-	var testGroupedAVPwithInvalidLen = []byte{
+func TestDecodeMalformedGroupAVPReturnsError(t *testing.T) {
+	var testGroupedAVPWithInvalidLen = []byte{
 		0x00, 0x00, 0x01, 0x04,
 		0x40, 0x00, 0x00, 0x20,
 		0x00, 0x00, 0x01, 0x02, // Auth-Application-Id
@@ -83,7 +83,7 @@ func TestGroupAVPError(t *testing.T) {
 		0x40, 0x00, 0x00, 0x0f, // In-valid length
 		0x00, 0x00, 0x28, 0xaf,
 	}
-	_, err := DecodeAVP(testGroupedAVPwithInvalidLen, 0, dict.Default)
+	_, err := DecodeAVP(testGroupedAVPWithInvalidLen, 0, dict.Default)
 	if err != nil {
 		t.Fatalf("expected error for inner AVP with invalid length, got nil")
 	}

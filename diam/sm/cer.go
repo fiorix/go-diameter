@@ -140,6 +140,10 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
 	}
+	// Echo Inband-Security-Id when TLS upgrade was negotiated (RFC 3588 §6.2).
+	if cer.RequestedSecurity() == 1 && sm.cfg.TLSConfig != nil {
+		a.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(1))
+	}
 	_, err = a.WriteTo(c)
 	if err != nil {
 		err = fmt.Errorf("Error CEA '%s' send failure: %v", errMessage, err)
@@ -199,6 +203,10 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	}
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
+	}
+	// Echo Inband-Security-Id when TLS upgrade was negotiated (RFC 3588 §6.2).
+	if cer.RequestedSecurity() == 1 && sm.cfg.TLSConfig != nil {
+		a.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(1))
 	}
 	_, err = a.WriteTo(c)
 	return err

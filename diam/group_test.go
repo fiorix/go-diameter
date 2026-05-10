@@ -83,8 +83,8 @@ func TestDecodeMalformedGroupAVPReturnsError(t *testing.T) {
 		0x40, 0x00, 0x00, 0x0f, // In-valid length
 		0x00, 0x00, 0x28, 0xaf,
 	}
-	_, err := DecodeAVP(testGroupedAVPWithInvalidLen, 0, dict.Default)
-	if err != nil {
+	_, err := DecodeGroupedFromBytes(testGroupedAVPWithInvalidLen, 0, dict.Default)
+	if err == nil {
 		t.Fatalf("expected error for inner AVP with invalid length, got nil")
 	}
 }

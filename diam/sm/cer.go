@@ -28,7 +28,12 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			return
 		}
 		cer := new(smparser.CER)
-		_, err := cer.ParseWithSecurity(m, smparser.Server, c.TLS() != nil)
+		tlsActive := c.TLS() != nil
+		// Accept Inband-Security-Id=1 when TLS is already active, or
+		// when the conn supports upgrading and we have a TLSConfig.
+		_, canUpgrade := c.(diam.TLSUpgrader)
+		canTLS := tlsActive || (canUpgrade && sm.cfg.TLSConfig != nil)
+		_, err := cer.ParseWithSecurity(m, smparser.Server, canTLS)
 		if err != nil {
 			err = errorCEA(sm, c, m, cer, err)
 			if err != nil {
@@ -50,6 +55,37 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 				Error:   err,
 			})
 			return
+		}
+		// RFC 6733 §5.6/§13: If Inband-Security-Id=1 was negotiated and
+		// TLS is not already active, upgrade the connection now.
+		//
+		// Failure handling: if the TLS handshake fails after a success
+		// CEA has been sent, the connection is closed. Per RFC 6733 §13
+		// the TLS handshake begins immediately after CEA — both peers
+		// participate, so a handshake failure is observable by both sides.
+		// Sending a second (failure) CEA would violate the protocol.
+		if cer.RequestedSecurity() == 1 && !tlsActive {
+			u, ok := c.(diam.TLSUpgrader)
+			if !ok || sm.cfg.TLSConfig == nil {
+				// Should not happen (canTLS check above prevents it),
+				// but close defensively.
+				sm.Error(&diam.ErrorReport{
+					Conn:    c,
+					Message: m,
+					Error:   fmt.Errorf("post-CER TLS upgrade: conn does not support TLSUpgrader"),
+				})
+				c.Close()
+				return
+			}
+			if err := u.StartTLS(sm.cfg.TLSConfig); err != nil {
+				sm.Error(&diam.ErrorReport{
+					Conn:    c,
+					Message: m,
+					Error:   fmt.Errorf("post-CER TLS upgrade failed: %w", err),
+				})
+				c.Close()
+				return
+			}
 		}
 		meta := smpeer.FromCER(cer)
 		c.SetContext(smpeer.NewContext(ctx, meta))
@@ -103,6 +139,10 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	}
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
+	}
+	// Echo Inband-Security-Id when TLS upgrade was negotiated (RFC 6733 §13).
+	if cer.RequestedSecurity() == 1 && sm.cfg.TLSConfig != nil {
+		a.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(1))
 	}
 	_, err = a.WriteTo(c)
 	if err != nil {
@@ -163,6 +203,10 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	}
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
+	}
+	// Echo Inband-Security-Id when TLS upgrade was negotiated (RFC 6733 §13).
+	if cer.RequestedSecurity() == 1 && sm.cfg.TLSConfig != nil {
+		a.NewAVP(avp.InbandSecurityID, avp.Mbit, 0, datatype.Unsigned32(1))
 	}
 	_, err = a.WriteTo(c)
 	return err

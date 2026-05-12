@@ -15,15 +15,14 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 )
 
-// cerPayload builds a minimal CER payload usable by the test mux.
-func cerPayload(tb testing.TB) []byte {
+// testPayload builds a minimal DWR payload usable by the test mux.
+// Uses DWR (280) rather than CER (257) because CER is always dispatched
+// synchronously to allow safe StartTLS upgrades.
+func testPayload(tb testing.TB) []byte {
 	tb.Helper()
-	msg := NewRequest(257, 0, dict.Default)
+	msg := NewRequest(280, 0, dict.Default)
 	msg.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("test"))
 	msg.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
-	msg.NewAVP(avp.HostIPAddress, avp.Mbit, 0, datatype.Address(net.ParseIP("127.0.0.1")))
-	msg.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(0))
-	msg.NewAVP(avp.ProductName, 0, 0, datatype.UTF8String("test"))
 	b, err := msg.Serialize()
 	if err != nil {
 		tb.Fatalf("serialize: %v", err)
@@ -59,7 +58,7 @@ func TestConcurrentServeThroughput(t *testing.T) {
 	}
 	defer conn.Close()
 
-	payload := cerPayload(t)
+	payload := testPayload(t)
 	start := time.Now()
 	for i := 0; i < total; i++ {
 		if _, err := conn.Write(payload); err != nil {
@@ -110,7 +109,7 @@ func TestConcurrentServePanicRecovery(t *testing.T) {
 	}
 	defer conn.Close()
 
-	payload := cerPayload(t)
+	payload := testPayload(t)
 	for i := 0; i < 3; i++ {
 		if _, err := conn.Write(payload); err != nil {
 			t.Fatal(err)
@@ -165,7 +164,7 @@ func TestConcurrentServeBounded(t *testing.T) {
 	}
 	defer conn.Close()
 
-	payload := cerPayload(t)
+	payload := testPayload(t)
 	for i := 0; i < total; i++ {
 		if _, err := conn.Write(payload); err != nil {
 			t.Fatal(err)
@@ -228,7 +227,7 @@ func runDispatchBenchmark(b *testing.B, maxConcurrent int, handlerLatency time.D
 			ln.Close()
 			b.Fatal(err)
 		}
-		payload := cerPayload(b)
+		payload := testPayload(b)
 
 		b.StartTimer()
 		for j := 0; j < total; j++ {

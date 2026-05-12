@@ -8,6 +8,7 @@ package diam
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -20,6 +21,22 @@ import (
 
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 )
+
+// netConn wraps a net.Conn but overrides Read with a custom io.Reader.
+// Used by startTLS to prepend buffered bytes to the TLS handshake read.
+type netConn struct {
+	r    io.Reader
+	conn net.Conn
+}
+
+func (c netConn) Read(b []byte) (int, error)         { return c.r.Read(b) }
+func (c netConn) Write(b []byte) (int, error)        { return c.conn.Write(b) }
+func (c netConn) Close() error                       { return c.conn.Close() }
+func (c netConn) LocalAddr() net.Addr                { return c.conn.LocalAddr() }
+func (c netConn) RemoteAddr() net.Addr               { return c.conn.RemoteAddr() }
+func (c netConn) SetDeadline(t time.Time) error      { return c.conn.SetDeadline(t) }
+func (c netConn) SetReadDeadline(t time.Time) error  { return c.conn.SetReadDeadline(t) }
+func (c netConn) SetWriteDeadline(t time.Time) error { return c.conn.SetWriteDeadline(t) }
 
 // The Handler interface allow arbitrary objects to be
 // registered to serve particular messages like CER, DWR.
@@ -57,6 +74,30 @@ type CloseNotifier interface {
 	// CloseNotify returns a channel that is closed
 	// when the client connection has gone away.
 	CloseNotify() <-chan struct{}
+}
+
+// TLSUpgrader is implemented by Conns that support upgrading a plain
+// connection to TLS after the CER/CEA exchange (RFC 6733 §5.6, §13).
+// Use a type assertion to check if a Conn supports this:
+//
+//	if u, ok := conn.(diam.TLSUpgrader); ok {
+//	    err := u.StartTLS(tlsConfig)
+//	}
+//
+// If the TLS handshake fails after a success CEA has already been sent,
+// the connection must be closed. Both peers participate in the TLS
+// handshake so the failure is observable by both sides; sending a
+// second CEA would violate the Diameter protocol.
+type TLSUpgrader interface {
+	// StartTLS upgrades the underlying connection to TLS using
+	// server-side parameters (tls.Server). Must be called from within
+	// a handler before the next read.
+	StartTLS(cfg *tls.Config) error
+
+	// StartTLSClient upgrades the underlying connection to TLS using
+	// client-side parameters (tls.Client). Must be called from within
+	// a handler before the next read.
+	StartTLSClient(cfg *tls.Config) error
 }
 
 // A liveSwitchReader is a switchReader that's safe for concurrent
@@ -232,9 +273,16 @@ func (c *conn) serve() {
 // (sequential, default) or in a new goroutine (concurrent), depending
 // on Server.MaxConcurrentHandlers. A positive value bounds concurrency
 // via a per-connection semaphore; a negative value is unbounded.
+//
+// CER (Capabilities-Exchange-Request, code 257) is always dispatched
+// synchronously regardless of MaxConcurrentHandlers. The CER handler
+// may call StartTLS to upgrade the connection; that upgrade must complete
+// before the serve loop reads the next message, otherwise the TLS
+// ClientHello would be consumed as a diameter message.
 func (c *conn) dispatch(m *Message) {
-	if c.server.MaxConcurrentHandlers == 0 {
-		// Sequential dispatch preserves the historical Handler contract.
+	if c.server.MaxConcurrentHandlers == 0 || m.Header.CommandCode == CapabilitiesExchange {
+		// Sequential dispatch preserves the historical Handler contract,
+		// and is required for CER to allow safe StartTLS upgrade.
 		serverHandler{c.server}.ServeDIAM(c.writer, m)
 		return
 	}
@@ -392,6 +440,68 @@ func (w *response) SetContext(ctx context.Context) {
 
 func (w *response) Connection() net.Conn {
 	return w.conn.rwc
+}
+
+// StartTLS upgrades the underlying plain TCP connection to TLS using
+// server-side parameters (tls.Server).
+//
+// Concurrency safety: StartTLS swaps the connection's underlying reader
+// and writer. It is only safe to call from within a message handler
+// (e.g. handleCER) before the serve loop reads the next message. The
+// serve loop blocks on the handler, so no concurrent read is in progress
+// at that point. Do NOT call StartTLS from a separate goroutine while
+// the connection is actively reading.
+func (w *response) StartTLS(cfg *tls.Config) error {
+	return w.startTLS(cfg, true)
+}
+
+// StartTLSClient upgrades the underlying plain TCP connection to TLS
+// using client-side parameters (tls.Client). Same concurrency
+// constraints as StartTLS apply.
+func (w *response) StartTLSClient(cfg *tls.Config) error {
+	return w.startTLS(cfg, false)
+}
+
+func (w *response) startTLS(cfg *tls.Config, server bool) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.conn.tlsState != nil {
+		return nil // already TLS
+	}
+
+	// The bufio.Reader may have pre-read bytes beyond the last diameter
+	// message (e.g. the TLS ClientHello sent by the peer immediately after
+	// CEA). tls.Server/Client reads from the raw net.Conn, so those bytes
+	// would be lost and the handshake would stall or fail.
+	// Drain the bufio buffer and prepend it to the raw connection so the
+	// TLS layer sees the complete byte stream.
+	var rawConn io.Reader = w.conn.rwc
+	if n := w.conn.buf.Reader.Buffered(); n > 0 {
+		buffered := make([]byte, n)
+		if _, err := io.ReadFull(w.conn.buf.Reader, buffered); err == nil {
+			rawConn = io.MultiReader(bytes.NewReader(buffered), w.conn.rwc)
+		}
+	}
+
+	var tlsConn *tls.Conn
+	if server {
+		tlsConn = tls.Server(netConn{rawConn, w.conn.rwc}, cfg)
+	} else {
+		tlsConn = tls.Client(netConn{rawConn, w.conn.rwc}, cfg)
+	}
+	if err := tlsConn.Handshake(); err != nil {
+		log.Printf("diam: startTLS handshake failed from %s: %v", w.conn.rwc.RemoteAddr(), err)
+		return err
+	}
+	// Replace the underlying connection and reader.
+	w.conn.rwc = tlsConn
+	w.conn.sr.Lock()
+	w.conn.sr.r = tlsConn
+	w.conn.sr.Unlock()
+	w.conn.buf = bufio.NewReadWriter(bufio.NewReader(&w.conn.sr), bufio.NewWriter(tlsConn))
+	state := tlsConn.ConnectionState()
+	w.conn.tlsState = &state
+	return nil
 }
 
 // The HandlerFunc type is an adapter to allow the use of

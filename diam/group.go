@@ -36,6 +36,12 @@ func DecodeGroupedFromBytes(b []byte, application uint32, dictionary *dict.Parse
 		avp, err := DecodeAVP(b[n:], application, dictionary)
 		if err != nil {
 			errs = append(errs, err.Error())
+			if avp.Data == nil {
+				// Fatal decode error (e.g., truncated sub-AVP header): remaining
+				// bytes cannot form a valid sub-AVP. Break so the caller detects
+				// g.Len() != bodyLen and falls back to Unknown for the parent AVP.
+				break
+			}
 		}
 		g.AVP = append(g.AVP, avp)
 		n += avp.Len()

@@ -53,6 +53,56 @@ func TestDecodeMessageWithGroupedAVP(t *testing.T) {
 	t.Logf("Message:\n%s", m)
 }
 
+func TestDecodeGroupedFromBytesHeaderTooShort(t *testing.T) {
+	b := []byte{0x01, 0x02, 0x03} // 3 bytes — cannot form an AVP header
+	g, err := DecodeGroupedFromBytes(b, 0, dict.Default)
+	if err == nil {
+		t.Fatal("Expected error for truncated header, got nil")
+	}
+	if len(g.AVP) != 0 {
+		t.Fatalf("Expected 0 sub-AVPs, got %d", len(g.AVP))
+	}
+}
+
+func TestDecodeGroupedFromBytesDataTooShort(t *testing.T) {
+	b := []byte{
+		0x01, 0x02, 0x03, 0x04, // Code
+		0x40,             // Flags: M-bit
+		0x00, 0x00, 0xff, // Length: 255 — far exceeds the 8 bytes available
+	}
+	g, err := DecodeGroupedFromBytes(b, 0, dict.Default)
+	if err == nil {
+		t.Fatal("Expected error for data-too-short sub-AVP, got nil")
+	}
+	if len(g.AVP) != 0 {
+		t.Fatalf("Expected 0 sub-AVPs (break before append), got %d", len(g.AVP))
+	}
+}
+
+func TestDecodeGroupedFromBytesValidThenTruncated(t *testing.T) {
+	b := []byte{
+		// Auth-Application-Id (code 258, Unsigned32=4) — 12 bytes, valid
+		0x00, 0x00, 0x01, 0x02, 0x40, 0x00, 0x00, 0x0c,
+		0x00, 0x00, 0x00, 0x04,
+		// 3 trailing bytes — too few to form a sub-AVP header (need 8)
+		0x01, 0x02, 0x03,
+	}
+	g, err := DecodeGroupedFromBytes(b, 0, dict.Default)
+	if err == nil {
+		t.Fatal("Expected error for truncated trailing bytes, got nil")
+	}
+	if len(g.AVP) != 1 {
+		t.Fatalf("Expected 1 decoded sub-AVP before the truncated remainder, got %d", len(g.AVP))
+	}
+	if g.AVP[0].Code != avp.AuthApplicationID {
+		t.Fatalf("Expected Auth-Application-Id (code %d), got %d", avp.AuthApplicationID, g.AVP[0].Code)
+	}
+	// g.Len() reflects only the successfully decoded sub-AVP.
+	if got := g.Len(); got != 12 {
+		t.Fatalf("Expected g.Len()=12, got %d", got)
+	}
+}
+
 func TestMakeGroupedAVP(t *testing.T) {
 	g := &GroupedAVP{
 		AVP: []*AVP{

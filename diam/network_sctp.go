@@ -110,9 +110,21 @@ func NewSCTPConn(sctpConn *sctp.SCTPConn) MultistreamConn {
 		return nil
 	}
 	sctpConn.SubscribeEvents(sctp.SCTP_EVENT_DATA_IO)
-	// Disable Nagle-like buffering so small Diameter messages are sent immediately.
+
+	// Sender side: disable the SCTP Nagle algorithm (RFC 6458 §8.1.21) so small
+	// Diameter messages are sent immediately instead of being coalesced. This is
+	// the primary fix for the latency caused by sender-side buffering.
+	//
+	// TODO: replace the raw Setsockopt/unsafe.Pointer call with a typed helper
+	// (e.g. SetNoDelay) once the ishidawataru/sctp package exposes one. It only
+	// provides the low-level Setsockopt today, so unsafe is currently unavoidable.
 	noDelay := 1
 	sctpConn.Setsockopt(sctp.SCTP_NODELAY, uintptr(unsafe.Pointer(&noDelay)), unsafe.Sizeof(noDelay))
+
+	// Receiver side: disable the delayed-SACK timer (RFC 6458 §8.1.19) so
+	// acknowledgements are sent for every packet without delay, complementing the
+	// sender-side NODELAY above to minimize round-trip latency.
+	sctpConn.SetSackTimer(&sctp.SackTimer{SackDelay: 0, SackFrequency: 1})
 	return &SCTPConn{SCTPConn: sctpConn, s: &streams{}, currStream: InvalidStreamID, writerStream: InvalidStreamID}
 }
 

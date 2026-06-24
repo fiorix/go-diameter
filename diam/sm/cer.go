@@ -104,6 +104,9 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
 	}
+	if sm.cfg.OnCEA != nil {
+		sm.cfg.OnCEA(c, a)
+	}
 	_, err = a.WriteTo(c)
 	if err != nil {
 		err = fmt.Errorf("Error CEA '%s' send failure: %v", errMessage, err)
@@ -163,6 +166,9 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	}
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
+	}
+	if sm.cfg.OnCEA != nil {
+		sm.cfg.OnCEA(c, a)
 	}
 	_, err = a.WriteTo(c)
 	return err

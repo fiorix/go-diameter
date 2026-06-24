@@ -79,10 +79,18 @@ type Settings struct {
 	// handshake.
 	OnCER diam.HandlerFunc
 
+	// OnCEA, if non-nil, is invoked immediately before a CEA is sent (both
+	// the success CEA and the error CEA). Useful for logging or metrics.
+	OnCEA diam.HandlerFunc
+
 	// OnDWR, if non-nil, is invoked when a DWR is received (after the
 	// peer has passed the handshake) before the state machine responds
 	// with DWA. Same semantics as OnCER.
 	OnDWR diam.HandlerFunc
+
+	// OnDWA, if non-nil, is invoked immediately before a DWA is sent in
+	// response to a peer DWR. Useful for logging or metrics.
+	OnDWA diam.HandlerFunc
 }
 
 var (

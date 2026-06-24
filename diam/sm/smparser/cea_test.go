@@ -260,6 +260,45 @@ func TestCommonAppIdCEA(t *testing.T) {
 	}
 }
 
+// TestCEACapabilityAVPs verifies that the capability AVPs from RFC 6733 §5.3.2
+// (Vendor-Id, Product-Name, Supported-Vendor-Id) are parsed into the CEA struct.
+func TestCEACapabilityAVPs(t *testing.T) {
+	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)
+	m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(diam.Success))
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("foobar"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("test"))
+	m.NewAVP(avp.OriginStateID, avp.Mbit, 0, datatype.Unsigned32(1))
+	m.NewAVP(avp.VendorID, avp.Mbit, 0, datatype.Unsigned32(10415))
+	m.NewAVP(avp.ProductName, 0, 0, datatype.UTF8String("go-diameter"))
+	m.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(10415))
+	m.NewAVP(avp.SupportedVendorID, avp.Mbit, 0, datatype.Unsigned32(13019))
+	m.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, datatype.Unsigned32(4))
+
+	cea := new(CEA)
+	if err := cea.Parse(m, Client); err != nil {
+		t.Fatal(err)
+	}
+	if cea.VendorID != 10415 {
+		t.Fatalf("Unexpected Vendor-Id. Want 10415, have %d", cea.VendorID)
+	}
+	if cea.ProductName != "go-diameter" {
+		t.Fatalf("Unexpected Product-Name. Want %q, have %q", "go-diameter", cea.ProductName)
+	}
+	if len(cea.SupportedVendorID) != 2 {
+		t.Fatalf("Unexpected Supported-Vendor-Id count. Want 2, have %d", len(cea.SupportedVendorID))
+	}
+	want := []datatype.Unsigned32{10415, 13019}
+	for i, a := range cea.SupportedVendorID {
+		v, ok := a.Data.(datatype.Unsigned32)
+		if !ok {
+			t.Fatalf("Unexpected Supported-Vendor-Id type at %d. Want datatype.Unsigned32, have %T", i, a.Data)
+		}
+		if v != want[i] {
+			t.Fatalf("Unexpected Supported-Vendor-Id at %d. Want %d, have %d", i, want[i], v)
+		}
+	}
+}
+
 // TestCommonAppIdCEA tests that at least one CEA AppID exist in the default dictionary
 func TestCEAAutAndAcct(t *testing.T) {
 	m := diam.NewMessage(diam.CapabilitiesExchange, 0, 0, 0, 0, nil)

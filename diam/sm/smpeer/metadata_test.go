@@ -26,6 +26,12 @@ func TestFromCER(t *testing.T) {
 		t.Fatalf("Unexpected OriginRealm. Want %q, have %q",
 			cer.OriginRealm, meta.OriginRealm)
 	}
+	if meta.Cer != cer {
+		t.Fatalf("Unexpected Cer. Want %p, have %p", cer, meta.Cer)
+	}
+	if meta.Cea != nil {
+		t.Fatalf("Unexpected Cea. Want nil, have %#v", meta.Cea)
+	}
 	ctx := NewContext(context.Background(), meta)
 	data, ok := FromContext(ctx)
 	if !ok {
@@ -49,6 +55,12 @@ func TestFromCEA(t *testing.T) {
 	if meta.OriginRealm != cer.OriginRealm {
 		t.Fatalf("Unexpected OriginRealm. Want %q, have %q",
 			cer.OriginRealm, meta.OriginRealm)
+	}
+	if meta.Cea != cer {
+		t.Fatalf("Unexpected Cea. Want %p, have %p", cer, meta.Cea)
+	}
+	if meta.Cer != nil {
+		t.Fatalf("Unexpected Cer. Want nil, have %#v", meta.Cer)
 	}
 	ctx := NewContext(context.Background(), meta)
 	data, ok := FromContext(ctx)

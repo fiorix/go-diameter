@@ -22,12 +22,12 @@ type Metadata struct {
 	OriginRealm  datatype.DiameterIdentity
 	Applications []uint32 // Acct or Auth IDs supported by the peer.
 
-	// Cer and Cea retain the full parsed handshake message so callers can
-	// read capability AVPs (e.g. Vendor-Id, Product-Name, Supported-Vendor-Id)
-	// that are not promoted to the fields above. Exactly one is set, matching
-	// which constructor was used: Cer for inbound peers, Cea for outbound.
-	Cer *smparser.CER
-	Cea *smparser.CEA
+	// CER and CEA retain the full parsed handshake message. Exactly one is
+	// set, matching which constructor was used: CER for inbound peers, CEA
+	// for outbound. CEA exposes the capability AVPs (Vendor-Id, Product-Name,
+	// Supported-Vendor-Id) that are not promoted to the fields above.
+	CER *smparser.CER
+	CEA *smparser.CEA
 }
 
 // FromCER creates a Metadata object from data in the CER.
@@ -36,7 +36,7 @@ func FromCER(cer *smparser.CER) *Metadata {
 		OriginHost:   cer.OriginHost,
 		OriginRealm:  cer.OriginRealm,
 		Applications: cer.Applications(),
-		Cer:          cer,
+		CER:          cer,
 	}
 }
 
@@ -46,7 +46,7 @@ func FromCEA(cea *smparser.CEA) *Metadata {
 		OriginHost:   cea.OriginHost,
 		OriginRealm:  cea.OriginRealm,
 		Applications: cea.Applications(),
-		Cea:          cea,
+		CEA:          cea,
 	}
 }
 

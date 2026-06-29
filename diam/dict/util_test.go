@@ -7,6 +7,8 @@ package dict
 import (
 	"bytes"
 	"testing"
+
+	"github.com/fiorix/go-diameter/v4/diam/datatype"
 )
 
 func TestApps(t *testing.T) {
@@ -169,6 +171,44 @@ func TestFindAVPWithVendorNoInfiniteRecursion(t *testing.T) {
 	}
 	if avp.Name != "Unknown-99999-12345" {
 		t.Fatalf("Expected Unknown-99999-12345 AVP, got %s", avp.Name)
+	}
+}
+
+func TestFindAVPByCode(t *testing.T) {
+	// Exact (appid, code, vendorID) match.
+	if avp, err := Default.FindAVPByCode(4, 461, UndefinedVendorID); err != nil {
+		t.Fatalf("FindAVPByCode error for Service-Context-Id: %v", err)
+	} else if avp.Name != "Service-Context-Id" {
+		t.Fatalf("Unexpected AVP %q, expected Service-Context-Id", avp.Name)
+	}
+
+	// Inherited base AVP (app 4 → base) resolves via the pre-merged index.
+	if avp, err := Default.FindAVPByCode(4, 263, 0); err != nil {
+		t.Fatalf("FindAVPByCode error for inherited Session-Id: %v", err)
+	} else if avp.Name != "Session-Id" {
+		t.Fatalf("Unexpected AVP %q, expected Session-Id", avp.Name)
+	}
+
+	// Inheritance through the full parent chain: Gx (16777238) → 4 → base.
+	if avp, err := Default.FindAVPByCode(16777238, 264, 0); err != nil {
+		t.Fatalf("FindAVPByCode error for inherited Origin-Host: %v", err)
+	} else if avp.Name != "Origin-Host" {
+		t.Fatalf("Unexpected AVP %q, expected Origin-Host", avp.Name)
+	}
+
+	// Unknown vendor AVP resolves to Unknown, not cross-vendor to base NAS-Port (code 5, vendor 0).
+	avp, err := Default.FindAVPByCode(4, 5, 10415)
+	if err == nil {
+		t.Fatal("Expected error for unknown vendor AVP code 5 / vendor 10415")
+	}
+	if avp == nil {
+		t.Fatal("Expected Unknown AVP, got nil")
+	}
+	if avp.Name != "Unknown-5-10415" {
+		t.Fatalf("Expected Unknown-5-10415, got %q (cross-vendor mismatch)", avp.Name)
+	}
+	if avp.Data.Type != datatype.UnknownType {
+		t.Fatalf("Expected Unknown data type, got %v", avp.Data.Type)
 	}
 }
 

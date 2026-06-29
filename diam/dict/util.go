@@ -142,16 +142,10 @@ retry:
 //
 // FindAVPByCode must never be called concurrently with LoadFile or Load.
 func (p *Parser) FindAVPByCode(appid, code, vendorID uint32) (*AVP, error) {
-	// Primary lookup — covers both app-specific and inherited AVPs
-	// thanks to mergeInheritedAVPs() called at load time.
+	// Exact (appid, code, vendorID) match; inherited AVPs are pre-merged by mergeInheritedAVPs().
+	// An absent vendor AVP resolves to Unknown, never cross-vendor (RFC 6733 §4.1/§11.1.1).
 	if avp, ok := p.avpcode[codeIdx{appid, code, vendorID}]; ok {
 		return avp, nil
-	}
-	// Fallback: if a specific vendorID was given, retry with UndefinedVendorID.
-	if vendorID != UndefinedVendorID {
-		if avp, ok := p.avpcode[codeIdx{appid, code, UndefinedVendorID}]; ok {
-			return avp, nil
-		}
 	}
 	return MakeUnknownAVP(appid, code, vendorID),
 		fmt.Errorf("Could not find AVP %d for Vendor: %d", code, vendorID)

@@ -166,6 +166,11 @@ func (m *Message) decodeAVPs(b []byte) error {
 				return err
 			}
 		}
+		if a.Data == nil {
+			// Stop: without Data we cannot compute a.Len() to advance, and the
+			// framing is corrupt anyway.
+			break
+		}
 		m.AVP = append(m.AVP, a)
 		n += a.Len()
 	}

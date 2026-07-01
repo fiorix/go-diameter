@@ -71,3 +71,18 @@ func TestMakeGroupedAVP(t *testing.T) {
 	}
 	t.Logf("Message:\n%s", a)
 }
+
+// TestDecodeGroupedFromBytesMalformed ensures a sub-AVP whose header is too
+// short (leaving its Data nil) yields an error instead of a nil-pointer panic.
+func TestDecodeGroupedFromBytesMalformed(t *testing.T) {
+	// One AVP header declaring a length of 4, which is shorter than the 8-byte
+	// minimum, so DecodeAVP returns an error with a nil Data.
+	b := []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04}
+	g, err := DecodeGroupedFromBytes(b, 0, dict.Default)
+	if err == nil {
+		t.Fatal("expected an error for the malformed grouped AVP")
+	}
+	if g == nil {
+		t.Fatal("expected a non-nil partial group")
+	}
+}

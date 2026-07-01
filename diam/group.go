@@ -35,7 +35,10 @@ func DecodeGroupedFromBytes(b []byte, application uint32, dictionary *dict.Parse
 	for n := 0; n < len(b); {
 		avp, err := DecodeAVP(b[n:], application, dictionary)
 		if err != nil {
+			// Stop: framing is now untrustworthy and avp.Data may be nil, so
+			// advancing by avp.Len() would panic.
 			errs = append(errs, err.Error())
+			break
 		}
 		g.AVP = append(g.AVP, avp)
 		n += avp.Len()

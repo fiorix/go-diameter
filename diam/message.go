@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"net"
 	"strings"
@@ -23,6 +24,19 @@ import (
 
 // MessageBufferLength is the default buffer length for Diameter messages.
 var MessageBufferLength = 1 << 10
+
+// unknownCommand is used when the dictionary has no application/command
+// entry for a received message (e.g. an application whose dictionary isn't
+// loaded at all). Its permissive rule set lets decodeAVPs run generically
+// instead of aborting -- AVP-level lookups already degrade to
+// datatype.Unknown for codes the dictionary doesn't recognize
+// (dict.FindAVPByCode), so a message like this still decodes instead of
+// erroring out, even though its AVPs come back untyped.
+var unknownCommand = &dict.Command{
+	Name:    "Unknown",
+	Request: dict.CommandRule{Rule: make([]*dict.Rule, 32)},
+	Answer:  dict.CommandRule{Rule: make([]*dict.Rule, 32)},
+}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -113,7 +127,9 @@ func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command,
 		m.Header.CommandCode,
 	)
 	if err != nil {
-		return nil, stream, err
+		log.Printf("diam: no dictionary command for app %d code %d, decoding generically: %v",
+			m.Header.ApplicationID, m.Header.CommandCode, err)
+		cmd = unknownCommand
 	}
 	return cmd, stream, nil
 }

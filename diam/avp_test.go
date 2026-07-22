@@ -118,6 +118,66 @@ func TestDecodeAVPWithVendorID(t *testing.T) {
 	}
 }
 
+func TestDecodeAVPUnknownVendor(t *testing.T) {
+	// Unknown vendor AVP decodes as type Unknown with the full payload,
+	// not bound to same-code base NAS-Port.
+	payload := []byte("08-21090003e80000") // 17 bytes, not a 4-byte Unsigned32
+	a := NewAVP(5, avp.Vbit, 10415, datatype.OctetString(payload))
+	b, err := a.Serialize()
+	if err != nil {
+		t.Fatal("Failed to serialize AVP:", err)
+	}
+	got, err := DecodeAVP(b, 4, dict.Default)
+	if err != nil {
+		t.Fatal("Failed to decode unknown vendor AVP:", err)
+	}
+	if got == nil || got.Data == nil {
+		t.Fatal("Expected Unknown AVP with non-nil Data")
+	}
+	if got.Len() != len(b) {
+		t.Fatalf("Unknown AVP Len() %d does not match wire length %d (desync)",
+			got.Len(), len(b))
+	}
+	if u, ok := got.Data.(datatype.Unknown); !ok {
+		t.Fatalf("Expected datatype.Unknown, got %T", got.Data)
+	} else if !bytes.Equal([]byte(u), payload) {
+		t.Fatalf("Unknown payload not preserved: have %x, want %x", []byte(u), payload)
+	}
+}
+
+func TestReadMessageUnknownVendorAVP(t *testing.T) {
+	// Regression: an unknown vendor AVP colliding with base code 5 (NAS-Port) must
+	// parse without desyncing the stream or panicking in (*AVP).Len().
+	m := NewRequest(CreditControl, 4, dict.Default)
+	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String("test;1;0;1"))
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("client"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("localhost"))
+	m.NewAVP(avp.CCRequestType, avp.Mbit, 0, datatype.Enumerated(1))
+	m.NewAVP(avp.CCRequestNumber, avp.Mbit, 0, datatype.Unsigned32(0))
+	m.NewAVP(5, avp.Vbit, 10415, datatype.OctetString([]byte("08-21090003e80000")))
+
+	var buf bytes.Buffer
+	if _, err := m.WriteTo(&buf); err != nil {
+		t.Fatal("Failed to serialize message:", err)
+	}
+	wire := buf.Bytes()
+
+	got, err := ReadMessage(bytes.NewReader(wire), dict.Default)
+	if err != nil {
+		t.Fatal("Failed to read message:", err)
+	}
+	if len(got.AVP) != 6 {
+		t.Fatalf("Expected 6 AVPs, got %d (stream desync)", len(got.AVP))
+	}
+	last := got.AVP[len(got.AVP)-1]
+	if last.Code != 5 || last.VendorID != 10415 {
+		t.Fatalf("Last AVP misframed: code=%d vendor=%d", last.Code, last.VendorID)
+	}
+	if last.Data == nil {
+		t.Fatal("Unknown AVP decoded with nil Data")
+	}
+}
+
 func TestEncodeAVP(t *testing.T) {
 	a := &AVP{
 		Code:  avp.OriginHost,

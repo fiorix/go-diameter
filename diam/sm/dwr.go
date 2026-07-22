@@ -39,6 +39,9 @@ func handleDWR(sm *StateMachine) diam.HandlerFunc {
 			stateid := datatype.Unsigned32(sm.cfg.OriginStateID)
 			m.NewAVP(avp.OriginStateID, avp.Mbit, 0, stateid)
 		}
+		if sm.cfg.OnDWA != nil {
+			sm.cfg.OnDWA(c, a)
+		}
 		_, err = a.WriteTo(c)
 		if err != nil {
 			sm.Error(&diam.ErrorReport{

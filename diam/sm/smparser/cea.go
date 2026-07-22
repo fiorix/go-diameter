@@ -18,6 +18,9 @@ type CEA struct {
 	OriginHost                  datatype.DiameterIdentity `avp:"Origin-Host"`
 	OriginRealm                 datatype.DiameterIdentity `avp:"Origin-Realm"`
 	OriginStateID               uint32                    `avp:"Origin-State-Id"`
+	VendorID                    uint32                    `avp:"Vendor-Id"`           // Peer's Vendor-Id (RFC 6733 §5.3.2, mandatory).
+	ProductName                 string                    `avp:"Product-Name"`        // Peer's Product-Name (RFC 6733 §5.3.2, mandatory).
+	SupportedVendorID           []*diam.AVP               `avp:"Supported-Vendor-Id"` // Vendor-Ids the peer supports (RFC 6733 §5.3.2).
 	AcctApplicationID           []*diam.AVP               `avp:"Acct-Application-Id"`
 	AuthApplicationID           []*diam.AVP               `avp:"Auth-Application-Id"`
 	VendorSpecificApplicationID []*diam.AVP               `avp:"Vendor-Specific-Application-Id"`

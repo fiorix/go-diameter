@@ -57,7 +57,7 @@ func TestS6aProxyService(t *testing.T) {
 
 	go func() {
 		if err := s.Serve(lis); err != nil {
-			t.Fatalf("failed to serve: %v", err)
+			t.Errorf("failed to serve: %v", err)
 			return
 		}
 	}()
@@ -107,7 +107,7 @@ func TestS6aProxyService(t *testing.T) {
 		ulResp, err := c.UpdateLocation(context.Background(), ulReq)
 		if err != nil {
 			complChan <- err
-			t.Fatalf("GRPC ULR Error: %v", err)
+			t.Errorf("GRPC ULR Error: %v", err)
 			return
 		}
 		t.Logf("GRPC ULA: %#+v", *ulResp)

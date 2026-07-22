@@ -102,15 +102,24 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	}
 	// Handle grouped AVPs directly to avoid an intermediate copy.
 	if dictAVP.Data.Type == datatype.GroupedType {
-		a.Data, err = DecodeGroupedFromBytes(payload, application, dictionary)
-		if err != nil {
-			return DecodeError(fmt.Errorf("%s(%d): Grouped{%v}", dictAVP.Name, dictAVP.Code, err))
+		g, groupErr := DecodeGroupedFromBytes(payload[:bodyLen], application, dictionary)
+		if groupErr != nil {
+			// Preserve raw bytes to prevent offset misalignment in the parent parse loop.
+			a.Data = datatype.Unknown(payload[:bodyLen])
+			return DecodeError(fmt.Errorf("%s(%d): Grouped{%v}", dictAVP.Name, dictAVP.Code, groupErr))
 		}
+		a.Data = g
 	} else {
-		a.Data, err = datatype.Decode(dictAVP.Data.Type, payload)
-		if err != nil {
-			return DecodeError(fmt.Errorf("%s(%d): %v", dictAVP.Name, dictAVP.Code, err))
+		decoded, decodeErr := datatype.Decode(dictAVP.Data.Type, payload[:bodyLen])
+		if decodeErr != nil || decoded.Len() != bodyLen {
+			// Preserve raw bytes to prevent offset misalignment in the parent parse loop.
+			if decodeErr == nil {
+				decodeErr = fmt.Errorf("size mismatch: %s expects %d bytes, wire has %d", dictAVP.Data.TypeName, decoded.Len(), bodyLen)
+			}
+			a.Data = datatype.Unknown(payload[:bodyLen])
+			return DecodeError(fmt.Errorf("%s(%d): %v", dictAVP.Name, dictAVP.Code, decodeErr))
 		}
+		a.Data = decoded
 	}
 	return nil
 }

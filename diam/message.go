@@ -160,11 +160,23 @@ func (m *Message) decodeAVPs(b []byte) error {
 	for n := 0; n < len(b); {
 		a, err = DecodeAVP(b[n:], m.Header.ApplicationID, m.Dictionary())
 		if err != nil {
-			if decodeErr, ok := err.(DecodeError); ok {
-				decodeErrs = append(decodeErrs, decodeErr.Error())
-			} else {
+			decodeErr, ok := err.(DecodeError)
+			if !ok {
 				return err
 			}
+			decodeErrs = append(decodeErrs, decodeErr.Error())
+			m.AVP = append(m.AVP, a)
+			// The payload failed to decode, so a.Data may be nil and a.Len()
+			// would dereference it. Advance by the on-wire AVP length instead
+			// (DecodeAVP already validated it is present in b), padded to the
+			// next 4-byte boundary. Reject a non-advancing length so a
+			// malformed length field can't spin the loop forever.
+			adv := a.Length + pad4(a.Length)
+			if adv <= 0 || n+adv > len(b) {
+				break
+			}
+			n += adv
+			continue
 		}
 		m.AVP = append(m.AVP, a)
 		n += a.Len()

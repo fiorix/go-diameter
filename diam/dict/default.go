@@ -601,7 +601,7 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="Requested-Action" required="false" max="1"/>
 				<rule avp="Used-Service-Unit" required="false" max="1"/>
 				<rule avp="Multiple-Services-Indicator" required="false" max="1"/>
-				<rule avp="Multiple-Services-Credit-Control" required="false" max="1"/>
+				<rule avp="Multiple-Services-Credit-Control" required="false"/>
 				<rule avp="Service-Parameter-Info" required="false" max="1"/>
 				<rule avp="CC-Correlation-Id" required="false" max="1"/>
 				<rule avp="User-Equipment-Info" required="false" max="1"/>
@@ -624,7 +624,7 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="Origin-State-Id" required="false" max="1"/>
 				<rule avp="Event-Timestamp" required="false" max="1"/>
 				<rule avp="Granted-Service-Unit" required="false" max="1"/>
-				<rule avp="Multiple-Services-Credit-Control" required="false" max="1"/>
+				<rule avp="Multiple-Services-Credit-Control" required="false"/>
 				<rule avp="Cost-Information" required="false" max="1"/>
 				<rule avp="Final-Unit-Indication" required="false" max="1"/>
 				<rule avp="Check-Balance-Result" required="false" max="1"/>

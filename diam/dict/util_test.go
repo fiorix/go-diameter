@@ -235,3 +235,40 @@ func BenchmarkScanAVPCode(b *testing.B) {
 		Default.ScanAVP(263)
 	}
 }
+
+// TestCreditControlMSCCUnbounded guards the Credit-Control (Gy) command
+// rules for Multiple-Services-Credit-Control. RFC 4006 lists the AVP as
+// *[ Multiple-Services-Credit-Control ] in both CCR and CCA, so the rule
+// must not carry an upper bound. The dictionary used to declare max="1",
+// which contradicted both the RFC and the Ro rule in tgpp_ro_rf.xml.
+func TestCreditControlMSCCUnbounded(t *testing.T) {
+	cmd, err := Default.FindCommand(4, 272) // Credit-Control
+	if err != nil {
+		t.Fatal(err)
+	}
+	find := func(rules []*Rule) *Rule {
+		for _, r := range rules {
+			if r.AVP == "Multiple-Services-Credit-Control" {
+				return r
+			}
+		}
+		return nil
+	}
+	for _, tc := range []struct {
+		name  string
+		rules []*Rule
+	}{
+		{"CCR", cmd.Request.Rule},
+		{"CCA", cmd.Answer.Rule},
+	} {
+		r := find(tc.rules)
+		if r == nil {
+			t.Errorf("%s: Multiple-Services-Credit-Control rule not found", tc.name)
+			continue
+		}
+		if r.Max != 0 {
+			t.Errorf("%s: Multiple-Services-Credit-Control max=%d, want 0 (unbounded)",
+				tc.name, r.Max)
+		}
+	}
+}

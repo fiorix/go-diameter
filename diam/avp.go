@@ -162,7 +162,19 @@ func (a *AVP) SerializeTo(b []byte) error {
 
 // Len returns the length of this AVP in bytes with padding.
 func (a *AVP) Len() int {
+	// Data is nil for an AVP whose payload failed to decode (see
+	// DecodeFromBytes). Fall back to the header length so callers iterating
+	// over a partially-decoded message can't trigger a nil dereference.
+	if a.Data == nil {
+		return a.headerLen()
+	}
 	return a.headerLen() + a.Data.Len() + a.Data.Padding()
+}
+
+// pad4 returns the number of padding bytes needed to round n up to the next
+// 4-byte boundary, as required for AVP alignment (RFC 6733 §4.1).
+func pad4(n int) int {
+	return (4 - n%4) % 4
 }
 
 func (a *AVP) headerLen() int {

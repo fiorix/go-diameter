@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/fiorix/go-diameter/v4/diam/avp"
@@ -341,5 +342,82 @@ func BenchmarkWriteMessage(b *testing.B) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	for n := 0; n < b.N; n++ {
 		m.WriteTo(ioutil.Discard)
+	}
+}
+
+// TestDecodeAVPsSurvivesAnUndecodableAVP covers Message.decodeAVPs.
+//
+// DecodeAVP returns a non-nil *AVP alongside a DecodeError so parsing can
+// continue past a bad AVP. When the failure is fatal, though — a truncated
+// header, or a declared AVP Length longer than the bytes that follow — that
+// AVP has a nil Data, and AVP.Len dereferences Data. decodeAVPs measured it
+// anyway, so any peer able to send a malformed AVP panicked the decode.
+func TestDecodeAVPsSurvivesAnUndecodableAVP(t *testing.T) {
+	// Origin-Host (code 264, M bit) declaring an AVP Length of 0xffffff,
+	// which is longer than what follows it.
+	body := []byte{
+		0x00, 0x00, 0x01, 0x08, // AVP Code 264
+		0x40, 0xff, 0xff, 0xff, // M bit, AVP Length 16777215
+		'x', 'y', 'z', 0x00,
+	}
+	message := append([]byte{
+		0x01, 0x00, 0x00, byte(HeaderLength + len(body)),
+		0x80, 0x00, 0x01, 0x01, // CER
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x01,
+	}, body...)
+
+	m, err := ReadMessage(bytes.NewReader(message), dict.Default)
+	if err == nil {
+		t.Fatal("Expected a decode error for an AVP declaring more data than it carries, got nil")
+	}
+	if !strings.Contains(err.Error(), "Failed to decode one or more AVPs") {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if m == nil {
+		t.Fatal("Expected a non-nil *Message alongside the decode error")
+	}
+	if len(m.AVP) != 0 {
+		t.Errorf("Expected the undecodable AVP to be dropped, got %d AVPs", len(m.AVP))
+	}
+}
+
+// TestReadMessageWithTruncatedTrailingAVP builds a well-formed
+// Capabilities-Exchange-Request and appends 3 trailing bytes, too few to form
+// a valid AVP header (which needs at least 8). The AVPs preceding them must
+// still be decoded, and decodeAVPs must report the failure without measuring
+// the partially decoded AVP, whose Data is nil.
+func TestReadMessageWithTruncatedTrailingAVP(t *testing.T) {
+	m := NewRequest(CapabilitiesExchange, 0, nil)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("host"))
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, datatype.DiameterIdentity("realm"))
+
+	var buf bytes.Buffer
+	if _, err := m.WriteTo(&buf); err != nil {
+		t.Fatalf("WriteTo failed: %v", err)
+	}
+
+	// Append 3 garbage bytes and grow the header's Message-Length (bytes
+	// [1:4], a 24-bit big-endian field) to match, so readBody actually hands
+	// them to decodeAVPs instead of stopping short.
+	raw := append(buf.Bytes(), 0x01, 0x02, 0x03)
+	msgLen := uint32(len(raw))
+	raw[1] = byte(msgLen >> 16)
+	raw[2] = byte(msgLen >> 8)
+	raw[3] = byte(msgLen)
+
+	msg, err := ReadMessage(bytes.NewReader(raw), dict.Default)
+	if err == nil {
+		t.Fatal("Expected an error when decoding a message with a truncated trailing AVP, got nil")
+	}
+	if !strings.Contains(err.Error(), "Failed to decode one or more AVPs") {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if msg == nil {
+		t.Fatal("Expected a non-nil *Message even though decoding failed partway through")
+	}
+	if len(msg.AVP) != 2 {
+		t.Fatalf("Expected the 2 AVPs preceding the truncated bytes to still be decoded, got %d", len(msg.AVP))
 	}
 }

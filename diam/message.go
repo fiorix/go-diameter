@@ -162,6 +162,14 @@ func (m *Message) decodeAVPs(b []byte) error {
 		if err != nil {
 			if decodeErr, ok := err.(DecodeError); ok {
 				decodeErrs = append(decodeErrs, decodeErr.Error())
+				if a.Data == nil {
+					// Fatal decode error (e.g., truncated AVP header): the AVP
+					// carries no Data, so a.Len() would dereference nil, and the
+					// remaining bytes cannot form a valid AVP anyway. Break and
+					// keep what was decoded; DecodeErr below reports the failure.
+					// Same guard as DecodeGroupedFromBytes.
+					break
+				}
 			} else {
 				return err
 			}

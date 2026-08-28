@@ -7,6 +7,7 @@ package diam
 import (
 	"bytes"
 	"encoding/hex"
+	"strings"
 	"testing"
 
 	"github.com/fiorix/go-diameter/v4/diam/avp"
@@ -120,4 +121,24 @@ func TestMakeGroupedAVP(t *testing.T) {
 			hex.Dump(testGroupedAVP), hex.Dump(b))
 	}
 	t.Logf("Message:\n%s", a)
+}
+
+// TestDecodeGroupedSurvivesAnUndecodableAVP covers the same defect as
+// TestDecodeAVPsSurvivesAnUndecodableAVP reached through a grouped AVP, which
+// is how the interesting messages arrive: Media-Component-Description on Rx
+// nests to arbitrary depth. Minimised by a fuzzer to 60 bytes.
+func TestDecodeGroupedSurvivesAnUndecodableAVP(t *testing.T) {
+	message := []byte("0\x00\x0070\x00\x01\x12\x01\x00\x00100000000\x00\x00\x01)0" +
+		"\x00\x00 00000000000000000000000000000000000000000000")
+
+	m, err := ReadMessage(bytes.NewReader(message), dict.Default)
+	if err == nil {
+		t.Fatal("Expected a decode error for a grouped AVP with an undecodable member, got nil")
+	}
+	if !strings.Contains(err.Error(), "Failed to decode one or more AVPs") {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if m == nil {
+		t.Fatal("Expected a non-nil *Message alongside the decode error")
+	}
 }

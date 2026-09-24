@@ -19,7 +19,8 @@ import (
 // Unmarshal API so it catches any regression in scanStruct's use of the
 // index, not just in newIndex.
 func TestUnmarshalVendorId(t *testing.T) {
-	// Two AVPs sharing code 777 but differing by VendorID.
+	// Two AVPs sharing code 777 but differing by VendorID, plus a grouped
+	// AVP that carries both of them.
 	const dictXML = `<?xml version="1.0" encoding="UTF-8"?>
 <diameter>
   <application id="4">
@@ -29,28 +30,61 @@ func TestUnmarshalVendorId(t *testing.T) {
     <avp name="Example-Vendor" code="777" must="M,V" may="-" must-not="-" may-encrypt="Y" vendor-id="10415">
       <data type="Unsigned32" />
     </avp>
+    <avp name="Example-Group" code="778" must="M" may="-" must-not="V" may-encrypt="Y">
+      <data type="Grouped">
+        <rule avp="Example-Base" required="false" max="1" />
+        <rule avp="Example-Vendor" required="false" max="1" />
+      </data>
+    </avp>
   </application>
 </diameter>`
-	if err := dict.Default.Load(bytes.NewReader([]byte(dictXML))); err != nil {
+	d, err := dict.NewParser()
+	if err != nil {
+		t.Fatalf("new parser: %v", err)
+	}
+	if err := d.Load(bytes.NewReader([]byte(dictXML))); err != nil {
 		t.Fatalf("load dict: %v", err)
 	}
 
-	m := NewRequest(272, 4, dict.Default)
-	m.AddAVP(NewAVP(777, avp.Mbit, 0, datatype.OctetString("base-data")))
-	m.AddAVP(NewAVP(777, avp.Mbit|avp.Vbit, 10415, datatype.Unsigned32(12345)))
+	sameCode := func(base string, vendor uint32) []*AVP {
+		return []*AVP{
+			NewAVP(777, avp.Mbit, 0, datatype.OctetString(base)),
+			NewAVP(777, avp.Mbit|avp.Vbit, 10415, datatype.Unsigned32(vendor)),
+		}
+	}
 
-	var dst struct {
+	m := NewRequest(272, 4, d)
+	for _, a := range sameCode("base-data", 12345) {
+		m.AddAVP(a)
+	}
+	m.AddAVP(NewAVP(778, avp.Mbit, 0, &GroupedAVP{AVP: sameCode("group-data", 67890)}))
+
+	type pair struct {
 		Base   datatype.OctetString `avp:"Example-Base"`
 		Vendor datatype.Unsigned32  `avp:"Example-Vendor"`
+	}
+	var dst struct {
+		pair
+		Group pair `avp:"Example-Group"`
 	}
 	if err := m.Unmarshal(&dst); err != nil {
 		t.Fatalf("Unmarshal: %v", err)
 	}
 
-	if got, want := string(dst.Base), "base-data"; got != want {
-		t.Errorf("Base: got %q, want %q (wrong AVP routed to Base field)", got, want)
-	}
-	if got, want := uint32(dst.Vendor), uint32(12345); got != want {
-		t.Errorf("Vendor: got %d, want %d (wrong AVP routed to Vendor field)", got, want)
+	for _, tc := range []struct {
+		name       string
+		got        pair
+		wantBase   string
+		wantVendor uint32
+	}{
+		{"top-level", dst.pair, "base-data", 12345},
+		{"grouped", dst.Group, "group-data", 67890},
+	} {
+		if got := string(tc.got.Base); got != tc.wantBase {
+			t.Errorf("%s Base: got %q, want %q (wrong AVP routed to Base field)", tc.name, got, tc.wantBase)
+		}
+		if got := uint32(tc.got.Vendor); got != tc.wantVendor {
+			t.Errorf("%s Vendor: got %d, want %d (wrong AVP routed to Vendor field)", tc.name, got, tc.wantVendor)
+		}
 	}
 }

@@ -5921,11 +5921,11 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
             		<data type="UTF8String"/>
         	</avp>
 	
-		<avp name="IMS-Content-Identifier" code="563" must="V" may-encrypt="Y">
+		<avp name="IMS-Content-Identifier" code="563" must="V" may-encrypt="Y" vendor-id="10415">
             		<data type="OctetString"/>
         	</avp>
 		
-		<avp name="IMS-Content-Type" code="564" must="V" may-encrypt="Y">
+		<avp name="IMS-Content-Type" code="564" must="V" may-encrypt="Y" vendor-id="10415">
             		<data type="Enumerated">
 				<item code="0" name="NO_CONTENT_DETAIL"/>
                 		<item code="1" name="CAT"/>
@@ -5977,7 +5977,7 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		 <avp name="AN-GW-Address" code="1050" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
             		<data type="Address"/>
         	</avp>
-		<avp name="AN-Trusted" code="1503" must="M,V">
+		<avp name="AN-Trusted" code="1503" must="M,V" vendor-id="10415">
             		<data type="Enumerated">
 				<item code="0" name="TRUSTED"/>
                 		<item code="1" name="UNTRUSTED"/>
@@ -6081,22 +6081,22 @@ var tgpprxXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="SourceID" code="649" must-not="V">
         	    	<data type="DiameterIdentity"/>
 	        </avp>
-		<avp name="User-Location-Info-Time" code="2812" must="V" may="P" must-not="M" may-encrypt="Y">
+		<avp name="User-Location-Info-Time" code="2812" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
         	    	<data type="Time"/>
 	        </avp>
-		<avp name="RAN-NAS-Release-Cause" code="2819" must="V" may="P" must-not="M" may-encrypt="Y">
+		<avp name="RAN-NAS-Release-Cause" code="2819" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
         	    	<data type="OctetString"/>
 	        </avp>
-		<avp name="TWAN-Identifier" code="29" must="V" may="P" must-not="M" may-encrypt="Y">
+		<avp name="TWAN-Identifier" code="29" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
         	    	<data type="OctetString"/>
 	        </avp>
-		<avp name="TCP-Source-Port" code="2843" must="V" may="P" must-not="M" may-encrypt="Y">
+		<avp name="TCP-Source-Port" code="2843" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
         	    	<data type="Unsigned32"/>
 	        </avp>
-		<avp name="UDP-Source-Port" code="2806" must="V" may="P" must-not="M" may-encrypt="Y">
+		<avp name="UDP-Source-Port" code="2806" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
         	    	<data type="Unsigned32"/>
 	        </avp>
-		<avp name="UE-Local-IP-Address" code="2805" must="V" may="P" must-not="M" may-encrypt="Y">
+		<avp name="UE-Local-IP-Address" code="2805" must="V" may="P" must-not="M" may-encrypt="Y" vendor-id="10415">
         	    	<data type="Address"/>
 	        </avp>
 		<avp name="Failed-AVP" code="279" must="M" may="P" must-not="V" may-encrypt="-">

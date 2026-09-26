@@ -6,6 +6,7 @@ package dict
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -46,6 +47,21 @@ func TestLoad(t *testing.T) {
 		p, _ := NewParser()
 		if err = p.Load(f); err != nil {
 			t.Fatalf("Error Loading Parsing %s: %s", dict, err)
+		}
+	}
+}
+
+// TestDefaultDictVendorID checks that every AVP in the default dictionary
+// that declares the V flag also carries a vendor-id. Such an AVP is indexed
+// under vendor 0 and can never match its wire encoding, which arrives with
+// a nonzero Vendor-Id.
+func TestDefaultDictVendorID(t *testing.T) {
+	for _, app := range Default.Apps() {
+		for _, avp := range app.AVP {
+			if strings.Contains(avp.Must, "V") && avp.VendorID == 0 {
+				t.Errorf("app %d: AVP %s (%d) has V in must but no vendor-id",
+					app.ID, avp.Name, avp.Code)
+			}
 		}
 	}
 }

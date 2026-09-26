@@ -343,12 +343,18 @@ func (m *Message) Unmarshal(dst interface{}) error {
 	return scanStruct(m, v, m.AVP)
 }
 
-// newIndex returns a map of AVPs indexed by their code.
-// TODO: make this part of the Message.
-func newIndex(avps []*AVP) map[uint32][]*AVP {
-	idx := make(map[uint32][]*AVP, len(avps))
+// avpKey identifies an AVP by both Code and VendorID.
+type avpKey struct {
+	Code     uint32
+	VendorID uint32
+}
+
+// newIndex returns a map of AVPs indexed by their {Code, VendorID}.
+func newIndex(avps []*AVP) map[avpKey][]*AVP {
+	idx := make(map[avpKey][]*AVP, len(avps))
 	for _, a := range avps {
-		idx[a.Code] = append(idx[a.Code], a)
+		key := avpKey{a.Code, a.VendorID}
+		idx[key] = append(idx[key], a)
 	}
 	return idx
 }
@@ -376,12 +382,12 @@ func scanStruct(m *Message, field reflect.Value, avps []*AVP) error {
 		}
 		// Lookup the AVP name (tag) in the dictionary.
 		// The dictionary AVP has the code.
-		d, err := m.Dictionary().FindAVP(m.Header.ApplicationID, avpname) // Relies on the fact that in the same app will not be AVPs with same code but different vendorId
+		d, err := m.Dictionary().FindAVP(m.Header.ApplicationID, avpname)
 		if err != nil {
 			return err
 		}
 		// See if this AVP exist in the message.
-		avps, exists := idx[d.Code]
+		avps, exists := idx[avpKey{d.Code, d.VendorID}]
 		if !exists {
 			continue
 		}

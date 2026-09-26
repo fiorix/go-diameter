@@ -9,16 +9,10 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 )
 
-// TestUnmarshalVendorId is a regression test for #169.
-//
-// newIndex used to key AVPs by Code only, so AVPs with the same code but
-// different VendorIds ended up in the same bucket. scanStruct then picked
-// the first match regardless of VendorId, corrupting the destination
-// struct. After the fix, {Code, VendorID} is the index key and Unmarshal
-// distinguishes the two AVPs correctly. This test drives the public
-// Unmarshal API so it catches any regression in scanStruct's use of the
-// index, not just in newIndex.
-func TestUnmarshalVendorId(t *testing.T) {
+// TestUnmarshalVendorID is a regression test for #169: Unmarshal must
+// distinguish AVPs sharing a code by Vendor-Id, at the top level and
+// inside grouped AVPs.
+func TestUnmarshalVendorID(t *testing.T) {
 	// Two AVPs sharing code 777 but differing by VendorID, plus a grouped
 	// AVP that carries both of them.
 	const dictXML = `<?xml version="1.0" encoding="UTF-8"?>

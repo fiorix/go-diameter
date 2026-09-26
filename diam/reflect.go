@@ -92,7 +92,6 @@ func marshalStruct(m *Message, field reflect.Value) (error, []*AVP) {
 		}
 
 		// Lookup the AVP name (tag) in the dictionary, the dictionary AVP has the code.
-		// Relies on the fact that in the same app will not be AVPs with same code but different vendorId
 		dictAVP, err = m.Dictionary().FindAVP(m.Header.ApplicationID, avpName)
 		if err != nil {
 			return err, nil
@@ -204,7 +203,6 @@ BASIC_TYPE:
 					continue
 				}
 				// Lookup the AVP name (tag) in the dictionary, the dictionary AVP has the code.
-				// Relies on the fact that in the same app will not be AVPs with same code but different vendorId
 				d, err := m.Dictionary().FindAVP(m.Header.ApplicationID, avpname)
 				if err != nil {
 					return err, nil

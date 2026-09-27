@@ -135,8 +135,9 @@ func TestConcurrentServeBounded(t *testing.T) {
 	const limit = 4
 	const total = 20
 
-	var inflight, maxInflight int64
+	var inflight, maxInflight, handled int64
 	release := make(chan struct{})
+	done := make(chan struct{})
 
 	mux := NewServeMux()
 	mux.HandleFunc("ALL", func(c Conn, m *Message) {
@@ -149,6 +150,9 @@ func TestConcurrentServeBounded(t *testing.T) {
 		}
 		<-release
 		atomic.AddInt64(&inflight, -1)
+		if atomic.AddInt64(&handled, 1) == total {
+			close(done)
+		}
 	})
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -181,6 +185,14 @@ func TestConcurrentServeBounded(t *testing.T) {
 	}
 	if peak == 0 {
 		t.Errorf("no handlers ran")
+	}
+	// Wait for every message to be decoded and handled. The server decodes
+	// with dict.Default, so a connection goroutine still working after this
+	// test returns races any later test that loads into dict.Default.
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("timed out waiting for all messages to be handled")
 	}
 }
 

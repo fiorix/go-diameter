@@ -260,8 +260,17 @@ func TestMessageWriteTo(t *testing.T) {
     </avp>
   </application>
 </diameter>`
-	dict.Default.Load(bytes.NewReader([]byte(mydictXML)))
-	m := NewRequest(CreditControl, 4, nil)
+	// A private parser: loading into dict.Default would race connection
+	// goroutines from other tests that decode with it, and would leak the
+	// vendor dictionary into every test that runs after this one.
+	p, err := dict.NewParser("./dict/testdata/base.xml", "./dict/testdata/credit_control.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := p.Load(bytes.NewReader([]byte(mydictXML))); err != nil {
+		t.Fatal(err)
+	}
+	m := NewRequest(CreditControl, 4, p)
 	m.NewAVP("Session-Id", avp.Mbit, 0, datatype.UTF8String("890f81bee22a0dfddc8b9037eb367781cea1f328"))
 	m.NewAVP("Service-Information", avp.Mbit, 10415, &GroupedAVP{
 		AVP: []*AVP{

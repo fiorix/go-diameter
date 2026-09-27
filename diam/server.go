@@ -91,8 +91,9 @@ type conn struct {
 	tlsState *tls.ConnectionState // or nil when not using TLS
 	writer   *response            // the diam.Conn exposed to handlers
 
-	hwg sync.WaitGroup // tracks in-flight handler goroutines
-	sem chan struct{}  // bounds concurrent handlers; nil = unbounded/sequential
+	hwg      sync.WaitGroup // tracks in-flight handler goroutines
+	sem      chan struct{}  // bounds concurrent handlers; nil = unbounded/sequential
+	accepted bool           // accepted by Server.Serve, as opposed to dialed
 
 	mu           sync.Mutex // guards the following
 	closeNotifyc chan struct{}
@@ -197,6 +198,17 @@ func (c *conn) serve() {
 		c.rwc.Close()
 		c.notifyClientGone()
 	}()
+	if c.accepted {
+		h := c.server.Handler
+		if h == nil {
+			h = DefaultServeMux
+		}
+		if ah, ok := h.(AcceptHandler); ok {
+			if onClose := ah.HandleAccept(c.writer); onClose != nil {
+				defer onClose()
+			}
+		}
+	}
 	if tlsConn, ok := c.rwc.(*tls.Conn); ok {
 		if err := tlsConn.Handshake(); err != nil {
 			return
@@ -415,6 +427,16 @@ type ErrorReporter interface {
 	// ErrorReports returns a channel that receives
 	// errors from the connection.
 	ErrorReports() <-chan *ErrorReport
+}
+
+// The AcceptHandler interface is implemented by Handlers that need to know
+// when a Server accepts a connection. HandleAccept is called once for each
+// connection accepted by Server.Serve, before the TLS handshake and before
+// the first read; it is not called for connections created by Dial. It runs
+// on the connection's goroutine and must not block. If it returns a non-nil
+// function, that function is called once when the connection is closed.
+type AcceptHandler interface {
+	HandleAccept(c Conn) (onClose func())
 }
 
 // ErrorReport is sent out of the server in case it fails to
@@ -814,6 +836,7 @@ func (srv *Server) Serve(l net.Listener) error {
 			log.Printf("srv.newConn error: %v", err)
 			continue
 		} else {
+			c.accepted = true
 			go c.serve()
 		}
 	}

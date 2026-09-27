@@ -28,12 +28,19 @@ func DecodeGrouped(data datatype.Grouped, application uint32, dictionary *dict.P
 }
 
 // DecodeGroupedFromBytes decodes a Grouped AVP directly from a raw byte slice,
-// avoiding the intermediate datatype.Grouped copy.
+// avoiding the intermediate datatype.Grouped copy. b is the payload of a
+// Grouped AVP at level 1; nesting is limited as described for DecodeAVP.
 func DecodeGroupedFromBytes(b []byte, application uint32, dictionary *dict.Parser) (*GroupedAVP, error) {
+	return decodeGroupedFromBytes(b, application, dictionary, 1)
+}
+
+// decodeGroupedFromBytes decodes the payload of a Grouped AVP whose members
+// are enclosed by depth Grouped AVPs.
+func decodeGroupedFromBytes(b []byte, application uint32, dictionary *dict.Parser, depth int) (*GroupedAVP, error) {
 	g := &GroupedAVP{}
 	var errs []string
 	for n := 0; n < len(b); {
-		avp, err := DecodeAVP(b[n:], application, dictionary)
+		avp, err := decodeAVP(b[n:], application, dictionary, depth)
 		if err != nil {
 			errs = append(errs, err.Error())
 			if avp.Data == nil {

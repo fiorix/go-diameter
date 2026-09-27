@@ -64,7 +64,8 @@ func readerBufferSlice(buf *bytes.Buffer, l int) []byte {
 }
 
 // ReadMessage reads a binary stream from the reader and uses the given
-// dictionary to parse it.
+// dictionary to parse it. Grouped AVP nesting is limited as described for
+// DecodeAVP.
 func ReadMessage(reader io.Reader, dictionary *dict.Parser) (*Message, error) {
 	buf := newReaderBuffer()
 	// Safe to pool: all datatype decoders (OctetString, Address, Grouped, etc.)

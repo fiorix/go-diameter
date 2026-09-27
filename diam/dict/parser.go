@@ -48,7 +48,24 @@ type Parser struct {
 	// parsing process will be stored in the Message's DecodeErr field which is
 	// accessible from a request handler.
 	Strict bool
+
+	// MaxGroupedDepth is how many levels of Grouped AVPs the decoder
+	// descends into, counting the outermost Grouped AVP as level 1. A Grouped
+	// AVP nested deeper keeps its payload as datatype.Unknown and the decode
+	// returns a DecodeError. Zero or a negative value means
+	// DefaultMaxGroupedDepth.
+	//
+	// Raise it only for a custom dictionary that nests deeper than the
+	// default: decoding cost grows quadratically with depth, and the limit is
+	// what bounds it for messages from untrusted peers. Set it before the
+	// Parser is used for decoding and do not change it afterwards.
+	MaxGroupedDepth int
 }
+
+// DefaultMaxGroupedDepth is the Grouped AVP nesting limit used when
+// Parser.MaxGroupedDepth is zero or negative. The deepest nesting in the
+// shipped dictionaries is 8 levels (Service-Information ... Unit-Value).
+const DefaultMaxGroupedDepth = 32
 
 type codeIdx struct {
 	appID    uint32

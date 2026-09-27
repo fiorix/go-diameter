@@ -24,7 +24,13 @@ var (
 	errAVPDataTooShort     = errors.New("not enough data to decode AVP")
 	errAVPVendorTooShort   = errors.New("not enough data to decode AVP with Vendor-ID")
 	errAVPSerializeNilData = errors.New("failed to serialize AVP: Data is nil")
+	errGroupedTooDeep      = errors.New("grouped AVP nesting exceeds limit")
 )
+
+// maxGroupedDepth bounds how many Grouped AVPs may enclose one another on
+// decode. The deepest nesting in the shipped dictionaries is 8 levels
+// (Service-Information ... Unit-Value).
+const maxGroupedDepth = 32
 
 // AVP is a Diameter attribute-value-pair.
 type AVP struct {
@@ -53,8 +59,13 @@ func NewAVP(code uint32, flags uint8, vendor uint32, data datatype.Type) *AVP {
 // DecodeAVP decodes the bytes of a Diameter AVP.
 // It uses the given application id and dictionary for decoding the bytes.
 func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, error) {
+	return decodeAVP(data, application, dictionary, 0)
+}
+
+// decodeAVP is DecodeAVP for an AVP enclosed by depth Grouped AVPs.
+func decodeAVP(data []byte, application uint32, dictionary *dict.Parser, depth int) (*AVP, error) {
 	avp := &AVP{}
-	if err := avp.DecodeFromBytes(data, application, dictionary); err != nil {
+	if err := avp.decodeFromBytes(data, application, dictionary, depth); err != nil {
 		return avp, err
 	}
 	return avp, nil
@@ -63,6 +74,13 @@ func DecodeAVP(data []byte, application uint32, dictionary *dict.Parser) (*AVP, 
 // DecodeFromBytes decodes the bytes of a Diameter AVP.
 // It uses the given application id and dictionary for decoding the bytes.
 func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.Parser) error {
+	return a.decodeFromBytes(data, application, dictionary, 0)
+}
+
+// decodeFromBytes is DecodeFromBytes for an AVP enclosed by depth Grouped
+// AVPs. A Grouped AVP at depth maxGroupedDepth is not descended into: its
+// payload is kept as datatype.Unknown and a DecodeError is returned.
+func (a *AVP) decodeFromBytes(data []byte, application uint32, dictionary *dict.Parser, depth int) error {
 	if len(data) < 8 {
 		return fmt.Errorf("%w: have %d need %d", errAVPHeaderTooShort, len(data), 8)
 	}
@@ -102,7 +120,11 @@ func (a *AVP) DecodeFromBytes(data []byte, application uint32, dictionary *dict.
 	}
 	// Handle grouped AVPs directly to avoid an intermediate copy.
 	if dictAVP.Data.Type == datatype.GroupedType {
-		g, groupErr := DecodeGroupedFromBytes(payload[:bodyLen], application, dictionary)
+		if depth >= maxGroupedDepth {
+			a.Data = datatype.Unknown(payload[:bodyLen])
+			return DecodeError(fmt.Errorf("%s(%d): %w", dictAVP.Name, dictAVP.Code, errGroupedTooDeep))
+		}
+		g, groupErr := decodeGroupedFromBytes(payload[:bodyLen], application, dictionary, depth+1)
 		if groupErr != nil {
 			// Preserve raw bytes to prevent offset misalignment in the parent parse loop.
 			a.Data = datatype.Unknown(payload[:bodyLen])

@@ -6,6 +6,7 @@ package diam
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"testing"
 
@@ -120,4 +121,42 @@ func TestMakeGroupedAVP(t *testing.T) {
 			hex.Dump(testGroupedAVP), hex.Dump(b))
 	}
 	t.Logf("Message:\n%s", a)
+}
+
+// nestedMSCC returns a Credit-Control request whose body is depth
+// Multiple-Services-Credit-Control AVPs, each containing the next.
+func nestedMSCC(depth int) []byte {
+	total := HeaderLength + 8*depth
+	b := make([]byte, total)
+	b[0] = 1
+	putUint24(b[1:4], uint32(total))
+	b[4] = RequestFlag
+	putUint24(b[5:8], CreditControl)
+	binary.BigEndian.PutUint32(b[8:12], CHARGING_CONTROL_APP_ID)
+	for i := 0; i < depth; i++ {
+		o := HeaderLength + 8*i
+		binary.BigEndian.PutUint32(b[o:o+4], avp.MultipleServicesCreditControl)
+		b[o+4] = avp.Mbit
+		putUint24(b[o+5:o+8], uint32(total-o))
+	}
+	return b
+}
+
+func TestDecodeGroupedNestingLimit(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		depth   int
+		wantErr bool
+	}{
+		{"at limit", maxGroupedDepth, false},
+		{"one past limit", maxGroupedDepth + 1, true},
+		{"hostile", 20000, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := ReadMessage(bytes.NewReader(nestedMSCC(tc.depth)), dict.Default)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("depth %d: err = %v, wantErr %v", tc.depth, err, tc.wantErr)
+			}
+		})
+	}
 }

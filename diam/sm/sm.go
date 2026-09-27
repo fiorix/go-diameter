@@ -6,6 +6,7 @@ package sm
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/fiorix/go-diameter/v4/diam"
 	"github.com/fiorix/go-diameter/v4/diam/datatype"
@@ -91,7 +92,18 @@ type Settings struct {
 	// OnDWA, if non-nil, is invoked immediately before a DWA is sent in
 	// response to a peer DWR. Useful for logging or metrics.
 	OnDWA diam.HandlerFunc
+
+	// HandshakeTimeout bounds how long a connection accepted by a
+	// diam.Server may stay open without completing the capabilities
+	// exchange (RFC 6733 §5.6.1). Zero means DefaultHandshakeTimeout; a
+	// negative value disables the limit. It does not apply to connections
+	// the state machine dials as a client.
+	HandshakeTimeout time.Duration
 }
+
+// DefaultHandshakeTimeout is the HandshakeTimeout used when Settings leaves
+// it zero.
+const DefaultHandshakeTimeout = 30 * time.Second
 
 var (
 	baseCERIdx = diam.CommandIndex{AppID: 0, Code: diam.CapabilitiesExchange, Request: true}
@@ -157,6 +169,30 @@ func (sm *StateMachine) Settings() *Settings {
 // ServeDIAM implements the diam.Handler interface.
 func (sm *StateMachine) ServeDIAM(c diam.Conn, m *diam.Message) {
 	sm.mux.ServeDIAM(c, m)
+}
+
+// HandleAccept implements diam.AcceptHandler. It closes c if the peer has not
+// completed the capabilities exchange within the handshake timeout. The
+// returned function stops the timer, so a closed connection is not retained
+// until the timeout expires.
+func (sm *StateMachine) HandleAccept(c diam.Conn) func() {
+	d := sm.handshakeTimeout()
+	if d < 0 {
+		return nil
+	}
+	t := time.AfterFunc(d, func() {
+		if _, ok := smpeer.FromContext(c.Context()); !ok {
+			c.Close()
+		}
+	})
+	return func() { t.Stop() }
+}
+
+func (sm *StateMachine) handshakeTimeout() time.Duration {
+	if sm.cfg.HandshakeTimeout == 0 {
+		return DefaultHandshakeTimeout
+	}
+	return sm.cfg.HandshakeTimeout
 }
 
 // Handle implements the diam.Handler interface.

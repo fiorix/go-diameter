@@ -132,7 +132,7 @@ func New(settings *Settings) *StateMachine {
 	sm.mux.Handle("CER", cerHandler)
 	sm.mux.Handle("DWR", handshakeOK(dwrHandler))
 	sm.mux.HandleIdx(baseCERIdx, cerHandler)
-	sm.mux.HandleIdx(baseDWRIdx, dwrHandler)
+	sm.mux.HandleIdx(baseDWRIdx, handshakeOK(dwrHandler))
 	return sm
 }
 

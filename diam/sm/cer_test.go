@@ -534,3 +534,45 @@ func TestHandleCER_InbandSecurity(t *testing.T) {
 		t.Fatal("No message received")
 	}
 }
+
+// TestHandleCER_ErrorCEAFlags checks that an error CEA (5010 here) is sent
+// without the E bit: permanent failures use the command's own grammar
+// (RFC 6733 §7.1.5), and the E bit marks a message that does not.
+func TestHandleCER_ErrorCEAFlags(t *testing.T) {
+	sm := New(serverSettings)
+	srv := diamtest.NewServer(sm, dict.Default)
+	defer srv.Close()
+	mc := make(chan *diam.Message, 1)
+	mux := diam.NewServeMux()
+	mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
+		mc <- m
+	})
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cli.Close()
+	m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, localhostAddress)
+	m.NewAVP(avp.VendorID, avp.Mbit, 0, clientSettings.VendorID)
+	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
+	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1000))
+	if _, err = m.WriteTo(cli); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case resp := <-mc:
+		if !testResultCode(resp, diam.NoCommonApplication) {
+			t.Fatalf("Unexpected result code.\n%s", resp)
+		}
+		if resp.Header.CommandFlags&diam.ErrorFlag != 0 {
+			t.Fatalf("Error CEA has the E bit set.\n%s", resp)
+		}
+	case err := <-mux.ErrorReports():
+		t.Fatal(err)
+	case <-time.After(time.Second):
+		t.Fatal("No CEA received")
+	}
+}

@@ -37,7 +37,7 @@ func handleDWR(sm *StateMachine) diam.HandlerFunc {
 		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, sm.cfg.OriginRealm)
 		if sm.cfg.OriginStateID != 0 {
 			stateid := datatype.Unsigned32(sm.cfg.OriginStateID)
-			m.NewAVP(avp.OriginStateID, avp.Mbit, 0, stateid)
+			a.NewAVP(avp.OriginStateID, avp.Mbit, 0, stateid)
 		}
 		if sm.cfg.OnDWA != nil {
 			sm.cfg.OnDWA(c, a)

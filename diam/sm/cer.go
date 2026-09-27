@@ -87,7 +87,6 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 	default:
 		a = m.Answer(diam.UnableToComply)
 	}
-	a.Header.CommandFlags |= diam.ErrorFlag
 	// Fix for Same H2H and E2E Identifier in success response
 	a.Header.HopByHopID = m.Header.HopByHopID
 	a.Header.EndToEndID = m.Header.EndToEndID

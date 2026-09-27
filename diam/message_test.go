@@ -152,6 +152,59 @@ func TestReadMessageWithVendorID(t *testing.T) {
 	t.Logf("Message:\n%s", msg)
 }
 
+// TestReadMessageUnregisteredApplication covers a message whose
+// Application-Id has no dictionary entry at all (e.g. 3GPP Cx/Dx,
+// 16777216, isn't part of dict.Default). Before this fix, readHeader's
+// FindCommand lookup failed outright for ANY message on such an
+// application -- even a well-formed one carrying only ordinary AVPs -- and
+// ReadMessage returned an error. Since conn.serve() closes the whole
+// connection on any ReadMessage error, a single message on an unregistered
+// application used to take down the entire peer connection, not just that
+// one message.
+//
+// FindAVPByCode doesn't chain to the base application (id 0) for an
+// unregistered app, so even well-known AVPs like Result-Code decode as
+// datatype.Unknown here rather than their typed dictionary value -- decoding
+// no longer errors out, which is what this fix addresses, but recovering
+// typed values for base AVPs on unregistered applications is a separate
+// concern this change doesn't attempt to solve.
+func TestReadMessageUnregisteredApplication(t *testing.T) {
+	const unregisteredApp = 16777216 // 3GPP Cx/Dx, not in dict.Default
+	const someCommand = 303          // Multimedia-Auth-Request/Answer
+
+	m := NewMessage(someCommand, 0, unregisteredApp, 1, 1, dict.Default)
+	if _, err := m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String("cx;1;1")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := m.NewAVP(avp.ResultCode, avp.Mbit, 0, datatype.Unsigned32(2001)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := m.NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("hss")); err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	if _, err := m.WriteTo(&buf); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := ReadMessage(&buf, dict.Default)
+	if err != nil {
+		t.Fatalf("ReadMessage should decode generically for an unregistered application, got error: %v", err)
+	}
+	if len(got.AVP) != 3 {
+		t.Fatalf("got %d AVPs, want 3", len(got.AVP))
+	}
+	rc, err := got.FindAVP(avp.ResultCode, 0)
+	if err != nil {
+		t.Fatalf("Result-Code AVP not found: %v", err)
+	}
+	want := datatype.Unknown{0x00, 0x00, 0x07, 0xd1} // 2001, big-endian
+	if got, ok := rc.Data.(datatype.Unknown); !ok || !bytes.Equal(got, want) {
+		t.Fatalf("Result-Code raw bytes = %#v, want %#v", rc.Data, want)
+	}
+}
+
 func TestNewMessage(t *testing.T) {
 	want, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	m := NewMessage(CapabilitiesExchange, RequestFlag, 0, 0xa8cc407d, 0xa8c1b2b4, dict.Default)

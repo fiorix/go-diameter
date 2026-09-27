@@ -9,6 +9,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version-file: 'go.mod'
+          # Test with the latest patched Go rather than the go.mod minimum:
+          # stdlib fixes (crypto/tls, crypto/x509) only reach builds made
+          # with a current toolchain.
+          go-version: 'stable'
+          check-latest: true
       - run: |
           go test -v -race -cover -timeout 300s ./diam/...

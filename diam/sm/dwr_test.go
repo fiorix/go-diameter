@@ -206,3 +206,34 @@ func TestHandleDWR_OriginStateID(t *testing.T) {
 		t.Fatal("No DWA received")
 	}
 }
+
+// TestHandleDWR_BeforeCER checks that a DWR sent as the first message on a
+// connection, before any CER, is not answered (RFC 6733 §5.6.1).
+func TestHandleDWR_BeforeCER(t *testing.T) {
+	sm := New(serverSettings)
+	srv := diamtest.NewServer(sm, dict.Default)
+	defer srv.Close()
+	mc := make(chan *diam.Message, 1)
+	mux := diam.NewServeMux()
+	mux.HandleFunc("DWA", func(c diam.Conn, m *diam.Message) {
+		mc <- m
+	})
+	cli, err := diam.Dial(srv.Addr, mux, dict.Default)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cli.Close()
+	m := diam.NewRequest(diam.DeviceWatchdog, 0, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
+	if _, err = m.WriteTo(cli); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case resp := <-mc:
+		t.Fatalf("DWR before CER was answered.\n%s", resp)
+	case err := <-mux.ErrorReports():
+		t.Fatal(err)
+	case <-time.After(500 * time.Millisecond):
+	}
+}

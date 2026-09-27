@@ -6,6 +6,7 @@ package diam
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"strings"
 	"testing"
@@ -140,5 +141,74 @@ func TestDecodeGroupedSurvivesAnUndecodableAVP(t *testing.T) {
 	}
 	if m == nil {
 		t.Fatal("Expected a non-nil *Message alongside the decode error")
+	}
+}
+
+// nestedMSCC returns a Credit-Control request whose body is depth
+// Multiple-Services-Credit-Control AVPs, each containing the next.
+func nestedMSCC(depth int) []byte {
+	total := HeaderLength + 8*depth
+	b := make([]byte, total)
+	b[0] = 1
+	putUint24(b[1:4], uint32(total))
+	b[4] = RequestFlag
+	putUint24(b[5:8], CreditControl)
+	binary.BigEndian.PutUint32(b[8:12], CHARGING_CONTROL_APP_ID)
+	for i := 0; i < depth; i++ {
+		o := HeaderLength + 8*i
+		binary.BigEndian.PutUint32(b[o:o+4], avp.MultipleServicesCreditControl)
+		b[o+4] = avp.Mbit
+		putUint24(b[o+5:o+8], uint32(total-o))
+	}
+	return b
+}
+
+func TestDecodeGroupedNestingLimit(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		depth   int
+		wantErr bool
+	}{
+		{"at limit", dict.DefaultMaxGroupedDepth, false},
+		{"one past limit", dict.DefaultMaxGroupedDepth + 1, true},
+		{"hostile", 20000, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := ReadMessage(bytes.NewReader(nestedMSCC(tc.depth)), dict.Default)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("depth %d: err = %v, wantErr %v", tc.depth, err, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestDecodeGroupedNestingLimitFromParser(t *testing.T) {
+	newParser := func(limit int) *dict.Parser {
+		p, err := dict.NewParser("./dict/testdata/base.xml", "./dict/testdata/credit_control.xml")
+		if err != nil {
+			t.Fatal(err)
+		}
+		p.MaxGroupedDepth = limit
+		return p
+	}
+	for _, tc := range []struct {
+		name    string
+		limit   int
+		depth   int
+		wantErr bool
+	}{
+		{"raised, at limit", 64, 64, false},
+		{"raised, one past limit", 64, 65, true},
+		{"lowered, at limit", 4, 4, false},
+		{"lowered, one past limit", 4, 5, true},
+		{"zero means default", 0, dict.DefaultMaxGroupedDepth + 1, true},
+		{"negative means default", -1, dict.DefaultMaxGroupedDepth, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := ReadMessage(bytes.NewReader(nestedMSCC(tc.depth)), newParser(tc.limit))
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("limit %d, depth %d: err = %v, wantErr %v", tc.limit, tc.depth, err, tc.wantErr)
+			}
+		})
 	}
 }

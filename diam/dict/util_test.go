@@ -6,6 +6,7 @@ package dict
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/fiorix/go-diameter/v4/diam/datatype"
@@ -269,6 +270,98 @@ func TestCreditControlMSCCUnbounded(t *testing.T) {
 		if r.Max != 0 {
 			t.Errorf("%s: Multiple-Services-Credit-Control max=%d, want 0 (unbounded)",
 				tc.name, r.Max)
+		}
+	}
+}
+
+// RFC 8506 §8 AVP table: codes 653-669, M bit optional, V bit forbidden.
+var rfc8506AVPs = []struct {
+	code uint32
+	name string
+	typ  datatype.TypeID
+}{
+	{653, "User-Equipment-Info-Extension", datatype.GroupedType},
+	{654, "User-Equipment-Info-IMEISV", datatype.OctetStringType},
+	{655, "User-Equipment-Info-MAC", datatype.OctetStringType},
+	{656, "User-Equipment-Info-EUI64", datatype.OctetStringType},
+	{657, "User-Equipment-Info-ModifiedEUI64", datatype.OctetStringType},
+	{658, "User-Equipment-Info-IMEI", datatype.OctetStringType},
+	{659, "Subscription-Id-Extension", datatype.GroupedType},
+	{660, "Subscription-Id-E164", datatype.UTF8StringType},
+	{661, "Subscription-Id-IMSI", datatype.UTF8StringType},
+	{662, "Subscription-Id-SIP-URI", datatype.UTF8StringType},
+	{663, "Subscription-Id-NAI", datatype.UTF8StringType},
+	{664, "Subscription-Id-Private", datatype.UTF8StringType},
+	{665, "Redirect-Server-Extension", datatype.GroupedType},
+	{666, "Redirect-Address-IPAddress", datatype.AddressType},
+	{667, "Redirect-Address-URL", datatype.UTF8StringType},
+	{668, "Redirect-Address-SIP-URI", datatype.UTF8StringType},
+	{669, "QoS-Final-Unit-Indication", datatype.GroupedType},
+}
+
+func TestCreditControlRFC8506AVPs(t *testing.T) {
+	for _, appID := range []uint32{4, 16777238} { // Credit-Control, Gx (inherits 4)
+		for _, want := range rfc8506AVPs {
+			avp, err := Default.FindAVPByCode(appID, want.code, 0)
+			if err != nil {
+				t.Errorf("app %d: AVP %d: %v", appID, want.code, err)
+				continue
+			}
+			if avp.Name != want.name || avp.Data.Type != want.typ {
+				t.Errorf("app %d: AVP %d = %s/type %d, want %s/type %d", appID, want.code,
+					avp.Name, avp.Data.Type, want.name, want.typ)
+			}
+			if strings.Contains(avp.Must, "M") || !strings.Contains(avp.May, "M") || avp.MustNot != "V" {
+				t.Errorf("app %d: %s flags must=%q may=%q must-not=%q, want M optional and V forbidden",
+					appID, want.name, avp.Must, avp.May, avp.MustNot)
+			}
+		}
+	}
+}
+
+func TestCreditControlRFC8506Rules(t *testing.T) {
+	cmd, err := Default.FindCommand(4, 272) // Credit-Control
+	if err != nil {
+		t.Fatal(err)
+	}
+	find := func(rules []*Rule, name string) *Rule {
+		for _, r := range rules {
+			if r.AVP == name {
+				return r
+			}
+		}
+		return nil
+	}
+	grouped := func(name string) []*Rule {
+		avp, err := Default.FindAVP(4, name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return avp.Data.Rule
+	}
+	for _, tc := range []struct {
+		where string
+		rules []*Rule
+		avp   string
+		max   int
+	}{
+		{"CCR", cmd.Request.Rule, "Subscription-Id-Extension", 0},
+		{"CCR", cmd.Request.Rule, "User-Equipment-Info-Extension", 1},
+		{"CCA", cmd.Answer.Rule, "QoS-Final-Unit-Indication", 1},
+		{"Multiple-Services-Credit-Control", grouped("Multiple-Services-Credit-Control"), "QoS-Final-Unit-Indication", 1},
+		{"QoS-Final-Unit-Indication", grouped("QoS-Final-Unit-Indication"), "Redirect-Server-Extension", 1},
+		{"Subscription-Id-Extension", grouped("Subscription-Id-Extension"), "Subscription-Id-E164", 1},
+		{"User-Equipment-Info-Extension", grouped("User-Equipment-Info-Extension"), "User-Equipment-Info-IMEI", 1},
+		{"Redirect-Server-Extension", grouped("Redirect-Server-Extension"), "Redirect-Address-SIP-URI", 1},
+	} {
+		r := find(tc.rules, tc.avp)
+		if r == nil {
+			t.Errorf("%s: no rule for %s", tc.where, tc.avp)
+			continue
+		}
+		if r.Required || r.Max != tc.max {
+			t.Errorf("%s: %s required=%v max=%d, want optional max=%d",
+				tc.where, tc.avp, r.Required, r.Max, tc.max)
 		}
 	}
 }

@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fiorix/go-diameter/v4 v4.1.0 h1:BLnx7qodfPCkHdDenlSBSikKBHJ9KECKPDRmUsTsVeY=
-github.com/fiorix/go-diameter/v4 v4.1.0/go.mod h1:QFFTA9ZuwtvbLZvJ51KA212SHBwprxuTuX540iCTYEM=
+github.com/fiorix/go-diameter/v4 v4.5.0 h1:JID7Xs0+G+uTxUu03juZzy9SIUAiuVHoiIksN0zkUtg=
+github.com/fiorix/go-diameter/v4 v4.5.0/go.mod h1:V9bsPxAg2Qoeh/0p6DAuRpuHn80PIbMnld3OLPMEGas=
 github.com/ishidawataru/sctp v0.0.0-20251114114122-19ddcbc6aae2 h1:36qep4gxKs+JgeHGWeQ040RyZdt9kQlLglL1rFVn/oQ=
 github.com/ishidawataru/sctp v0.0.0-20251114114122-19ddcbc6aae2/go.mod h1:co9pwDoBCm1kGxawmb4sPq0cSIOOWNPT4KnHotMP1Zg=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=

@@ -595,16 +595,18 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="Origin-State-Id" required="false" max="1"/>
 				<rule avp="Event-Timestamp" required="false" max="1"/>
 				<rule avp="Subscription-Id" required="false" max="1"/>
+				<rule avp="Subscription-Id-Extension" required="false"/>
 				<rule avp="Service-Identifier" required="false" max="1"/>
 				<rule avp="Termination-Cause" required="false" max="1"/>
 				<rule avp="Requested-Service-Unit" required="false" max="1"/>
 				<rule avp="Requested-Action" required="false" max="1"/>
 				<rule avp="Used-Service-Unit" required="false" max="1"/>
 				<rule avp="Multiple-Services-Indicator" required="false" max="1"/>
-				<rule avp="Multiple-Services-Credit-Control" required="false" max="1"/>
+				<rule avp="Multiple-Services-Credit-Control" required="false"/>
 				<rule avp="Service-Parameter-Info" required="false" max="1"/>
 				<rule avp="CC-Correlation-Id" required="false" max="1"/>
 				<rule avp="User-Equipment-Info" required="false" max="1"/>
+				<rule avp="User-Equipment-Info-Extension" required="false" max="1"/>
 				<rule avp="Proxy-Info" required="false" max="1"/>
 				<rule avp="Route-Record" required="false" max="1"/>
 				<rule avp="Service-Information" required="false" max="1"/>
@@ -624,9 +626,10 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="Origin-State-Id" required="false" max="1"/>
 				<rule avp="Event-Timestamp" required="false" max="1"/>
 				<rule avp="Granted-Service-Unit" required="false" max="1"/>
-				<rule avp="Multiple-Services-Credit-Control" required="false" max="1"/>
+				<rule avp="Multiple-Services-Credit-Control" required="false"/>
 				<rule avp="Cost-Information" required="false" max="1"/>
 				<rule avp="Final-Unit-Indication" required="false" max="1"/>
+				<rule avp="QoS-Final-Unit-Indication" required="false" max="1"/>
 				<rule avp="Check-Balance-Result" required="false" max="1"/>
 				<rule avp="Credit-Control-Failure-Handling" required="false" max="1"/>
 				<rule avp="Direct-Debiting-Failure-Handling" required="false" max="1"/>
@@ -833,6 +836,7 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<rule avp="Validity-Time" required="false" max="1"/>
 				<rule avp="Result-Code" required="false" max="1"/>
 				<rule avp="Final-Unit-Indication" required="false" max="1"/>
+				<rule avp="QoS-Final-Unit-Indication" required="false" max="1"/>
 				<!-- *[ AVP ]-->
 			</data>
 		</avp>
@@ -1019,6 +1023,116 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 		<avp name="Validity-Time" code="448" must="M" may="P" must-not="V" may-encrypt="Y">
 			<!-- http://tools.ietf.org/html/rfc4006#section-8.33-->
 			<data type="Unsigned32"/>
+		</avp>
+
+		<avp name="User-Equipment-Info-Extension" code="653" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.52-->
+			<data type="Grouped">
+				<rule avp="User-Equipment-Info-IMEISV" required="false" max="1"/>
+				<rule avp="User-Equipment-Info-MAC" required="false" max="1"/>
+				<rule avp="User-Equipment-Info-EUI64" required="false" max="1"/>
+				<rule avp="User-Equipment-Info-ModifiedEUI64" required="false" max="1"/>
+				<rule avp="User-Equipment-Info-IMEI" required="false" max="1"/>
+				<!-- *[ AVP ]-->
+			</data>
+		</avp>
+
+		<avp name="User-Equipment-Info-IMEISV" code="654" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.53-->
+			<data type="OctetString"/>
+		</avp>
+
+		<avp name="User-Equipment-Info-MAC" code="655" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.54-->
+			<data type="OctetString"/>
+		</avp>
+
+		<avp name="User-Equipment-Info-EUI64" code="656" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.55-->
+			<data type="OctetString"/>
+		</avp>
+
+		<avp name="User-Equipment-Info-ModifiedEUI64" code="657" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.56-->
+			<data type="OctetString"/>
+		</avp>
+
+		<avp name="User-Equipment-Info-IMEI" code="658" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.57-->
+			<data type="OctetString"/>
+		</avp>
+
+		<avp name="Subscription-Id-Extension" code="659" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.58-->
+			<data type="Grouped">
+				<rule avp="Subscription-Id-E164" required="false" max="1"/>
+				<rule avp="Subscription-Id-IMSI" required="false" max="1"/>
+				<rule avp="Subscription-Id-SIP-URI" required="false" max="1"/>
+				<rule avp="Subscription-Id-NAI" required="false" max="1"/>
+				<rule avp="Subscription-Id-Private" required="false" max="1"/>
+				<!-- *[ AVP ]-->
+			</data>
+		</avp>
+
+		<avp name="Subscription-Id-E164" code="660" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.59-->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="Subscription-Id-IMSI" code="661" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.60-->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="Subscription-Id-SIP-URI" code="662" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.61-->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="Subscription-Id-NAI" code="663" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.62-->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="Subscription-Id-Private" code="664" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.63-->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="Redirect-Server-Extension" code="665" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.64-->
+			<data type="Grouped">
+				<rule avp="Redirect-Address-IPAddress" required="false" max="1"/>
+				<rule avp="Redirect-Address-URL" required="false" max="1"/>
+				<rule avp="Redirect-Address-SIP-URI" required="false" max="1"/>
+				<!-- *[ AVP ]-->
+			</data>
+		</avp>
+
+		<avp name="Redirect-Address-IPAddress" code="666" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.65-->
+			<data type="Address"/>
+		</avp>
+
+		<avp name="Redirect-Address-URL" code="667" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.66-->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="Redirect-Address-SIP-URI" code="668" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.67-->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="QoS-Final-Unit-Indication" code="669" must="-" may="P,M" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc8506#section-8.68-->
+			<data type="Grouped">
+				<rule avp="Final-Unit-Action" required="true" max="1"/>
+				<rule avp="Filter-Rule" required="false"/>
+				<rule avp="Filter-Id" required="false"/>
+				<rule avp="Redirect-Server-Extension" required="false" max="1"/>
+				<!-- *[ AVP ]-->
+			</data>
 		</avp>
 	</application>
 </diameter>`

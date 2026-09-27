@@ -6,6 +6,7 @@ package diam
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"testing"
 
@@ -360,5 +361,68 @@ func BenchmarkEncodeAVP(b *testing.B) {
 	a := NewAVP(avp.OriginHost, avp.Mbit, 0, datatype.DiameterIdentity("client"))
 	for n := 0; n < b.N; n++ {
 		a.Serialize()
+	}
+}
+
+// rawAVP encodes an AVP header (no Vendor-ID) followed by payload and padding.
+func rawAVP(code uint32, payload []byte) []byte {
+	b := make([]byte, 8, 8+len(payload)+3)
+	binary.BigEndian.PutUint32(b[0:4], code)
+	b[4] = avp.Mbit
+	putUint24(b[5:8], uint32(8+len(payload)))
+	b = append(b, payload...)
+	return append(b, make([]byte, pad4(len(b)))...)
+}
+
+// TestDecodeFallbackDoesNotAliasInput checks that the datatype.Unknown kept
+// on each decode-error fallback owns its bytes. ReadMessage decodes out of a
+// pooled buffer that is reused by the next call.
+func TestDecodeFallbackDoesNotAliasInput(t *testing.T) {
+	badU32 := []byte{0x11, 0x11, 0x11, 0x11, 0x11} // 5 bytes for an Unsigned32
+	for _, tc := range []struct {
+		name   string
+		data   []byte
+		decode func(a *AVP, b []byte) error
+	}{
+		{
+			name: "scalar size mismatch",
+			data: rawAVP(avp.CCRequestNumber, badU32),
+			decode: func(a *AVP, b []byte) error {
+				return a.DecodeFromBytes(b, CHARGING_CONTROL_APP_ID, dict.Default)
+			},
+		},
+		{
+			name: "grouped member fails to decode",
+			data: rawAVP(avp.MultipleServicesCreditControl, rawAVP(avp.RatingGroup, badU32)),
+			decode: func(a *AVP, b []byte) error {
+				return a.DecodeFromBytes(b, CHARGING_CONTROL_APP_ID, dict.Default)
+			},
+		},
+		{
+			name: "grouped nesting limit",
+			data: rawAVP(avp.MultipleServicesCreditControl, rawAVP(avp.RatingGroup, []byte{0, 0, 0, 1})),
+			decode: func(a *AVP, b []byte) error {
+				return a.decodeFromBytes(b, CHARGING_CONTROL_APP_ID, dict.Default, maxGroupedDepth)
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			buf := append([]byte(nil), tc.data...)
+			a := &AVP{}
+			if err := tc.decode(a, buf); err == nil {
+				t.Fatal("expected a DecodeError from the fallback path")
+			}
+			u, ok := a.Data.(datatype.Unknown)
+			if !ok {
+				t.Fatalf("Data is %T, want datatype.Unknown", a.Data)
+			}
+			want := append([]byte(nil), u...)
+			for i := range buf {
+				buf[i] = 0xEE
+			}
+			if !bytes.Equal(u, want) {
+				t.Fatalf("Data changed when the input buffer was reused: got % x, want % x", []byte(u), want)
+			}
+		})
 	}
 }

@@ -121,13 +121,13 @@ func (a *AVP) decodeFromBytes(data []byte, application uint32, dictionary *dict.
 	// Handle grouped AVPs directly to avoid an intermediate copy.
 	if dictAVP.Data.Type == datatype.GroupedType {
 		if depth >= maxGroupedDepth {
-			a.Data = datatype.Unknown(payload[:bodyLen])
+			a.Data = unknownCopy(payload[:bodyLen])
 			return DecodeError(fmt.Errorf("%s(%d): %w", dictAVP.Name, dictAVP.Code, errGroupedTooDeep))
 		}
 		g, groupErr := decodeGroupedFromBytes(payload[:bodyLen], application, dictionary, depth+1)
 		if groupErr != nil {
 			// Preserve raw bytes to prevent offset misalignment in the parent parse loop.
-			a.Data = datatype.Unknown(payload[:bodyLen])
+			a.Data = unknownCopy(payload[:bodyLen])
 			return DecodeError(fmt.Errorf("%s(%d): Grouped{%v}", dictAVP.Name, dictAVP.Code, groupErr))
 		}
 		a.Data = g
@@ -138,7 +138,7 @@ func (a *AVP) decodeFromBytes(data []byte, application uint32, dictionary *dict.
 			if decodeErr == nil {
 				decodeErr = fmt.Errorf("size mismatch: %s expects %d bytes, wire has %d", dictAVP.Data.TypeName, decoded.Len(), bodyLen)
 			}
-			a.Data = datatype.Unknown(payload[:bodyLen])
+			a.Data = unknownCopy(payload[:bodyLen])
 			return DecodeError(fmt.Errorf("%s(%d): %v", dictAVP.Name, dictAVP.Code, decodeErr))
 		}
 		a.Data = decoded
@@ -214,4 +214,12 @@ func (a *AVP) String() string {
 		a.VendorID,
 		a.Data,
 	)
+}
+
+// unknownCopy returns b as a datatype.Unknown with its own backing array, so
+// the result stays valid after ReadMessage returns its pooled buffer.
+func unknownCopy(b []byte) datatype.Unknown {
+	d := make([]byte, len(b))
+	copy(d, b)
+	return datatype.Unknown(d)
 }

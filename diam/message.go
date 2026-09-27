@@ -121,6 +121,16 @@ func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command,
 func (m *Message) readBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, stream uint) error {
 	var err error
 	var n int
+	// Belt to DecodeFromBytes' braces. A Header that reached here without
+	// being decoded from the wire — set by hand, or by a future caller — can
+	// still carry a MessageLength below HeaderLength, and the subtraction
+	// below is unsigned: uint32(0) - 20 is 4294967276, which readerBufferSlice
+	// would then make(). Cheap to check, fatal to omit.
+	if m.Header.MessageLength < HeaderLength {
+		return fmt.Errorf(
+			"readBody Error: Message Length %d is shorter than the %d byte header",
+			m.Header.MessageLength, HeaderLength)
+	}
 	b := readerBufferSlice(buf, int(m.Header.MessageLength-HeaderLength))
 	msr, isMulti := r.(MultistreamReader)
 	if isMulti {

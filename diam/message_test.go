@@ -421,3 +421,27 @@ func TestReadMessageWithTruncatedTrailingAVP(t *testing.T) {
 		t.Fatalf("Expected the 2 AVPs preceding the truncated bytes to still be decoded, got %d", len(msg.AVP))
 	}
 }
+
+func TestReadMessageDecodesSubscriptionIDExtension(t *testing.T) {
+	m := NewRequest(CreditControl, 4, dict.Default)
+	m.NewAVP(avp.SubscriptionIDExtension, 0, 0, &GroupedAVP{
+		AVP: []*AVP{
+			NewAVP(avp.SubscriptionIDE164, 0, 0, datatype.UTF8String("15555550100")),
+		},
+	})
+	b, err := m.Serialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := ReadMessage(bytes.NewReader(b), dict.Default)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := got.FindAVP(avp.SubscriptionIDE164, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v, ok := a.Data.(datatype.UTF8String); !ok || v != "15555550100" {
+		t.Fatalf("Subscription-Id-E164 = %#v, want UTF8String(\"15555550100\")", a.Data)
+	}
+}

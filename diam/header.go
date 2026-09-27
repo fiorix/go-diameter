@@ -47,14 +47,10 @@ func (h *Header) DecodeFromBytes(data []byte) error {
 	}
 	h.Version = data[0]
 	h.MessageLength = uint24to32(data[1:4])
-	// RFC 6733 section 3: the Message Length field is the length of the
-	// message *including* this header, so a value below HeaderLength cannot
-	// describe any message. Rejected here rather than left to the caller
-	// because readBody subtracts HeaderLength from it into an int, and on a
-	// 64-bit platform uint32(0)-20 is 4294967276 — a make() of very nearly
-	// 4 GiB, from a 20-byte message, before any handler runs and before
-	// capabilities are exchanged. An out-of-memory is a fatal runtime error
-	// rather than a panic, so no recover() upstream of it can help.
+	// RFC 6733 section 3: Message Length includes this header, so a value
+	// below HeaderLength is invalid. Rejecting it here also keeps readBody's
+	// unsigned MessageLength-HeaderLength from underflowing into a near-4 GiB
+	// allocation.
 	if h.MessageLength < HeaderLength {
 		return fmt.Errorf(
 			"Message Length %d is shorter than the %d byte header",

@@ -2510,5 +2510,16 @@
       <data type="Unsigned32"/>
     </avp>
 
+    <!-- Copies of NASREQ (1) AVPs, so this application resolves them without that dictionary. -->
+    <avp name="Accounting-Input-Octets" code="363" must="M" may="-" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc7155#section-4.6.1 -->
+      <data type="Unsigned64"/>
+    </avp>
+
+    <avp name="Accounting-Output-Octets" code="364" must="M" may="-" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc7155#section-4.6.2 -->
+      <data type="Unsigned64"/>
+    </avp>
+
 	</application>
 </diameter>

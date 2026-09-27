@@ -1134,6 +1134,17 @@ var creditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
 				<!-- *[ AVP ]-->
 			</data>
 		</avp>
+
+		<!-- Copies of NASREQ (1) AVPs, so this application resolves them without that dictionary. -->
+		<avp name="Called-Station-Id" code="30" must="M" may="-" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc7155#section-4.2.5 -->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="Filter-Id" code="11" must="M" may="" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc7155#section-4.4.7 -->
+			<data type="UTF8String"/>
+		</avp>
 	</application>
 </diameter>`
 
@@ -1605,6 +1616,17 @@ var gxcreditcontrolXML = `<?xml version="1.0" encoding="UTF-8"?>
                 <rule avp="Flow-Direction" required="false" max="1"/>
                 <!-- *[ AVP ]-->
             </data>
+        </avp>
+
+        <!-- Copies of NASREQ (1) AVPs, so this application resolves them without that dictionary. -->
+        <avp name="Framed-IP-Address" code="8" must="M" may="-" must-not="V" may-encrypt="Y">
+            <!-- http://tools.ietf.org/html/rfc7155#section-4.4.10.5.1 -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Framed-IPv6-Prefix" code="97" must="M" may="-" must-not="V" may-encrypt="Y">
+            <!-- http://tools.ietf.org/html/rfc7155#section-4.4.10.5.6 -->
+            <data type="OctetString"/>
         </avp>
 
     </application>
@@ -5084,6 +5106,17 @@ var tgpprorfXML = `<?xml version="1.0" encoding="UTF-8"?>
 
     <avp name="Extended-APN-AMBR-UL" code="2849" must="V" must-not="M" may="P" may-encrypt="Y" vendor-id="10415">
       <data type="Unsigned32"/>
+    </avp>
+
+    <!-- Copies of NASREQ (1) AVPs, so this application resolves them without that dictionary. -->
+    <avp name="Accounting-Input-Octets" code="363" must="M" may="-" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc7155#section-4.6.1 -->
+      <data type="Unsigned64"/>
+    </avp>
+
+    <avp name="Accounting-Output-Octets" code="364" must="M" may="-" must-not="V" may-encrypt="Y">
+      <!-- http://tools.ietf.org/html/rfc7155#section-4.6.2 -->
+      <data type="Unsigned64"/>
     </avp>
 
 	</application>

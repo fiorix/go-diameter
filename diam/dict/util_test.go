@@ -365,3 +365,74 @@ func TestCreditControlRFC8506Rules(t *testing.T) {
 		}
 	}
 }
+
+// AVPs the credit-control family (4 and its children) defines as copies of
+// NASREQ (1) definitions, keyed by the application that holds the copy.
+var nasreqCopies = map[uint32][]string{
+	4:        {"Called-Station-Id", "Filter-Id", "Accounting-Input-Octets", "Accounting-Output-Octets"},
+	16777238: {"Framed-IP-Address", "Framed-IPv6-Prefix"},
+}
+
+func TestCreditControlWithoutNASREQ(t *testing.T) {
+	p, err := NewParser(
+		"./testdata/base.xml",
+		"./testdata/credit_control.xml",
+		"./testdata/tgpp_ro_rf.xml",
+		"./testdata/gx_credit_control.xml",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for appID, names := range nasreqCopies {
+		for _, name := range names {
+			if _, err := p.FindAVP(appID, name); err != nil {
+				t.Errorf("app %d: %v", appID, err)
+			}
+		}
+	}
+}
+
+func TestCreditControlRulesDoNotResolveThroughNASREQ(t *testing.T) {
+	for _, app := range Default.Apps() {
+		if _, scoped := parentAppIds[app.ID]; !scoped || app.ID == 1 {
+			continue
+		}
+		var rules []*Rule
+		for _, cmd := range app.Command {
+			rules = append(rules, cmd.Request.Rule...)
+			rules = append(rules, cmd.Answer.Rule...)
+		}
+		for _, avp := range app.AVP {
+			rules = append(rules, avp.Data.Rule...)
+		}
+		for _, r := range rules {
+			avp, err := Default.FindAVP(app.ID, r.AVP)
+			if err == nil && avp.App.ID == 1 {
+				t.Errorf("app %d (%s): rule %s resolves only through NASREQ", app.ID, app.Name, r.AVP)
+			}
+		}
+	}
+}
+
+func TestNASREQCopiesMatchNASREQ(t *testing.T) {
+	for appID, names := range nasreqCopies {
+		for _, name := range names {
+			cp, err := Default.FindAVP(appID, name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			orig, err := Default.FindAVP(1, name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if cp.App.ID == 1 {
+				t.Errorf("app %d: %s is not defined by the application", appID, name)
+			}
+			if cp.Code != orig.Code || cp.Must != orig.Must || cp.May != orig.May ||
+				cp.MustNot != orig.MustNot || cp.MayEncrypt != orig.MayEncrypt ||
+				cp.VendorID != orig.VendorID || cp.Data.Type != orig.Data.Type {
+				t.Errorf("app %d: %s = %+v, NASREQ has %+v", appID, name, *cp, *orig)
+			}
+		}
+	}
+}

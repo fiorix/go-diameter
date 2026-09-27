@@ -562,5 +562,16 @@
 				<!-- *[ AVP ]-->
 			</data>
 		</avp>
+
+		<!-- Copies of NASREQ (1) AVPs, so this application resolves them without that dictionary. -->
+		<avp name="Called-Station-Id" code="30" must="M" may="-" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc7155#section-4.2.5 -->
+			<data type="UTF8String"/>
+		</avp>
+
+		<avp name="Filter-Id" code="11" must="M" may="" must-not="V" may-encrypt="Y">
+			<!-- http://tools.ietf.org/html/rfc7155#section-4.4.7 -->
+			<data type="UTF8String"/>
+		</avp>
 	</application>
 </diameter>

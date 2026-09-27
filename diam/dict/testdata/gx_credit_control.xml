@@ -418,5 +418,16 @@
             </data>
         </avp>
 
+        <!-- Copies of NASREQ (1) AVPs, so this application resolves them without that dictionary. -->
+        <avp name="Framed-IP-Address" code="8" must="M" may="-" must-not="V" may-encrypt="Y">
+            <!-- http://tools.ietf.org/html/rfc7155#section-4.4.10.5.1 -->
+            <data type="OctetString"/>
+        </avp>
+
+        <avp name="Framed-IPv6-Prefix" code="97" must="M" may="-" must-not="V" may-encrypt="Y">
+            <!-- http://tools.ietf.org/html/rfc7155#section-4.4.10.5.6 -->
+            <data type="OctetString"/>
+        </avp>
+
     </application>
 </diameter>

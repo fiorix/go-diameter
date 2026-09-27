@@ -24,6 +24,10 @@ import (
 // MessageBufferLength is the default buffer length for Diameter messages.
 var MessageBufferLength = 1 << 10
 
+// errInvalidMessageLength reports a header whose Message-Length is smaller
+// than the header itself (RFC 6733 §3).
+var errInvalidMessageLength = errors.New("message length is less than the header length")
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -107,6 +111,10 @@ func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command,
 	m.Header, err = DecodeHeader(b)
 	if err != nil {
 		return nil, stream, err
+	}
+	// readBody sizes its buffer as MessageLength-HeaderLength in uint32.
+	if m.Header.MessageLength < HeaderLength {
+		return nil, stream, fmt.Errorf("%w: %d", errInvalidMessageLength, m.Header.MessageLength)
 	}
 	cmd, err = m.Dictionary().FindCommand(
 		m.Header.ApplicationID,

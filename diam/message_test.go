@@ -8,10 +8,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"errors"
 	"io/ioutil"
 	"net"
 	"reflect"
+	"runtime"
 	"testing"
+	"time"
 
 	"github.com/fiorix/go-diameter/v4/diam/avp"
 	"github.com/fiorix/go-diameter/v4/diam/datatype"
@@ -341,5 +344,62 @@ func BenchmarkWriteMessage(b *testing.B) {
 	m, _ := ReadMessage(bytes.NewReader(testMessage), dict.Default)
 	for n := 0; n < b.N; n++ {
 		m.WriteTo(ioutil.Discard)
+	}
+}
+
+// headerWithLength returns a 20-byte CER header that declares length l.
+func headerWithLength(l uint32) []byte {
+	h := make([]byte, HeaderLength)
+	h[0] = 1
+	putUint24(h[1:4], l)
+	h[4] = RequestFlag
+	putUint24(h[5:8], CapabilitiesExchange)
+	return h
+}
+
+func TestReadMessageRejectsLengthBelowHeader(t *testing.T) {
+	for _, l := range []uint32{0, 1, 12, HeaderLength - 1} {
+		var before, after runtime.MemStats
+		runtime.ReadMemStats(&before)
+		_, err := ReadMessage(bytes.NewReader(headerWithLength(l)), dict.Default)
+		runtime.ReadMemStats(&after)
+		if !errors.Is(err, errInvalidMessageLength) {
+			t.Errorf("length %d: err = %v, want errInvalidMessageLength", l, err)
+		}
+		if got := after.TotalAlloc - before.TotalAlloc; got > 1<<20 {
+			t.Errorf("length %d: allocated %d bytes decoding a 20-byte header", l, got)
+		}
+	}
+	// A header-only message is the smallest valid length.
+	if _, err := ReadMessage(bytes.NewReader(headerWithLength(HeaderLength)), dict.Default); errors.Is(err, errInvalidMessageLength) {
+		t.Errorf("length %d rejected: %v", HeaderLength, err)
+	}
+}
+
+// TestServerClosesConnOnLengthBelowHeader checks that a header declaring a
+// length below the header size closes the connection (RFC 6733 §2.1).
+func TestServerClosesConnOnLengthBelowHeader(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := &Server{Handler: HandlerFunc(func(Conn, *Message) {}), Dict: dict.Default}
+	go srv.Serve(ln)
+	defer srv.Close()
+	c, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	if _, err = c.Write(headerWithLength(12)); err != nil {
+		t.Fatal(err)
+	}
+	c.SetReadDeadline(time.Now().Add(2 * time.Second))
+	_, err = c.Read(make([]byte, 1))
+	if ne, ok := err.(net.Error); ok && ne.Timeout() {
+		t.Fatal("connection still open 2s after a header declaring length 12")
+	}
+	if err == nil {
+		t.Fatal("expected the connection to be closed, read returned data")
 	}
 }

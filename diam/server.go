@@ -105,6 +105,12 @@ func (c *conn) closeNotify() <-chan struct{} {
 	defer c.mu.Unlock()
 	if c.closeNotifyc == nil {
 		c.closeNotifyc = make(chan struct{})
+		if c.clientGone {
+			// The connection went away before anyone asked; deliver that now rather than
+			// returning a channel nothing will ever close.
+			close(c.closeNotifyc)
+			return c.closeNotifyc
+		}
 
 		if msc, isMulti := c.rwc.(MultistreamConn); isMulti {
 			// MultistreamConn provides it's own error handler
@@ -139,9 +145,13 @@ func (c *conn) closeNotify() <-chan struct{} {
 func (c *conn) notifyClientGone() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if c.closeNotifyc != nil && !c.clientGone {
+	if c.clientGone {
+		return
+	}
+	// Record the close even if nobody has called CloseNotify yet, so a later call can see it.
+	c.clientGone = true
+	if c.closeNotifyc != nil {
 		close(c.closeNotifyc) // unblock readers
-		c.clientGone = true
 	}
 }
 

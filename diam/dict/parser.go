@@ -107,10 +107,11 @@ func (p *Parser) LoadFile(filename string) error {
 	return p.Load(fd)
 }
 
-// Load loads a dictionary from byte array. May be used multiple times.
-func (p *Parser) Load(r io.Reader) error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+// initIndex allocates the lookup maps on first use. Load and
+// RegisterGroupedAVP both enter through it, so either works on a parser that
+// has not loaded XML, and neither discards what the other has indexed.
+// Callers must hold p.mu.
+func (p *Parser) initIndex() {
 	p.once.Do(func() {
 		p.appcode = make(map[uint32]*App)
 		p.apptype = make(map[appIdTypeIdx]*App)
@@ -118,6 +119,13 @@ func (p *Parser) Load(r io.Reader) error {
 		p.avpcode = make(map[codeIdx]*AVP)
 		p.command = make(map[codeIdx]*Command)
 	})
+}
+
+// Load loads a dictionary from byte array. May be used multiple times.
+func (p *Parser) Load(r io.Reader) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.initIndex()
 	f := new(File)
 	d := xml.NewDecoder(r)
 	if err := d.Decode(f); err != nil {
@@ -320,4 +328,95 @@ func printAVP(w io.Writer, avp *AVP) {
 				rule.AVP, rule.Required, rule.Min, rule.Max)
 		}
 	}
+}
+
+// RegisterGroupedAVP adds a Grouped AVP to the dictionary index at runtime,
+// for AVPs that are only known once the process is running -- supplied by a
+// provisioning feed, or specific to a peer -- and so cannot be shipped as XML
+// and read by Load.
+//
+// An AVP is identified by the pair {Code, VendorID}: the code alone is not
+// unique, because each vendor numbers its own AVP space (RFC 6733 §4.1).
+// vendorID is therefore required, with 0 meaning the IETF space.
+// UndefinedVendorID is a wildcard used by the lookup helpers, not a vendor,
+// and is rejected. The AVP is indexed under its own vendorID only, so a
+// registration can never shadow an AVP that reuses its code in a different
+// vendor's space -- the shipped dictionary has 40 such {app, code} pairs, for
+// instance app 4 code 9, which is Framed-IP-Netmask for vendor 0 and
+// TGPP-GGSN-MCC-MNC for vendor 10415.
+//
+// Look the result up with its vendor ID, through FindAVPByCode(appID, code,
+// vendorID) -- the path the decoder uses -- or FindAVPWithVendor(appID, name,
+// vendorID). FindAVP searches with UndefinedVendorID and will not find it.
+//
+// The AVP is registered for appID and is inherited by the applications that
+// descend from it, unless they already define that {Code, VendorID}; this
+// mirrors what Load does for AVPs read from XML, and is necessary because
+// FindAVPByCode resolves a single index entry and does not walk the parent
+// chain. Registering for app 0 therefore reaches every loaded application.
+// Propagation costs one pass over the index per call, so register a
+// dictionary before serving traffic rather than while handling messages.
+//
+// No member rules are attached, so the AVP's members decode generically by
+// their own dictionary entries, and Rule reports none for it. Registering the
+// same {appID, Code, VendorID} under the same name again is a no-op; a
+// registration that conflicts with an existing entry returns an error and
+// leaves the index unchanged.
+//
+// Like Load, RegisterGroupedAVP must not be called concurrently with message
+// decoding or with the Find and Scan lookups, which read the index without
+// holding a lock.
+func (p *Parser) RegisterGroupedAVP(appID, code, vendorID uint32, name string) error {
+	if name == "" {
+		return fmt.Errorf("dict: RegisterGroupedAVP: name is empty")
+	}
+	if code == 0 {
+		return fmt.Errorf("dict: RegisterGroupedAVP: %q: AVP code 0 is reserved", name)
+	}
+	if vendorID == UndefinedVendorID {
+		return fmt.Errorf("dict: RegisterGroupedAVP: %q: UndefinedVendorID is a "+
+			"lookup wildcard, not a vendor; use 0 for the IETF AVP space", name)
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.initIndex()
+
+	cIdx := codeIdx{appID, code, vendorID}
+	nIdx := nameIdx{appID, name, vendorID}
+	if existing, ok := p.avpcode[cIdx]; ok {
+		if existing.Name == name && existing.Data.Type == datatype.GroupedType {
+			return nil // Already registered, identically.
+		}
+		return fmt.Errorf("dict: RegisterGroupedAVP: %q: app %d already defines "+
+			"code %d vendor %d as %q (%s)",
+			name, appID, code, vendorID, existing.Name, existing.Data.TypeName)
+	}
+	if existing, ok := p.avpname[nIdx]; ok {
+		return fmt.Errorf("dict: RegisterGroupedAVP: %q: app %d already uses that "+
+			"name for code %d vendor %d", name, appID, existing.Code, existing.VendorID)
+	}
+	// Link to the owning application when it is loaded, as Load does. A
+	// synthesized App is deliberately not added to the application index:
+	// registering an AVP must not make an application appear supported
+	// during capabilities exchange.
+	app := p.appcode[appID]
+	if app == nil {
+		app = &App{ID: appID}
+	}
+	avp := &AVP{
+		Name:     name,
+		Code:     code,
+		VendorID: vendorID,
+		Data: Data{
+			Type:     datatype.GroupedType,
+			TypeName: "Grouped",
+		},
+		App: app,
+	}
+	p.avpcode[cIdx] = avp
+	p.avpname[nIdx] = avp
+	// Give descendant applications the same view of this AVP that they would
+	// have had if it arrived through Load.
+	p.mergeInheritedAVPs()
+	return nil
 }

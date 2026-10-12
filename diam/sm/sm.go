@@ -5,6 +5,7 @@
 package sm
 
 import (
+	"crypto/tls"
 	"fmt"
 	"time"
 
@@ -88,6 +89,19 @@ type Settings struct {
 	// peer has passed the handshake) before the state machine responds
 	// with DWA. Same semantics as OnCER.
 	OnDWR diam.HandlerFunc
+
+	// TLSConfig enables the in-band TLS upgrade negotiated with
+	// Inband-Security-Id (RFC 6733 §13), which RFC 6733 retains only for
+	// backward compatibility with RFC 3588 peers (§1.1.3, §2.1, §5.6). When
+	// set, a server accepts Inband-Security-Id=1 in a CER on a connection
+	// that can be upgraded and performs the handshake after its CEA; a client
+	// that requested TLS upgrades when the CEA selects it. Leave nil to refuse
+	// in-band security, which is the recommended configuration: §5.6 and §13
+	// prefer TLS before the CER, since that also protects the capabilities
+	// exchange. Setting it makes the capabilities exchange dispatch on the
+	// serve goroutine under Server.MaxConcurrentHandlers (see
+	// diam.InbandTLSHandler).
+	TLSConfig *tls.Config
 
 	// OnDWA, if non-nil, is invoked immediately before a DWA is sent in
 	// response to a peer DWR. Useful for logging or metrics.
@@ -257,4 +271,11 @@ func (f handshakeOK) ServeDIAM(c diam.Conn, m *diam.Message) {
 	if _, ok := smpeer.FromContext(c.Context()); ok {
 		f(c, m)
 	}
+}
+
+// InbandTLSEnabled reports whether this state machine may upgrade a
+// connection to TLS from within the capabilities-exchange handler, which is
+// the case when Settings.TLSConfig is set. It implements diam.InbandTLSHandler.
+func (sm *StateMachine) InbandTLSEnabled() bool {
+	return sm.cfg != nil && sm.cfg.TLSConfig != nil
 }

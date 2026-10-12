@@ -20,6 +20,21 @@ type CER struct {
 	AuthApplicationID           []*diam.AVP               `avp:"Auth-Application-Id"`
 	VendorSpecificApplicationID []*diam.AVP               `avp:"Vendor-Specific-Application-Id"`
 	appID                       []uint32                  // List of supported application IDs.
+	requestedSecurity           uint32                    // Inband-Security-Id the peer asked for.
+}
+
+// Security mechanisms carried by Inband-Security-Id (RFC 6733 §6.10).
+const (
+	// InbandSecurityNone is NO_INBAND_SECURITY, the default.
+	InbandSecurityNone uint32 = 0
+	// InbandSecurityTLS is TLS.
+	InbandSecurityTLS uint32 = 1
+)
+
+// RequestedSecurity returns the Inband-Security-Id the peer sent in its CER,
+// or InbandSecurityNone when it sent none. Valid after a successful parse.
+func (cer *CER) RequestedSecurity() uint32 {
+	return cer.requestedSecurity
 }
 
 // Parse parses and validates the given message, and returns nil when
@@ -34,11 +49,18 @@ func (cer *CER) Parse(m *diam.Message, localRole Role) (failedAVP *diam.AVP, err
 	return cer.ParseWithSecurity(m, localRole, false)
 }
 
-// ParseWithSecurity is like Parse but accepts a tlsActive flag. When
-// tlsActive is true, Inband-Security-Id=1 (TLS) is accepted because
-// the transport is already secured — per RFC 6733 §5.3.1 the peer is
-// simply declaring its TLS capability which is already satisfied.
-func (cer *CER) ParseWithSecurity(m *diam.Message, localRole Role, tlsActive bool) (failedAVP *diam.AVP, err error) {
+// ParseWithSecurity is like Parse but accepts a canTLS flag, telling it
+// whether this side can satisfy a request for Inband-Security-Id=1: either
+// the transport is already secured, in which case the peer is only declaring
+// a capability that is already met (RFC 6733 §6.10), or the connection
+// can still be upgraded in band. When it cannot, a request for any mechanism
+// other than NO_INBAND_SECURITY yields ErrNoCommonSecurity and the caller is
+// expected to answer DIAMETER_NO_COMMON_SECURITY.
+//
+// After a successful parse, RequestedSecurity reports what the peer asked
+// for, so the caller can tell an accepted TLS request from a CER that never
+// mentioned security.
+func (cer *CER) ParseWithSecurity(m *diam.Message, localRole Role, canTLS bool) (failedAVP *diam.AVP, err error) {
 	if err = m.Unmarshal(cer); err != nil {
 		return nil, err
 	}
@@ -46,8 +68,17 @@ func (cer *CER) ParseWithSecurity(m *diam.Message, localRole Role, tlsActive boo
 		return nil, err
 	}
 	if cer.InbandSecurityID != nil {
-		if v := cer.InbandSecurityID.Data.(datatype.Unsigned32); v != 0 && !tlsActive {
-			return nil, ErrNoCommonSecurity
+		v, ok := cer.InbandSecurityID.Data.(datatype.Unsigned32)
+		if !ok {
+			return cer.InbandSecurityID, ErrNoCommonSecurity
+		}
+		cer.requestedSecurity = uint32(v)
+		// Only TLS is defined here; anything else, and TLS when this side
+		// cannot provide it, has no mechanism in common with the peer.
+		if cer.requestedSecurity != InbandSecurityNone {
+			if cer.requestedSecurity != InbandSecurityTLS || !canTLS {
+				return nil, ErrNoCommonSecurity
+			}
 		}
 	}
 	app := &Application{

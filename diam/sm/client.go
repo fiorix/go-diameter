@@ -15,6 +15,7 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/avp"
 	"github.com/fiorix/go-diameter/v4/diam/datatype"
 	"github.com/fiorix/go-diameter/v4/diam/dict"
+	"github.com/fiorix/go-diameter/v4/diam/sm/smparser"
 )
 
 var (
@@ -202,6 +203,12 @@ func (cli *Client) handshake(c diam.Conn) (diam.Conn, error) {
 			c.Close()
 			return nil, fmt.Errorf("diameter handshake failure: %v", err)
 		}
+	}
+
+	// Record the security mechanism being requested, so handleCEA can tell
+	// whether the peer's answer agrees with it before upgrading.
+	if cli.InbandSecurityID != smparser.InbandSecurityNone {
+		c.SetContext(withRequestedInbandSecurity(c.Context(), cli.InbandSecurityID))
 	}
 
 	m := cli.makeCER(hostAddresses)

@@ -26,7 +26,12 @@ type CEA struct {
 	VendorSpecificApplicationID []*diam.AVP               `avp:"Vendor-Specific-Application-Id"`
 	FailedAVP                   []*diam.AVP               `avp:"Failed-AVP"`
 	ErrorMessage                string                    `avp:"Error-Message"`
-	appID                       []uint32                  // List of supported application IDs.
+	// InbandSecurityID is the security mechanism the peer selected
+	// (RFC 6733 §6.10): 0 for NO_INBAND_SECURITY, 1 for TLS. A CEA that
+	// omits the AVP leaves this 0, which is the same answer as declining,
+	// so an upgrade must only follow an explicit 1.
+	InbandSecurityID uint32   `avp:"Inband-Security-Id"`
+	appID            []uint32 // List of supported application IDs.
 }
 
 // ErrFailedResultCode is returned by Dial or DialTLS when the handshake

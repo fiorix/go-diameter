@@ -28,7 +28,16 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			return
 		}
 		cer := new(smparser.CER)
-		_, err := cer.ParseWithSecurity(m, smparser.Server, c.TLS() != nil)
+		// Decide whether an in-band upgrade is possible before answering,
+		// so that a request this side cannot honour is refused with
+		// DIAMETER_NO_COMMON_SECURITY rather than accepted and then failed.
+		// An already-encrypted connection satisfies the request without an
+		// upgrade.
+		tlsActive := c.TLS() != nil
+		upgrader, canUpgrade := c.(diam.TLSUpgrader)
+		willUpgrade := !tlsActive && canUpgrade &&
+			sm.cfg.TLSConfig != nil && upgrader.CanStartTLS()
+		_, err := cer.ParseWithSecurity(m, smparser.Server, tlsActive || willUpgrade)
 		if err != nil {
 			err = errorCEA(sm, c, m, cer, err)
 			if err != nil {
@@ -41,7 +50,9 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			c.Close()
 			return
 		}
-		err = successCEA(sm, c, m, cer)
+		// Only upgrade when the peer actually asked for TLS.
+		upgrade := willUpgrade && cer.RequestedSecurity() == smparser.InbandSecurityTLS
+		err = successCEA(sm, c, m, cer, upgrade)
 
 		if err != nil {
 			sm.Error(&diam.ErrorReport{
@@ -50,6 +61,20 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 				Error:   err,
 			})
 			return
+		}
+		if upgrade {
+			// RFC 6733 §13: the handshake begins once both ends reach the
+			// open state, and if it fails both ends MUST move to the closed
+			// state.
+			if err := upgrader.StartTLS(sm.cfg.TLSConfig); err != nil {
+				sm.Error(&diam.ErrorReport{
+					Conn:    c,
+					Message: m,
+					Error:   fmt.Errorf("in-band TLS upgrade failed: %w", err),
+				})
+				c.Close()
+				return
+			}
 		}
 		meta := smpeer.FromCER(cer)
 		c.SetContext(smpeer.NewContext(ctx, meta))
@@ -114,8 +139,12 @@ func errorCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER,
 }
 
 // successCEA sends a success answer indicating that the CER was successfully
-// parsed and accepted by the server.
-func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER) error {
+// parsed and accepted by the server. upgrade reports whether an in-band TLS
+// handshake will follow, in which case the selected mechanism is echoed back
+// so the peer knows to start it: RFC 6733 §13 requires the CER/CEA exchange
+// to include Inband-Security-Id=TLS for TLS to be established in the open
+// state.
+func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CER, upgrade bool) error {
 	var (
 		hostAddresses []datatype.Address
 		err           error
@@ -165,6 +194,10 @@ func successCEA(sm *StateMachine, c diam.Conn, m *diam.Message, cer *smparser.CE
 	}
 	if sm.cfg.FirmwareRevision != 0 {
 		a.NewAVP(avp.FirmwareRevision, 0, 0, sm.cfg.FirmwareRevision)
+	}
+	if upgrade {
+		a.NewAVP(avp.InbandSecurityID, avp.Mbit, 0,
+			datatype.Unsigned32(smparser.InbandSecurityTLS))
 	}
 	if sm.cfg.OnCEA != nil {
 		sm.cfg.OnCEA(c, a)

@@ -8,14 +8,17 @@ package diam
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/fiorix/go-diameter/v4/diam/dict"
@@ -59,6 +62,69 @@ type CloseNotifier interface {
 	CloseNotify() <-chan struct{}
 }
 
+// TLSUpgrader is implemented by Conns that can be upgraded to TLS after the
+// capabilities exchange, as negotiated with Inband-Security-Id (RFC 6733 §13).
+// RFC 6733 retains this only for backward compatibility with RFC 3588 peers
+// (§1.1.3, §2.1, §5.6). New deployments should prefer a TLS listener and hand
+// the Server an already-encrypted connection, which §5.6 and §13 recommend
+// because it also protects the CER and CEA.
+//
+// CanStartTLS reports whether this particular connection can be upgraded, and
+// must be consulted before a success CEA is sent: once both sides have agreed
+// on TLS in the CER/CEA exchange, the handshake is expected to follow. Only
+// buffered stream connections qualify, and only while their handler runs on
+// the serve goroutine (see InbandTLSHandler). A connection that is already
+// encrypted cannot be upgraded again, and neither can a MultistreamConn:
+// RFC 6733 §2.1 runs DTLS, not TLS, over SCTP.
+//
+//	if u, ok := c.(diam.TLSUpgrader); ok && u.CanStartTLS() {
+//	    err := u.StartTLS(tlsConfig)
+//	}
+//
+// If the handshake fails, the connection must be closed: RFC 6733 §13 requires
+// both ends to move to the closed state.
+type TLSUpgrader interface {
+	// CanStartTLS reports whether StartTLS or StartTLSClient can succeed on
+	// this connection. It does not change the connection.
+	CanStartTLS() bool
+
+	// StartTLS upgrades the connection to TLS as the server side
+	// (tls.Server). It must be called from the handler that is processing
+	// the capabilities exchange, before the serve loop reads again.
+	StartTLS(cfg *tls.Config) error
+
+	// StartTLSClient upgrades the connection to TLS as the client side
+	// (tls.Client), under the same constraint as StartTLS.
+	StartTLSClient(cfg *tls.Config) error
+}
+
+// InbandTLSHandler is implemented by Handlers that may upgrade a connection
+// to TLS from inside the handler for the capabilities exchange. A Server asks
+// its Handler once per connection. When the answer is true and
+// MaxConcurrentHandlers is non-zero, the capabilities exchange (CER and CEA)
+// on a connection that can still be upgraded is dispatched on the serve
+// goroutine instead of a new one; this is a behaviour change for such
+// Handlers only. A Handler that does not implement this interface, or reports
+// false, keeps the dispatch behaviour it had, and its connections report
+// CanStartTLS false under concurrent dispatch.
+//
+// sm.StateMachine implements this, reporting whether Settings.TLSConfig is
+// set. A Handler that wraps a StateMachine must forward InbandTLSEnabled for
+// in-band TLS to be available under concurrent dispatch.
+type InbandTLSHandler interface {
+	InbandTLSEnabled() bool
+}
+
+// inbandTLSEnabled reports whether h may upgrade a connection to TLS from
+// within the capabilities-exchange handler.
+func inbandTLSEnabled(h Handler) bool {
+	if h == nil {
+		h = DefaultServeMux
+	}
+	u, ok := h.(InbandTLSHandler)
+	return ok && u.InbandTLSEnabled()
+}
+
 // A liveSwitchReader is a switchReader that's safe for concurrent
 // reads and switches, if its mutex is held.
 type liveSwitchReader struct {
@@ -91,9 +157,17 @@ type conn struct {
 	tlsState *tls.ConnectionState // or nil when not using TLS
 	writer   *response            // the diam.Conn exposed to handlers
 
-	hwg      sync.WaitGroup // tracks in-flight handler goroutines
-	sem      chan struct{}  // bounds concurrent handlers; nil = unbounded/sequential
-	accepted bool           // accepted by Server.Serve, as opposed to dialed
+	hwg       sync.WaitGroup // tracks in-flight handler goroutines
+	sem       chan struct{}  // bounds concurrent handlers; nil = unbounded/sequential
+	accepted  bool           // accepted by Server.Serve, as opposed to dialed
+	inbandTLS bool           // Handler may upgrade this connection to TLS
+	inline    atomic.Bool    // a handler is running on the serve goroutine
+
+	// tmu guards rwc and tlsState against an in-band TLS upgrade, which
+	// replaces both while other goroutines may be inspecting or closing the
+	// connection through its diam.Conn. The serve goroutine, which is the
+	// only writer, reads them without it.
+	tmu sync.RWMutex
 
 	mu           sync.Mutex // guards the following
 	closeNotifyc chan struct{}
@@ -112,7 +186,7 @@ func (c *conn) closeNotify() <-chan struct{} {
 			return c.closeNotifyc
 		}
 
-		if msc, isMulti := c.rwc.(MultistreamConn); isMulti {
+		if msc, isMulti := c.netConn().(MultistreamConn); isMulti {
 			// MultistreamConn provides it's own error handler
 			msc.SetErrorHandler(func(mc MultistreamConn, err error) {
 				mc.Close()
@@ -155,6 +229,22 @@ func (c *conn) notifyClientGone() {
 	}
 }
 
+// netConn returns the current transport, which an in-band TLS upgrade may
+// replace. Use it wherever the connection is reached from a goroutine other
+// than the serve loop.
+func (c *conn) netConn() net.Conn {
+	c.tmu.RLock()
+	defer c.tmu.RUnlock()
+	return c.rwc
+}
+
+// tls returns the TLS state, or nil, under the same rules as netConn.
+func (c *conn) tls() *tls.ConnectionState {
+	c.tmu.RLock()
+	defer c.tmu.RUnlock()
+	return c.tlsState
+}
+
 // Create new connection from rwc.
 func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
 	msc, isMulti := rwc.(MultistreamConn)
@@ -172,6 +262,7 @@ func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
 		c.buf = bufio.NewReadWriter(bufio.NewReader(&c.sr), bufio.NewWriter(rwc))
 	}
 	c.writer = &response{conn: c}
+	c.inbandTLS = inbandTLSEnabled(srv.Handler)
 	if n := srv.MaxConcurrentHandlers; n > 0 {
 		c.sem = make(chan struct{}, n)
 	}
@@ -250,13 +341,25 @@ func (c *conn) serve() {
 	}
 }
 
-// dispatch invokes the handler for m either in the current goroutine
+// dispatch runs the handler for m, either on the serve goroutine
 // (sequential, default) or in a new goroutine (concurrent), depending
 // on Server.MaxConcurrentHandlers. A positive value bounds concurrency
 // via a per-connection semaphore; a negative value is unbounded.
+//
+// A capabilities exchange runs on the serve goroutine even under concurrent
+// dispatch, but only when the Handler reports in-band TLS as enabled (see
+// InbandTLSHandler) and this connection could still be upgraded. The handler
+// may call StartTLS, and the upgrade has to finish before the next read, or
+// the serve loop would read the peer's TLS ClientHello as a diameter message.
+// Everything else is unaffected: a Handler that does not offer in-band
+// security, a connection that already arrived over TLS, an SCTP connection,
+// and every command other than CER dispatch exactly as before.
 func (c *conn) dispatch(m *Message) {
-	if c.server.MaxConcurrentHandlers == 0 {
+	if c.server.MaxConcurrentHandlers == 0 ||
+		(c.inbandTLS && m.Header.CommandCode == CapabilitiesExchange && c.canStartTLS()) {
 		// Sequential dispatch preserves the historical Handler contract.
+		c.inline.Store(true)
+		defer c.inline.Store(false)
 		serverHandler{c.server}.ServeDIAM(c.writer, m)
 		return
 	}
@@ -276,7 +379,7 @@ func (c *conn) dispatch(m *Message) {
 				buf := make([]byte, 4096)
 				buf = buf[:runtime.Stack(buf, false)]
 				log.Printf("diam: panic serving %v: %v\n%s",
-					c.rwc.RemoteAddr().String(), err, buf)
+					c.netConn().RemoteAddr().String(), err, buf)
 			}
 		}()
 		serverHandler{c.server}.ServeDIAM(c.writer, m)
@@ -343,7 +446,7 @@ func (w *response) WriteStream(b []byte, stream uint) (int, error) {
 
 // CurrentWriterStream of MultistreamWriter interface
 func (w *response) CurrentWriterStream() uint {
-	if msc, isMulti := w.conn.rwc.(MultistreamConn); isMulti {
+	if msc, isMulti := w.conn.netConn().(MultistreamConn); isMulti {
 		return msc.CurrentWriterStream()
 	}
 	return 0
@@ -351,14 +454,14 @@ func (w *response) CurrentWriterStream() uint {
 
 // ResetWriterStream of MultistreamWriter interface
 func (w *response) ResetWriterStream() {
-	if msc, isMulti := w.conn.rwc.(MultistreamConn); isMulti {
+	if msc, isMulti := w.conn.netConn().(MultistreamConn); isMulti {
 		msc.CurrentWriterStream()
 	}
 }
 
 // SetWriterStream of MultistreamWriter interface
 func (w *response) SetWriterStream(stream uint) uint {
-	if msc, isMulti := w.conn.rwc.(MultistreamConn); isMulti {
+	if msc, isMulti := w.conn.netConn().(MultistreamConn); isMulti {
 		return msc.SetWriterStream(stream)
 	}
 	return 0
@@ -366,22 +469,22 @@ func (w *response) SetWriterStream(stream uint) uint {
 
 // Close closes the connection.
 func (w *response) Close() {
-	w.conn.rwc.Close()
+	w.conn.netConn().Close()
 }
 
 // LocalAddr returns the local address of the connection.
 func (w *response) LocalAddr() net.Addr {
-	return w.conn.rwc.LocalAddr()
+	return w.conn.netConn().LocalAddr()
 }
 
 // RemoteAddr returns the peer address of the connection.
 func (w *response) RemoteAddr() net.Addr {
-	return w.conn.rwc.RemoteAddr()
+	return w.conn.netConn().RemoteAddr()
 }
 
 // TLS returns the TLS connection state, or nil.
 func (w *response) TLS() *tls.ConnectionState {
-	return w.conn.tlsState
+	return w.conn.tls()
 }
 
 // Dictionary returns the dictionary parser associated to this connection.
@@ -413,8 +516,134 @@ func (w *response) SetContext(ctx context.Context) {
 }
 
 func (w *response) Connection() net.Conn {
-	return w.conn.rwc
+	return w.conn.netConn()
 }
+
+// CanStartTLS reports whether this connection can be upgraded to TLS now. It
+// is false unless the calling handler runs on the serve goroutine, because the
+// upgrade must complete before the serve loop reads again.
+func (w *response) CanStartTLS() bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.conn.inline.Load() && w.conn.canStartTLS()
+}
+
+// canStartTLS reports whether the transport allows an in-band upgrade.
+// Callers hold the response mutex, or are the serve goroutine.
+func (c *conn) canStartTLS() bool {
+	if c.tlsState != nil {
+		return false // Already encrypted.
+	}
+	if _, isMulti := c.rwc.(MultistreamConn); isMulti {
+		// RFC 6733 §2.1 secures SCTP with DTLS, not with this handshake,
+		// and newConn leaves a multistream connection without the buffered
+		// reader the upgrade needs.
+		return false
+	}
+	return c.buf != nil
+}
+
+// StartTLS upgrades the connection to TLS as the server side.
+//
+// It must be called from the handler processing the capabilities exchange
+// while that handler runs on the serve goroutine, so that no read is in
+// flight; otherwise it returns an error. See CanStartTLS.
+func (w *response) StartTLS(cfg *tls.Config) error {
+	return w.startTLS(cfg, true)
+}
+
+// StartTLSClient upgrades the connection to TLS as the client side, under the
+// same constraint as StartTLS.
+func (w *response) StartTLSClient(cfg *tls.Config) error {
+	return w.startTLS(cfg, false)
+}
+
+func (w *response) startTLS(cfg *tls.Config, server bool) error {
+	if cfg == nil {
+		return errors.New("diam: StartTLS: nil tls.Config")
+	}
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	c := w.conn
+	if c.tlsState != nil {
+		return errors.New("diam: StartTLS: connection is already using TLS")
+	}
+	if !c.canStartTLS() {
+		return fmt.Errorf("diam: StartTLS: connection to %s cannot be upgraded",
+			c.rwc.RemoteAddr())
+	}
+	if !c.inline.Load() {
+		return errors.New("diam: StartTLS: not called from a handler running on the serve goroutine")
+	}
+
+	// Take over the connection's current read source rather than reading the
+	// socket behind it. When a CloseNotifier has been registered the socket is
+	// being drained by a copy goroutine into a pipe, and reading the socket
+	// here would compete with it for the same bytes.
+	c.sr.Lock()
+	if c.sr.pr != nil && c.sr.pipeCopyF != nil {
+		// A CloseNotifier was registered but the serve loop has not read
+		// since, so the pipe is not running yet. Start it here, exactly as
+		// liveSwitchReader.Read would, so that close notification keeps
+		// working across the upgrade.
+		go c.sr.pipeCopyF()
+		c.sr.r = c.sr.pr
+		c.sr.pr = nil
+		c.sr.pipeCopyF = nil
+	}
+	readSource := c.sr.r
+	c.sr.Unlock()
+
+	// The peer may already have sent its ClientHello, which the buffered
+	// reader will have consumed along with the last diameter message. Those
+	// bytes belong to the handshake.
+	var handshakeReader io.Reader = readSource
+	if n := c.buf.Reader.Buffered(); n > 0 {
+		pending := make([]byte, n)
+		if _, err := io.ReadFull(c.buf.Reader, pending); err != nil {
+			// The bytes are consumed either way, so the stream cannot be
+			// handed to TLS intact; report it instead of losing them.
+			return fmt.Errorf("diam: StartTLS: reading %d buffered bytes: %w", n, err)
+		}
+		handshakeReader = io.MultiReader(bytes.NewReader(pending), readSource)
+	}
+
+	// Writes go straight to the socket; reads come through the chain above.
+	raw := &upgradeConn{Conn: c.rwc, r: handshakeReader}
+	var tlsConn *tls.Conn
+	if server {
+		tlsConn = tls.Server(raw, cfg)
+	} else {
+		tlsConn = tls.Client(raw, cfg)
+	}
+	if err := tlsConn.Handshake(); err != nil {
+		return fmt.Errorf("diam: StartTLS: handshake with %s: %w",
+			c.rwc.RemoteAddr(), err)
+	}
+
+	// Publish the upgraded connection. sr.r is set to the tls.Conn, which
+	// reads through handshakeReader, so it must not be reached via sr again.
+	state := tlsConn.ConnectionState()
+	c.sr.Lock()
+	c.sr.r = tlsConn
+	c.sr.Unlock()
+	c.buf = bufio.NewReadWriter(bufio.NewReader(&c.sr), bufio.NewWriter(tlsConn))
+	c.tmu.Lock()
+	c.rwc = tlsConn
+	c.tlsState = &state
+	c.tmu.Unlock()
+	return nil
+}
+
+// upgradeConn presents the connection's existing read chain and its socket as
+// one net.Conn, so the TLS handshake reads the bytes that have already been
+// buffered or piped instead of racing whoever is draining the socket.
+type upgradeConn struct {
+	net.Conn
+	r io.Reader
+}
+
+func (c *upgradeConn) Read(b []byte) (int, error) { return c.r.Read(b) }
 
 // The HandlerFunc type is an adapter to allow the use of
 // ordinary functions as diameter handlers.  If f is a function
@@ -909,7 +1138,7 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 		if err != nil {
 			return err
 		}
-	}	
+	}
 	conn, err := Listen(network, addr)
 	if err != nil {
 		return err

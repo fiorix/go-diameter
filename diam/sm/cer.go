@@ -41,18 +41,21 @@ func handleCER(sm *StateMachine) diam.HandlerFunc {
 			c.Close()
 			return
 		}
+		// Mark the peer as handshaked before the CEA goes out: with
+		// concurrent dispatch, its next request may be handled on another
+		// goroutine as soon as the CEA is on the wire.
+		meta := smpeer.FromCER(cer)
+		c.SetContext(smpeer.NewContext(ctx, meta))
 		err = successCEA(sm, c, m, cer)
-
 		if err != nil {
 			sm.Error(&diam.ErrorReport{
 				Conn:    c,
 				Message: m,
 				Error:   err,
 			})
+			c.Close()
 			return
 		}
-		meta := smpeer.FromCER(cer)
-		c.SetContext(smpeer.NewContext(ctx, meta))
 		// Notify about peer passing the handshake.
 		select {
 		case sm.hsNotifyc <- c:

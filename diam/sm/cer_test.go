@@ -576,3 +576,44 @@ func TestHandleCER_ErrorCEAFlags(t *testing.T) {
 		t.Fatal("No CEA received")
 	}
 }
+
+// TestHandleCER_PeerContextSetBeforeCEA checks that the connection carries the
+// peer metadata before the CEA is written. With Server.MaxConcurrentHandlers
+// set, the peer's first request after the CEA is dispatched on its own
+// goroutine and handshakeOK drops it if the context is not yet set. OnCEA
+// runs immediately before the CEA write, so it observes the order.
+func TestHandleCER_PeerContextSetBeforeCEA(t *testing.T) {
+	contextSet := make(chan bool, 1)
+	settings := *serverSettings
+	settings.OnCEA = func(c diam.Conn, m *diam.Message) {
+		_, ok := smpeer.FromContext(c.Context())
+		contextSet <- ok
+	}
+	sm := New(&settings)
+	srv := diamtest.NewServer(sm, dict.Default)
+	defer srv.Close()
+
+	cli, err := diam.Dial(srv.Addr, nil, dict.Default)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cli.Close()
+	m := diam.NewRequest(diam.CapabilitiesExchange, 1001, dict.Default)
+	m.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
+	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
+	m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, localhostAddress)
+	m.NewAVP(avp.VendorID, avp.Mbit, 0, clientSettings.VendorID)
+	m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
+	m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(1001))
+	if _, err := m.WriteTo(cli); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case ok := <-contextSet:
+		if !ok {
+			t.Fatal("peer context not set when the CEA is written")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("OnCEA did not fire")
+	}
+}

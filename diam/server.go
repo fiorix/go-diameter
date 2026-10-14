@@ -315,15 +315,18 @@ func (w *response) writeLocked(b []byte) (int, error) {
 	if w.conn.server.WriteTimeout > 0 {
 		w.conn.rwc.SetWriteDeadline(time.Now().Add(w.conn.server.WriteTimeout))
 	}
+	var n int
+	var err error
 	msc, isMulti := w.conn.rwc.(MultistreamConn) // Note - SetWriteDeadline is not currently supported for SCTP
 	if isMulti {                                 // don't use buffered writer for muti-streamming writes it'll mix up streams
-		return msc.Write(b)
+		n, err = msc.Write(b)
+	} else if n, err = w.conn.buf.Writer.Write(b); err == nil {
+		err = w.conn.buf.Writer.Flush()
 	}
-	n, err := w.conn.buf.Writer.Write(b)
 	if err != nil {
-		return 0, err
-	}
-	if err = w.conn.buf.Writer.Flush(); err != nil {
+		// A partial frame may be on the wire and the bufio.Writer keeps
+		// returning this error, so the connection cannot be used again.
+		w.conn.rwc.Close()
 		return 0, err
 	}
 	return n, nil

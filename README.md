@@ -40,7 +40,7 @@ See the API documentation at https://pkg.go.dev/github.com/fiorix/go-diameter/v4
 - Ships with sample client, server, snoop agent and benchmark tool
 - [State machines](https://tools.ietf.org/html/rfc6733#section-5.6) for CER/CEA and DWR/DWA for clients and servers
 - TCP and SCTP support. SCTP support relies on kernel SCTP implementation and external github.com/ishidawataru/sctp
-  package and is currently tested and enabled on Linux (Go 1.25 or later)
+  package and is currently tested and enabled on Linux (Go 1.26 or later)
   
 ## Getting started
 

@@ -8,10 +8,10 @@ FD_REPO="${FD_REPO:-https://github.com/open5gs/freeDiameter.git}"
 FD_REF="${FD_REF:-main}"    # open5gs fork has no version tags
 SRC_DIR=/tmp/freediameter
 PREFIX=/usr/local
-GO_VERSION="${GO_VERSION:-1.25.0}"
+GO_VERSION="${GO_VERSION:-1.27.3}"
 
-# Install a recent Go toolchain (Ubuntu 24.04 only ships 1.22; go.mod
-# requires 1.25). Fetch the official tarball instead of relying on
+# Install a recent Go toolchain (the distro package lags; go.mod
+# requires 1.26). Fetch the official tarball instead of relying on
 # GOTOOLCHAIN auto-download, which needs DNS the test pod lacks.
 ARCH="$(uname -m)"
 case "${ARCH}" in
@@ -36,14 +36,22 @@ if [ -n "${FD_COMMIT:-}" ]; then
     git checkout "${FD_COMMIT}"
 fi
 
+# CMake 4 no longer supports the OLD behavior of CMP0022, which
+# libfdproto and libfdcore still request.
+sed -i 's/cmake_policy(SET CMP0022 OLD)/cmake_policy(SET CMP0022 NEW)/' \
+    libfdproto/CMakeLists.txt libfdcore/CMakeLists.txt
+
 mkdir build
 cd build
 # Keep ALL_EXTENSIONS off so per-extension BUILD_<NAME> flags work.
+# CMAKE_POLICY_VERSION_MINIMUM lets CMake 4 accept the project's old
+# cmake_minimum_required.
 # Disable extensions whose deps (json-schema-validator, MySQL client,
 # PostgreSQL, SWIG) we don't want to install; they aren't used by any
 # test scenario.
 cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
       -DDISABLE_SCTP:BOOL=ON \
       -DBUILD_TESTING:BOOL=OFF \
       -DBUILD_DICT_JSON:BOOL=OFF \

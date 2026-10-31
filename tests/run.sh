@@ -33,6 +33,7 @@ need_root
 have_rootfs || die "rootfs '${ROOTFS}' not found; see prereqs in this script"
 
 ensure_pod
+ensure_pod_addr
 ensure_container "${GO_CT}" "${GO_IDENTITY}"
 ensure_container "${FD_CT}" "${FD_IDENTITY}"
 ensure_certs

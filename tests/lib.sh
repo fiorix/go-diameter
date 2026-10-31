@@ -51,6 +51,22 @@ ensure_pod() {
     fi
 }
 
+# freeDiameterd exits with EINVAL unless the host has a non-loopback
+# address (it needs one for Host-IP-Address in CER/CEA, and it drops
+# loopback even from ListenOn). The pod netns only has lo, so add a dummy
+# interface with a TEST-NET-1 address. The containers lack CAP_NET_ADMIN,
+# so this enters the pod netns from the host.
+ensure_pod_addr() {
+    local ns="/run/sdme/pods/${POD_NAME}/netns"
+    [[ -e "${ns}" ]] || die "pod netns ${ns} not found"
+    if ! nsenter --net="${ns}" ip link show dummy0 >/dev/null 2>&1; then
+        log "adding dummy0 (192.0.2.1/32) to pod ${POD_NAME}"
+        nsenter --net="${ns}" ip link add dummy0 type dummy
+        nsenter --net="${ns}" ip addr add 192.0.2.1/32 dev dummy0
+        nsenter --net="${ns}" ip link set dummy0 up
+    fi
+}
+
 ensure_container() {
     local name="$1" hostname="$2"
     local hostfile="${LOG_ROOT}/hostname-${name}"
@@ -69,7 +85,7 @@ EOF
         return
     fi
     log "creating container ${name} (hostname=${hostname})"
-    sdme create "${name}" \
+    sdme create --name "${name}" \
         -r "${ROOTFS}" \
         --pod "${POD_NAME}" \
         -b "${REPO_DIR}:${CT_REPO}" \
@@ -112,7 +128,7 @@ build_go_binaries() {
     log "building Go test binaries in ${GO_CT}"
     ct_exec "${GO_CT}" /bin/sh -c "cd ${CT_REPO} && \
         mkdir -p ${CT_BIN} && \
-        GOTOOLCHAIN=local \
+        HOME=/root GOTOOLCHAIN=local GOPROXY=off \
         /usr/local/bin/go build -buildvcs=false -trimpath \
             -o ${CT_BIN}/ ./tests/go/..."
 }

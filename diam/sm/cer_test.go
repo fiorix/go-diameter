@@ -617,3 +617,99 @@ func TestHandleCER_PeerContextSetBeforeCEA(t *testing.T) {
 		t.Fatal("OnCEA did not fire")
 	}
 }
+
+// TestHandleCER_OriginStateID checks that the CEA carries the server's own
+// Origin-State-Id, the value its DWAs carry, and never the one from the CER
+// (RFC 6733 section 8.16). A peer that tracks Origin-State-Id resets the
+// connection when the value changes between the CEA and a DWA.
+func TestHandleCER_OriginStateID(t *testing.T) {
+	const peerOriginStateID = datatype.Unsigned32(1)
+	for _, tc := range []struct {
+		name   string
+		osid   datatype.Unsigned32 // the server's Settings.OriginStateID
+		appID  uint32              // 1001 is supported, 1000 is not
+		result uint32
+	}{
+		{"success", 1234, 1001, diam.Success},
+		{"error", 1234, 1000, diam.NoCommonApplication},
+		{"unset", 0, 1001, diam.Success},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			settings := *serverSettings
+			settings.OriginStateID = tc.osid
+			sm := New(&settings)
+			srv := diamtest.NewServer(sm, dict.Default)
+			defer srv.Close()
+			mc := make(chan *diam.Message, 1)
+			mux := diam.NewServeMux()
+			mux.HandleFunc("CEA", func(c diam.Conn, m *diam.Message) {
+				mc <- m
+			})
+			mux.HandleFunc("DWA", func(c diam.Conn, m *diam.Message) {
+				mc <- m
+			})
+			cli, err := diam.Dial(srv.Addr, mux, dict.Default)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer cli.Close()
+			receive := func(name string) *diam.Message {
+				t.Helper()
+				select {
+				case m := <-mc:
+					return m
+				case err := <-mux.ErrorReports():
+					t.Fatal(err)
+				case <-time.After(time.Second):
+					t.Fatalf("No %s received", name)
+				}
+				return nil
+			}
+			checkOriginStateID := func(name string, m *diam.Message) {
+				t.Helper()
+				a, err := m.FindAVP(avp.OriginStateID, 0)
+				if tc.osid == 0 {
+					if err == nil {
+						t.Fatalf("%s has Origin-State-Id %v, want none.\n%s", name, a.Data, m)
+					}
+					return
+				}
+				if err != nil {
+					t.Fatalf("%s is missing Origin-State-Id.\n%s", name, m)
+				}
+				if got := a.Data.(datatype.Unsigned32); got != tc.osid {
+					t.Fatalf("%s Origin-State-Id: got %d, want %d", name, got, tc.osid)
+				}
+			}
+
+			m := diam.NewRequest(diam.CapabilitiesExchange, 0, dict.Default)
+			m.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
+			m.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
+			m.NewAVP(avp.HostIPAddress, avp.Mbit, 0, localhostAddress)
+			m.NewAVP(avp.VendorID, avp.Mbit, 0, clientSettings.VendorID)
+			m.NewAVP(avp.ProductName, 0, 0, clientSettings.ProductName)
+			m.NewAVP(avp.OriginStateID, avp.Mbit, 0, peerOriginStateID)
+			m.NewAVP(avp.AcctApplicationID, avp.Mbit, 0, datatype.Unsigned32(tc.appID))
+			if _, err := m.WriteTo(cli); err != nil {
+				t.Fatal(err)
+			}
+			cea := receive("CEA")
+			if !testResultCode(cea, tc.result) {
+				t.Fatalf("Unexpected result code.\n%s", cea)
+			}
+			checkOriginStateID("CEA", cea)
+			if tc.result != diam.Success {
+				return
+			}
+
+			m = diam.NewRequest(diam.DeviceWatchdog, 0, dict.Default)
+			m.NewAVP(avp.OriginHost, avp.Mbit, 0, clientSettings.OriginHost)
+			m.NewAVP(avp.OriginRealm, avp.Mbit, 0, clientSettings.OriginRealm)
+			m.NewAVP(avp.OriginStateID, avp.Mbit, 0, peerOriginStateID)
+			if _, err := m.WriteTo(cli); err != nil {
+				t.Fatal(err)
+			}
+			checkOriginStateID("DWA", receive("DWA"))
+		})
+	}
+}

@@ -1,10 +1,11 @@
 // diam-bad-client: deliberately malformed message sender for error-path
 // scenarios. Supports:
-//   -mode omit-origin-host : valid CER handshake, then CCR without
-//                            Origin-Host (expect 5005 DIAMETER_MISSING_AVP)
-//   -mode bad-avp-length   : valid CER handshake, then raw write of a
-//                            CCR header with a truncated AVP length
-//                            (expect 5014 DIAMETER_INVALID_AVP_LENGTH)
+//
+//	-mode omit-origin-host : valid CER handshake, then CCR without
+//	                         Origin-Host (expect 5005 DIAMETER_MISSING_AVP)
+//	-mode bad-avp-length   : valid CER handshake, then raw write of a
+//	                         CCR header with a truncated AVP length
+//	                         (expect 5014 DIAMETER_INVALID_AVP_LENGTH)
 package main
 
 import (

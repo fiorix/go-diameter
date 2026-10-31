@@ -26,8 +26,8 @@ import (
 const tgppVendorID = 10415
 
 const (
-	ccrInitial    = 1
-	ccrUpdate     = 2
+	ccrInitial     = 1
+	ccrUpdate      = 2
 	ccrTermination = 3
 )
 

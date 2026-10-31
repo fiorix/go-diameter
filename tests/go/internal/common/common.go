@@ -27,6 +27,9 @@ type Flags struct {
 	N           int
 	VendorID    uint
 	Network     string
+	// OriginStateID overrides the Origin-State-Id, which otherwise is
+	// the process start time.
+	OriginStateID uint
 }
 
 func RegisterFlags(defaultAddr string) *Flags {
@@ -42,6 +45,7 @@ func RegisterFlags(defaultAddr string) *Flags {
 	flag.IntVar(&f.N, "n", 1, "message count (for loops)")
 	flag.UintVar(&f.VendorID, "vendor", 13, "Vendor-Id")
 	flag.StringVar(&f.Network, "network", "tcp", "tcp or sctp")
+	flag.UintVar(&f.OriginStateID, "origin-state-id", 0, "Origin-State-Id (0 = process start time)")
 	return f
 }
 
@@ -50,12 +54,16 @@ func Settings(f *Flags, productName string) *sm.Settings {
 	if ip == nil {
 		log.Fatalf("invalid host-ip: %q", f.HostIP)
 	}
+	osid := datatype.Unsigned32(time.Now().Unix())
+	if f.OriginStateID != 0 {
+		osid = datatype.Unsigned32(f.OriginStateID)
+	}
 	return &sm.Settings{
 		OriginHost:       datatype.DiameterIdentity(f.OriginHost),
 		OriginRealm:      datatype.DiameterIdentity(f.OriginRealm),
 		VendorID:         datatype.Unsigned32(f.VendorID),
 		ProductName:      datatype.UTF8String(productName),
-		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
+		OriginStateID:    osid,
 		FirmwareRevision: 1,
 		HostIPAddresses:  []datatype.Address{datatype.Address(ip)},
 	}

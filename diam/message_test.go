@@ -25,21 +25,22 @@ import (
 //
 // Capabilities-Exchange-Request (CER)
 // {Code:257,Flags:0x80,Version:0x1,Length:204,ApplicationId:0,HopByHopId:0xa8cc407d,EndToEndId:0xa8c1b2b4}
-//   Origin-Host {Code:264,Flags:0x40,Length:12,VendorId:0,Value:DiameterIdentity{test},Padding:0}
-//   Origin-Realm {Code:296,Flags:0x40,Length:20,VendorId:0,Value:DiameterIdentity{localhost},Padding:3}
-//   Host-IP-Address {Code:257,Flags:0x40,Length:16,VendorId:0,Value:Address{10.1.0.1},Padding:2}
-//   Vendor-Id {Code:266,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{13}}
-//   Product-Name {Code:269,Flags:0x0,Length:20,VendorId:0,Value:UTF8String{go-diameter},Padding:1}
-//   Origin-State-Id {Code:278,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{1397760650}}
-//   Supported-Vendor-Id {Code:265,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{10415}}
-//   Supported-Vendor-Id {Code:265,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{13}}
-//   Auth-Application-Id {Code:258,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{4}}
-//   Inband-Security-Id {Code:299,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{0}}
-//   Vendor-Specific-Application-Id {Code:260,Flags:0x40,Length:32,VendorId:0,Value:Grouped{
-//     Auth-Application-Id {Code:258,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{4}},
-//     Vendor-Id {Code:266,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{10415}},
-//   }}
-//   Firmware-Revision {Code:267,Flags:0x0,Length:12,VendorId:0,Value:Unsigned32{1}}
+//
+//	Origin-Host {Code:264,Flags:0x40,Length:12,VendorId:0,Value:DiameterIdentity{test},Padding:0}
+//	Origin-Realm {Code:296,Flags:0x40,Length:20,VendorId:0,Value:DiameterIdentity{localhost},Padding:3}
+//	Host-IP-Address {Code:257,Flags:0x40,Length:16,VendorId:0,Value:Address{10.1.0.1},Padding:2}
+//	Vendor-Id {Code:266,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{13}}
+//	Product-Name {Code:269,Flags:0x0,Length:20,VendorId:0,Value:UTF8String{go-diameter},Padding:1}
+//	Origin-State-Id {Code:278,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{1397760650}}
+//	Supported-Vendor-Id {Code:265,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{10415}}
+//	Supported-Vendor-Id {Code:265,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{13}}
+//	Auth-Application-Id {Code:258,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{4}}
+//	Inband-Security-Id {Code:299,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{0}}
+//	Vendor-Specific-Application-Id {Code:260,Flags:0x40,Length:32,VendorId:0,Value:Grouped{
+//	  Auth-Application-Id {Code:258,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{4}},
+//	  Vendor-Id {Code:266,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{10415}},
+//	}}
+//	Firmware-Revision {Code:267,Flags:0x0,Length:12,VendorId:0,Value:Unsigned32{1}}
 var testMessage = []byte{
 	0x01, 0x00, 0x00, 0xcc,
 	0x80, 0x00, 0x01, 0x01,
@@ -95,6 +96,7 @@ var testMessage = []byte{
 }
 
 // CCR
+//
 //	Diameter Protocol
 //		Version: 0x01
 //		Length: 264

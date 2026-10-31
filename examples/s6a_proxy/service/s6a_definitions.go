@@ -71,8 +71,9 @@ type AIA struct {
 
 // Definitions for ULA, see sample below:
 //
-//Update-Location-Answer (ULA)
-//{Code:316,Flags:0x40,Version:0x1,Length:516,ApplicationId:16777251,HopByHopId:0x22910d0a,EndToEndId:0x8d330652}
+// Update-Location-Answer (ULA)
+// {Code:316,Flags:0x40,Version:0x1,Length:516,ApplicationId:16777251,HopByHopId:0x22910d0a,EndToEndId:0x8d330652}
+//
 //	Session-Id {Code:263,Flags:0x40,Length:24,VendorId:0,Value:UTF8String{session;89988919},Padding:0}
 //	ULA-Flags {Code:1406,Flags:0xc0,Length:16,VendorId:10415,Value:Unsigned32{1}}
 //	Subscription-Data {Code:1400,Flags:0xc0,Length:380,VendorId:10415,Value:Grouped{
@@ -111,7 +112,6 @@ type AIA struct {
 //	Origin-Host {Code:264,Flags:0x40,Length:28,VendorId:0,Value:DiameterIdentity{hss.openair4G.eur},Padding:3}
 //	Origin-Realm {Code:296,Flags:0x40,Length:24,VendorId:0,Value:DiameterIdentity{openair4G.eur},Padding:3}
 //	Result-Code {Code:268,Flags:0x40,Length:12,VendorId:0,Value:Unsigned32{2001}}
-//
 type AMBR struct {
 	MaxRequestedBandwidthUL uint32 `avp:"Max-Requested-Bandwidth-UL"`
 	MaxRequestedBandwidthDL uint32 `avp:"Max-Requested-Bandwidth-DL"`

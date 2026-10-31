@@ -33,7 +33,7 @@ func TestStateMachineTCP(t *testing.T) {
 	testStateMachine(t, "tcp")
 }
 
-/// TestStateMachine establishes a connection with a test server and
+// TestStateMachine establishes a connection with a test server and
 // sends a Re-Auth-Request message to ensure the handshake was
 // completed and that the RAR handler has context from the peer.
 func testStateMachine(t *testing.T, network string) {

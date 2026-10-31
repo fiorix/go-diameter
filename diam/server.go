@@ -915,7 +915,7 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 		if err != nil {
 			return err
 		}
-	}	
+	}
 	conn, err := Listen(network, addr)
 	if err != nil {
 		return err

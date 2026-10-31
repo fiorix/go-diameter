@@ -59,6 +59,10 @@ declare -a results
 for scen in "${SCENARIO_FILES[@]}"; do
     name="$(basename "${scen}" .sh)"
     dir="${REPO_DIR}/tests/logs/${name}"
+    # Start from an empty directory: scenarios wait on fd.log and the go
+    # logs while the peer that truncates them is still starting, so a log
+    # left by the previous run would satisfy the wait and the asserts.
+    rm -rf "${dir}"
     mkdir -p "${dir}"
     log "== scenario: ${name} =="
     wait_for_port_free "${GO_PORT}" || true

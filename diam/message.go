@@ -536,7 +536,11 @@ func (m *Message) FindAVPsWithPath(path []interface{}, vendorID uint32) ([]*AVP,
 func (m *Message) Answer(resultCode uint32) *Message {
 	nm := NewMessage(
 		m.Header.CommandCode,
-		m.Header.CommandFlags&^RequestFlag, // Reset the Request bit.
+		// RFC 6733 section 6.2: the answer has the P bit of the request.
+		// R is cleared, and T, E and the reserved bits are not carried
+		// over: section 3 forbids T in answers and requires the reserved
+		// bits to be zero.
+		m.Header.CommandFlags&ProxiableFlag,
 		m.Header.ApplicationID,
 		m.Header.HopByHopID,
 		m.Header.EndToEndID,

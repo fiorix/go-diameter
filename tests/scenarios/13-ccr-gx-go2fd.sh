@@ -28,6 +28,7 @@ sdme exec "${FD_CT}" -- /bin/sh "${wrapper}" &
 fd_pid=$!
 trap 'kill_pids ${fd_pid:-} ${go_pid:-}' EXIT
 wait_for_line "${fd_log}" "freeDiameterd daemon initialized" 15
+wait_for_port "${FD_PORT}" 15
 
 wrapper=$(ct_wrapper_path "${go_log}" "${CT_BIN}/diam-cc-client"  -addr "127.0.0.1:${FD_PORT}"  -origin-host "${GO_IDENTITY}" -origin-realm "${REALM}"  -peer-realm "${REALM}"  -app-id 16777238 -timeout 10s  -extra-dicts "${CT_REPO}/diam/dict/testdata/gx_credit_control.xml")
 sdme exec "${GO_CT}" -- /bin/sh "${wrapper}" &

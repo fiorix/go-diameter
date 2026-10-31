@@ -30,6 +30,7 @@ sdme exec "${GO_CT}" -- /bin/sh "${wrapper}" &
 go_pid=$!
 trap 'kill_pids ${go_pid:-} ${fd_pid:-}; stop_processes_in "${GO_CT}" diam-cc-server' EXIT
 wait_for_line "${go_log}" "cc server listening" 10
+wait_for_port "${GO_PORT}" 10
 
 wrapper=$(ct_wrapper_path "${fd_log}" /usr/local/bin/freeDiameterd -c "${ct_scen}/freeDiameter.conf" -d)
 sdme exec "${FD_CT}" -- /bin/sh "${wrapper}" &
@@ -40,7 +41,7 @@ for _ in $(seq 1 ${N}); do
     sdme exec "${FD_CT}" -- /usr/bin/pkill -USR1 -x freeDiameterd || true
     sleep 0.3
 done
-sleep 2
+wait_for_count "${fd_log}" "RESULT_CODE.*2001|Result-Code.*2001" "${N}" 10 || true
 
 ok=$(grep -cE "RESULT_CODE.*2001|Result-Code.*2001" "${fd_log}" || true)
 [[ "${ok}" -ge ${N} ]] || { log "expected >=${N} 2001, got ${ok}"; exit 1; }

@@ -31,6 +31,7 @@ sdme exec "${GO_CT}" -- /bin/sh "${wrapper}" &
 gos_pid=$!
 trap 'kill_pids ${gos_pid:-} ${fd_pid:-} ${goc_pid:-}; stop_processes_in "${GO_CT}" "diam-s6a"' EXIT
 wait_for_line "${go_log}" "s6a server listening" 10
+wait_for_port "${GO_PORT}" 10
 
 # 2) Start FD (both peer roles)
 wrapper=$(ct_wrapper_path "${fd_log}" /usr/local/bin/freeDiameterd -c "${ct_scen}/freeDiameter.conf" -d)
@@ -44,6 +45,7 @@ for _ in 1 2 3; do
     sleep 0.3
 done
 
+wait_for_port "${FD_PORT}" 15
 # 4) go client sends AIR to FD
 sdme exec "${GO_CT}" -- "${CT_BIN}/diam-s6a-client" \
     -addr "127.0.0.1:${FD_PORT}" \

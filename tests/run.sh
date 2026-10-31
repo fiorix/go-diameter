@@ -61,6 +61,8 @@ for scen in "${SCENARIO_FILES[@]}"; do
     dir="${REPO_DIR}/tests/logs/${name}"
     mkdir -p "${dir}"
     log "== scenario: ${name} =="
+    wait_for_port_free "${GO_PORT}" || true
+    wait_for_port_free "${FD_PORT}" || true
     start_ts=$(date +%s)
     if SCEN_NAME="${name}" SCEN_DIR="${dir}" bash "${scen}"; then
         status="PASS"; pass=$((pass+1))

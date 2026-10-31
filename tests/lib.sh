@@ -189,6 +189,59 @@ wait_for_line() {
     return 1
 }
 
+# pod_listening <port>
+# Succeeds if something in the pod listens on TCP <port>. The containers
+# share the pod netns, so the host can check it with ss through nsenter.
+pod_listening() {
+    nsenter --net="/run/sdme/pods/${POD_NAME}/netns" \
+        ss -Hltn "sport = :$1" 2>/dev/null | grep -q .
+}
+
+# wait_for_port <port> [timeout]
+# Wait until something in the pod listens on TCP <port>. The peers log
+# "listening on" or "daemon initialized" before their socket is bound, so
+# dialing on the log line alone races the listener.
+wait_for_port() {
+    local port="$1" timeout="${2:-15}"
+    local deadline=$(( $(date +%s) + timeout ))
+    while (( $(date +%s) < deadline )); do
+        pod_listening "${port}" && return 0
+        sleep 0.2
+    done
+    log "timeout: nothing listening on tcp/${port} in pod ${POD_NAME} after ${timeout}s"
+    return 1
+}
+
+# wait_for_port_free <port> [timeout]
+# Wait until nothing listens on TCP <port>, so a listener left by the
+# previous scenario cannot satisfy the next scenario's wait_for_port.
+wait_for_port_free() {
+    local port="$1" timeout="${2:-10}"
+    local deadline=$(( $(date +%s) + timeout ))
+    while (( $(date +%s) < deadline )); do
+        pod_listening "${port}" || return 0
+        sleep 0.2
+    done
+    log "timeout: tcp/${port} still has a listener in pod ${POD_NAME} after ${timeout}s"
+    return 1
+}
+
+# wait_for_count <file> <pattern> <n> [timeout]
+# Wait until at least <n> lines of <file> match <pattern>.
+wait_for_count() {
+    local file="$1" pattern="$2" n="$3" timeout="${4:-10}"
+    local deadline=$(( $(date +%s) + timeout ))
+    local got=0
+    while (( $(date +%s) < deadline )); do
+        got=$(grep -cE -- "${pattern}" "${file}" 2>/dev/null) || true
+        got=${got:-0}
+        (( got >= n )) && return 0
+        sleep 0.2
+    done
+    log "timeout: ${got}/${n} lines matching '${pattern}' in ${file} after ${timeout}s"
+    return 1
+}
+
 assert_in_log() {
     local file="$1" pattern="$2"
     if ! grep -qE -- "${pattern}" "${file}" 2>/dev/null; then

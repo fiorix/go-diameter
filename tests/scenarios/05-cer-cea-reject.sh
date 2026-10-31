@@ -25,6 +25,7 @@ sdme exec "${FD_CT}" -- /bin/sh "${wrapper}" &
 fd_pid=$!
 trap 'kill_pids ${fd_pid:-} ${go_pid:-}' EXIT
 wait_for_line "${fd_log}" "freeDiameterd daemon initialized" 15
+wait_for_port "${FD_PORT}" 15
 
 # Use a bogus Origin-Host that isn't in FD's ConnectPeer or acl_wl list.
 wrapper=$(ct_wrapper_path "${go_log}" "${CT_BIN}/diam-smoke-client"  -addr "127.0.0.1:${FD_PORT}"  -origin-host "rogue.evil.example" -origin-realm "evil.example"  -timeout 3s -dpr=false)

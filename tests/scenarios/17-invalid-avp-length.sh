@@ -30,6 +30,7 @@ sdme exec "${FD_CT}" -- /bin/sh "${wrapper}" &
 fd_pid=$!
 trap 'kill_pids ${fd_pid:-} ${go_pid:-}' EXIT
 wait_for_line "${fd_log}" "freeDiameterd daemon initialized" 15
+wait_for_port "${FD_PORT}" 15
 
 sdme exec "${GO_CT}" -- "${CT_BIN}/diam-bad-client" \
     -addr "127.0.0.1:${FD_PORT}" \

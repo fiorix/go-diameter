@@ -28,6 +28,7 @@ trap 'kill_pids ${fd_pid:-} ${go_pid:-}' EXIT
 
 wait_for_line "${fd_log}" "freeDiameterd daemon initialized" 15 \
     || { log "FD didn't start"; exit 1; }
+wait_for_port "${FD_PORT}" 15
 
 # Run go client.
 wrapper=$(ct_wrapper_path "${go_log}" "${CT_BIN}/diam-smoke-client"  -addr "127.0.0.1:${FD_PORT}"  -origin-host "${GO_IDENTITY}" -origin-realm "${REALM}"  -peer-host "${FD_IDENTITY}" -peer-realm "${REALM}"  -timeout 5s -dpr)

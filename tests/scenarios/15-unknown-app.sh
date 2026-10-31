@@ -25,6 +25,7 @@ sdme exec "${FD_CT}" -- /bin/sh "${wrapper}" &
 fd_pid=$!
 trap 'kill_pids ${fd_pid:-} ${go_pid:-}' EXIT
 wait_for_line "${fd_log}" "freeDiameterd daemon initialized" 15
+wait_for_port "${FD_PORT}" 15
 
 # diam-cc-client advertises Auth-Application-Id=4 in CER. FD hasn't
 # loaded Credit-Control, so no common application.

@@ -24,6 +24,7 @@ go_pid=$!
 trap 'kill_pids ${go_pid:-} ${fd_pid:-}; stop_processes_in "${GO_CT}" diam-smoke-server' EXIT
 
 wait_for_line "${go_log}" "listening on" 10 || { log "go server didn't start"; exit 1; }
+wait_for_port "${GO_PORT}" 10
 
 wrapper=$(ct_wrapper_path "${fd_log}" /usr/local/bin/freeDiameterd -c "${ct_scen}/freeDiameter.conf" -d)
 sdme exec "${FD_CT}" -- /bin/sh "${wrapper}" &

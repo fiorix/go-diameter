@@ -30,6 +30,7 @@ sdme exec "${FD_CT}" -- /bin/sh "${wrapper}" &
 fd_pid=$!
 trap 'kill_pids ${fd_pid:-} ${go_pid:-}' EXIT
 wait_for_line "${fd_log}" "freeDiameterd daemon initialized" 15
+wait_for_port "${FD_PORT}" 15
 
 wrapper=$(ct_wrapper_path "${go_log}" "${CT_BIN}/diam-echo-client"  -addr "127.0.0.1:${FD_PORT}"  -origin-host "${GO_IDENTITY}" -origin-realm "${REALM}"  -peer-host "${FD_IDENTITY}" -peer-realm "${REALM}"  -dict "${CT_DICT}/test_app.xml"  -n 100 -timeout 15s)
 sdme exec "${GO_CT}" -- /bin/sh "${wrapper}" &

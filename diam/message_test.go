@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/hex"
 	"io/ioutil"
+	"log"
 	"net"
 	"reflect"
 	"strings"
@@ -203,6 +204,39 @@ func TestReadMessageUnregisteredApplication(t *testing.T) {
 	want := datatype.Unknown{0x00, 0x00, 0x07, 0xd1} // 2001, big-endian
 	if got, ok := rc.Data.(datatype.Unknown); !ok || !bytes.Equal(got, want) {
 		t.Fatalf("Result-Code raw bytes = %#v, want %#v", rc.Data, want)
+	}
+}
+
+// TestReadMessageUnknownCommandIsQuiet checks that decoding a command the
+// dictionary does not know writes nothing to the standard logger. Any peer
+// can send such commands before the capabilities exchange, so logging each
+// one would let it flood the process log. Requests and answers size their
+// AVP slices separately, so both are decoded.
+func TestReadMessageUnknownCommandIsQuiet(t *testing.T) {
+	var logged bytes.Buffer
+	prev := log.Writer()
+	log.SetOutput(&logged)
+	defer log.SetOutput(prev)
+
+	for _, flags := range []uint8{RequestFlag, 0} {
+		m := NewMessage(303, flags, 16777216, 1, 1, dict.Default)
+		if _, err := m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String("cx;1;1")); err != nil {
+			t.Fatal(err)
+		}
+		var buf bytes.Buffer
+		if _, err := m.WriteTo(&buf); err != nil {
+			t.Fatal(err)
+		}
+		got, err := ReadMessage(&buf, dict.Default)
+		if err != nil {
+			t.Fatalf("flags %#02x: ReadMessage: %v", flags, err)
+		}
+		if len(got.AVP) != 1 {
+			t.Fatalf("flags %#02x: got %d AVPs, want 1", flags, len(got.AVP))
+		}
+	}
+	if logged.Len() > 0 {
+		t.Fatalf("decoding an unknown command wrote to the standard logger: %q", logged.String())
 	}
 }
 

@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net"
 	"strings"
@@ -25,18 +24,9 @@ import (
 // MessageBufferLength is the default buffer length for Diameter messages.
 var MessageBufferLength = 1 << 10
 
-// unknownCommand is used when the dictionary has no application/command
-// entry for a received message (e.g. an application whose dictionary isn't
-// loaded at all). Its permissive rule set lets decodeAVPs run generically
-// instead of aborting -- AVP-level lookups already degrade to
-// datatype.Unknown for codes the dictionary doesn't recognize
-// (dict.FindAVPByCode), so a message like this still decodes instead of
-// erroring out, even though its AVPs come back untyped.
-var unknownCommand = &dict.Command{
-	Name:    "Unknown",
-	Request: dict.CommandRule{Rule: make([]*dict.Rule, 32)},
-	Answer:  dict.CommandRule{Rule: make([]*dict.Rule, 32)},
-}
+// unknownCommandAVPs is the AVP capacity preallocated for a message whose
+// command is not in the dictionary, which has no rules to size it by.
+const unknownCommandAVPs = 32
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -128,9 +118,13 @@ func (m *Message) readHeader(r io.Reader, buf *bytes.Buffer) (cmd *dict.Command,
 		m.Header.CommandCode,
 	)
 	if err != nil {
-		log.Printf("diam: no dictionary command for app %d code %d, decoding generically: %v",
-			m.Header.ApplicationID, m.Header.CommandCode, err)
-		cmd = unknownCommand
+		// A command the dictionary does not know is not malformed wire
+		// data. Decode it generically and leave it to the dispatcher, which
+		// routes it to the ALL handler or reports it, instead of failing
+		// the read and closing the connection. Its AVPs are looked up by
+		// code and come back as datatype.Unknown when the dictionary does
+		// not know them either.
+		return nil, stream, nil
 	}
 	return cmd, stream, nil
 }
@@ -171,7 +165,12 @@ func (m *Message) readBody(r io.Reader, buf *bytes.Buffer, cmd *dict.Command, st
 	return nil
 }
 
+// maxAVPsFor returns the AVP capacity to preallocate for a message of cmd,
+// which is nil when the command is not in the dictionary.
 func (m *Message) maxAVPsFor(cmd *dict.Command) int {
+	if cmd == nil {
+		return unknownCommandAVPs
+	}
 	if m.Header.CommandFlags&RequestFlag == RequestFlag {
 		return len(cmd.Request.Rule)
 	}

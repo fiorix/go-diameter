@@ -5,6 +5,7 @@
 package diam
 
 import (
+	"errors"
 	"io"
 	"net"
 	"testing"
@@ -62,5 +63,39 @@ func TestWriteErrorClosesConn(t *testing.T) {
 	c.SetReadDeadline(time.Now().Add(2 * time.Second))
 	if _, err := io.Copy(io.Discard, c); err != nil {
 		t.Fatalf("connection still open after a failed write: read error %v, want EOF", err)
+	}
+}
+
+// failingMultistreamConn is a MultistreamConn whose writes fail, as an SCTP
+// send does for a message that is too large or names an invalid stream.
+type failingMultistreamConn struct {
+	MultistreamConn
+	closed bool
+}
+
+func (c *failingMultistreamConn) Write(b []byte) (int, error) {
+	return 0, errors.New("sctp: message too long")
+}
+
+func (c *failingMultistreamConn) Close() error {
+	c.closed = true
+	return nil
+}
+
+// TestWriteErrorKeepsMultistreamConn checks that a failed write on a
+// multistream (SCTP) connection is returned without closing it. SCTP sends
+// whole messages, so a failed send leaves no partial frame, and some errors
+// only affect that one message.
+func TestWriteErrorKeepsMultistreamConn(t *testing.T) {
+	rwc := &failingMultistreamConn{}
+	c, err := (&Server{}).newConn(rwc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := c.writer.Write([]byte("message")); err == nil {
+		t.Fatal("write succeeded, want the transport error")
+	}
+	if rwc.closed {
+		t.Fatal("a failed SCTP write closed the association")
 	}
 }

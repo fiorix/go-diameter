@@ -315,12 +315,15 @@ func (w *response) writeLocked(b []byte) (int, error) {
 	if w.conn.server.WriteTimeout > 0 {
 		w.conn.rwc.SetWriteDeadline(time.Now().Add(w.conn.server.WriteTimeout))
 	}
-	var n int
-	var err error
 	msc, isMulti := w.conn.rwc.(MultistreamConn) // Note - SetWriteDeadline is not currently supported for SCTP
 	if isMulti {                                 // don't use buffered writer for muti-streamming writes it'll mix up streams
-		n, err = msc.Write(b)
-	} else if n, err = w.conn.buf.Writer.Write(b); err == nil {
+		// SCTP sends whole messages, so a failed send leaves nothing
+		// partial behind, and some errors (EMSGSIZE, an invalid stream)
+		// only affect this message. A dead association fails the reads too.
+		return msc.Write(b)
+	}
+	n, err := w.conn.buf.Writer.Write(b)
+	if err == nil {
 		err = w.conn.buf.Writer.Flush()
 	}
 	if err != nil {

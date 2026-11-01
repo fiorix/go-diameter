@@ -1,0 +1,18 @@
+# test_app.fdx configuration.
+# mode is a bitmask (1=client, 2=server, 3=both).
+# Codes must match tests/dicts/test_app.xml on the go-diameter side.
+
+mode = ${TEST_APP_MODE};
+vendor-id = ${TEST_APP_VENDOR};
+appli-id = ${TEST_APP_APP};
+cmd-id = ${TEST_APP_CMD};
+avp-id = ${TEST_APP_AVP};
+# Disable long-avp: the test_app server callback errors if the request
+# lacks it, and our go clients don't send one by default.
+long-avp-id = 0;
+long-avp-len = 0;
+
+# Only used when mode includes client (1 or 3).
+dest-realm = "${FD_PEER_REALM}";
+dest-host  = "${FD_PEER_IDENTITY}";
+Signal = 10;

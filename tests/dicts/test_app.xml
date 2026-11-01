@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Mirror of FreeDiameter's test_app.fdx default codes:
+    Vendor-Id        = 999999
+    Application-Id   = 123456 (auth)
+    Command (Test)   = 234567
+    Test-AVP         = 345678 (OctetString)
+
+  Loaded on the go-diameter side via dict.Default.Load() so the same
+  wire format decodes cleanly against FD test_app (mode=server|client).
+-->
+<diameter>
+  <vendor id="999999" name="Test"/>
+
+  <application id="123456" type="auth" name="Test-App">
+    <command code="234567" short="TST" name="Test">
+      <request>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Destination-Realm" required="true" max="1"/>
+        <rule avp="Destination-Host" required="false" max="1"/>
+        <rule avp="User-Name" required="false" max="1"/>
+        <rule avp="Test-AVP" required="false" max="1"/>
+      </request>
+      <answer>
+        <rule avp="Session-Id" required="true" max="1"/>
+        <rule avp="Result-Code" required="true" max="1"/>
+        <rule avp="Origin-Host" required="true" max="1"/>
+        <rule avp="Origin-Realm" required="true" max="1"/>
+        <rule avp="Test-AVP" required="false" max="1"/>
+      </answer>
+    </command>
+
+    <avp name="Test-AVP" code="345678" must="M" may="V" must-not="" may-encrypt="">
+      <data type="Unsigned32"/>
+    </avp>
+  </application>
+</diameter>

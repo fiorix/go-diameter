@@ -256,8 +256,8 @@ kill_pids() {
     # First ensure the in-container long-running processes are dead,
     # otherwise sdme exec (machinectl shell) won't exit and the waits
     # below hang.
-    sdme exec "${FD_CT:-fdiam}" -- /usr/bin/pkill -KILL -f freeDiameterd 2>/dev/null || true
-    sdme exec "${GO_CT:-godiam}" -- /usr/bin/pkill -KILL -f "diam-" 2>/dev/null || true
+    stop_processes_in "${FD_CT:-fdiam}" freeDiameterd
+    stop_processes_in "${GO_CT:-godiam}" "diam-"
     for pid in "$@"; do
         [[ -n "${pid:-}" ]] || continue
         kill -KILL "${pid}" 2>/dev/null || true
@@ -267,7 +267,19 @@ kill_pids() {
 
 stop_processes_in() {
     local ct="$1" pattern="$2"
+    # sdme resolves a unique name prefix to a container, so acting on a
+    # harness container that does not exist could reach another one
+    # (godiam -> godiam-unit). Only touch an exact match.
+    have_container "${ct}" || return 0
     sdme exec "${ct}" -- /usr/bin/pkill -KILL -f "${pattern}" 2>/dev/null || true
+}
+
+# stop_container stops ct only if a container with exactly that name
+# exists; see stop_processes_in.
+stop_container() {
+    local ct="$1"
+    have_container "${ct}" || return 0
+    sdme stop "${ct}" 2>/dev/null || true
 }
 
 cleanup_scenario() {

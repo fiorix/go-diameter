@@ -86,7 +86,8 @@ echo "pass=${pass} fail=${fail}"
 
 if (( KEEP_POD == 0 )); then
     log "stopping containers (use --keep-pod to leave them up)"
-    sdme stop "${GO_CT}" "${FD_CT}" 2>/dev/null || true
+    stop_container "${GO_CT}"
+    stop_container "${FD_CT}"
 fi
 
 (( fail == 0 ))

@@ -7,8 +7,8 @@
 #   sudo ./tests/run.sh --keep-pod     # leave pod+containers up after
 #
 # Prereqs (one-time):
-#   sudo sdme fs import ubuntu docker.io/ubuntu:24.04 -v --install-packages=yes
-#   sudo sdme fs build godiam-fd tests/fs/build.conf -v
+#   sudo sdme fs import ubuntu docker.io/ubuntu -v --install-packages=yes
+#   sudo sdme fs build godiam-fd tests/fs/build.conf -v   # -f after go.mod changes
 
 set -euo pipefail
 

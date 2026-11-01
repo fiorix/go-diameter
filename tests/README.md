@@ -14,6 +14,8 @@ Host:
 - `sdme` in PATH (https://github.com/fiorix/sdme)
 - `gettext-base` for `envsubst` (on Debian/Ubuntu: `apt install gettext-base`)
 - `openssl` for the one-time self-signed cert generation
+- `nsenter` (util-linux) and `ss` (iproute2), used from the host to add
+  an address to the pod netns and to wait for listening ports
 
 One-time rootfs build:
 
@@ -22,8 +24,12 @@ sudo sdme fs import ubuntu docker.io/ubuntu -v --install-packages=yes
 sudo sdme fs build godiam-fd tests/fs/build.conf -v
 ```
 
-This builds the freeDiameter daemon + extensions into the rootfs and
-installs the Go toolchain. Subsequent scenario runs reuse the rootfs.
+This builds the freeDiameter daemon + extensions into the rootfs,
+installs the Go toolchain (1.27.3 by default, `GO_VERSION` in
+`tests/fs/scripts/install-fd.sh`) and fills the Go module cache from
+`go.mod`, since the test pod has no network. Subsequent scenario runs
+reuse the rootfs. Rebuild it with `-f` when `go.mod` or `go.sum`
+change. Last built on Ubuntu 26.04.
 
 ## Running
 
@@ -61,21 +67,21 @@ Numbered files under `tests/scenarios/`. Each script renders its own
 freeDiameter config from `tests/configs/*.tmpl`, starts the peers,
 asserts against logs, and returns 0/non-zero.
 
-Current status on the initial run — see `RESULTS.md` for per-failure
-diagnosis.
+Status on the latest run; see `RESULTS.md` for per-failure diagnosis.
+Three consecutive runs give the same result.
 
 | # | Name | Status | Coverage |
 |---|---|---|---|
 | 01 | cer-cea-go2fd            | PASS | CER/CEA + DPR |
 | 02 | cer-cea-fd2go            | PASS | CER/CEA (FD initiates) |
 | 03 | dwr-dwa-go2fd            | PASS | Watchdog, go-side timer |
-| 04 | dwr-dwa-fd2go            | PASS | Watchdog, FD TwTimer |
+| 04 | dwr-dwa-fd2go            | PASS | Watchdog, FD TwTimer, Origin-State-Id in CEA and DWA |
 | 05 | cer-cea-reject           | PASS | 3010 DIAMETER_UNKNOWN_PEER |
 | 06 | echo-go2fd               | FAIL | rt_default missing -> 3002 |
 | 07 | echo-fd2go               | FAIL | SIGUSR1 path for test_app client |
 | 08 | s6a-ulr-go2fd            | FAIL | test_app handles single cmd |
 | 09 | s6a-ulr-fd2go            | FAIL | SIGUSR1 path |
-| 10 | s6a-air-both-directions  | FAIL | combines 07+08 |
+| 10 | s6a-air-both-directions  | FAIL | go2.test.local rejected with 3010 |
 | 11 | ccr-ro-go2fd             | FAIL | 5001 without dict_dcca |
 | 12 | ccr-ro-fd2go             | FAIL | SIGUSR1 path |
 | 13 | ccr-gx-go2fd             | FAIL | Gx XML re-registers CC(272) |
@@ -102,7 +108,9 @@ diagnosis.
 
 1. Add a new numbered script under `tests/scenarios/`.
 2. Render one of the `configs/*.tmpl` files with `envsubst`.
-3. Start FD and Go binaries via `sdme exec`.
+3. Start FD and Go binaries via `sdme exec`. Before dialing a peer,
+   `wait_for_port` on its port: both peers log that they are up before
+   their socket is bound.
 4. Assert with `grep`/`assert_in_log`.
 5. Make it executable; `run.sh` auto-discovers it.
 

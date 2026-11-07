@@ -502,11 +502,17 @@ func avpsWithPath(avps []*AVP, path []avpKey) []*AVP {
 // FindAVPs searches the Message for all avps that match the search criteria.
 // The code can be either the AVP code (int, uint32) or name (string).
 //
+// The AVP is matched on both its code and the Vendor-Id of the dictionary
+// AVP that code and vendorID resolve to, so an AVP with the same code but a
+// different Vendor-Id is not returned. Pass dict.UndefinedVendorID to match
+// on the code only.
+//
 // Example:
 //
-//	avps, err := m.FindAVPs(264)
-//	avps, err := m.FindAVPs(avp.OriginHost)
-//	avps, err := m.FindAVPs("Origin-Host")
+//	avps, err := m.FindAVPs(264, 0)
+//	avps, err := m.FindAVPs(avp.OriginHost, 0)
+//	avps, err := m.FindAVPs("Origin-Host", 0)
+//	avps, err := m.FindAVPs(avp.TGPPUserLocationInfo, 10415)
 func (m *Message) FindAVPs(code interface{}, vendorID uint32) ([]*AVP, error) {
 	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorID)
 
@@ -520,11 +526,17 @@ func (m *Message) FindAVPs(code interface{}, vendorID uint32) ([]*AVP, error) {
 // FindAVP searches the Message for a specific AVP.
 // The code can be either the AVP code (int, uint32) or name (string).
 //
+// The AVP is matched on both its code and the Vendor-Id of the dictionary
+// AVP that code and vendorID resolve to, so an AVP with the same code but a
+// different Vendor-Id is not returned. Pass dict.UndefinedVendorID to match
+// on the code only.
+//
 // Example:
 //
-//	avp, err := m.FindAVP(264)
-//	avp, err := m.FindAVP(avp.OriginHost)
-//	avp, err := m.FindAVP("Origin-Host")
+//	avp, err := m.FindAVP(264, 0)
+//	avp, err := m.FindAVP(avp.OriginHost, 0)
+//	avp, err := m.FindAVP("Origin-Host", 0)
+//	avp, err := m.FindAVP(avp.TGPPUserLocationInfo, 10415)
 func (m *Message) FindAVP(code interface{}, vendorID uint32) (*AVP, error) {
 	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorID)
 
@@ -544,11 +556,21 @@ func (m *Message) FindAVP(code interface{}, vendorID uint32) (*AVP, error) {
 // Used for example on group hierarchies.
 // The path elements can be either AVP code (int, uint32), name (string) or combination of them.
 //
+// The AVP is matched on both its code and the Vendor-Id of the dictionary
+// AVP that code and vendorID resolve to, so an AVP with the same code but a
+// different Vendor-Id is not returned. Pass dict.UndefinedVendorID to match
+// on the code only.
+//
+// vendorID applies to every element of the path. If the path mixes AVPs of
+// different vendors whose codes are shared with another vendor's AVPs, pass
+// dict.UndefinedVendorID.
+//
 // Example:
 //
-//	avp, err := m.FindAVPsWithPath([]interface{}{264})
-//	avp, err := m.FindAVPsWithPath([]interface{}{avp.OriginHost})
-//	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
+//	avp, err := m.FindAVPsWithPath([]interface{}{264}, 0)
+//	avp, err := m.FindAVPsWithPath([]interface{}{avp.OriginHost}, 0)
+//	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"}, 0)
+//	avp, err := m.FindAVPsWithPath([]interface{}{avp.SubscriptionData, avp.MSISDN}, 10415)
 func (m *Message) FindAVPsWithPath(path []interface{}, vendorID uint32) ([]*AVP, error) {
 	pathKeys := make([]avpKey, len(path))
 	for i, pathCode := range path {

@@ -78,3 +78,40 @@ func TestMessageFindAVPVendorID(t *testing.T) {
 		t.Errorf("FindAVPsWithPath(%v, 10415) = %v, %v; want no AVPs", path, avps, err)
 	}
 }
+
+// TestMessageFindAVPUndefinedVendorID checks that dict.UndefinedVendorID
+// keeps the code-only match: FindAVP, FindAVPs and FindAVPsWithPath return
+// AVPs that share the code whatever their Vendor-Id.
+func TestMessageFindAVPUndefinedVendorID(t *testing.T) {
+	m, err := ReadMessage(bytes.NewReader(testAIAWithOCOLR), dict.Default)
+	if err != nil {
+		t.Fatal(err)
+	}
+	vd := datatype.Unsigned32(30)
+	ck := datatype.OctetString(bytes.Repeat([]byte{0xcc}, 16))
+
+	for _, code := range []interface{}{"Confidentiality-Key", "OC-Validity-Duration", uint32(625)} {
+		avps, err := m.FindAVPs(code, dict.UndefinedVendorID)
+		if err != nil || len(avps) != 2 || avps[0].Data != vd || avps[1].Data != ck {
+			t.Errorf("FindAVPs(%v, UndefinedVendorID) = %v, %v; want the OC-Validity-Duration and the Confidentiality-Key",
+				code, avps, err)
+		}
+		// The OC-Validity-Duration in OC-OLR comes first in the message.
+		if a, err := m.FindAVP(code, dict.UndefinedVendorID); err != nil || a.Data != vd {
+			t.Errorf("FindAVP(%v, UndefinedVendorID) = %v, %v; want the OC-Validity-Duration", code, a, err)
+		}
+	}
+
+	for _, tc := range []struct {
+		path []interface{}
+		want datatype.Type
+	}{
+		{[]interface{}{avp.OCOLR, avp.OCValidityDuration}, vd},
+		{[]interface{}{avp.AuthenticationInfo, avp.UTRANVector, avp.ConfidentialityKey}, ck},
+	} {
+		avps, err := m.FindAVPsWithPath(tc.path, dict.UndefinedVendorID)
+		if err != nil || len(avps) != 1 || avps[0].Data != tc.want {
+			t.Errorf("FindAVPsWithPath(%v, UndefinedVendorID) = %v, %v; want only %v", tc.path, avps, err, tc.want)
+		}
+	}
+}

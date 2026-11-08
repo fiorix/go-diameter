@@ -425,11 +425,29 @@ func (m *Message) Len() int {
 	return l
 }
 
-func findFromAVP(avps []*AVP, code uint32, findMultiple bool) ([]*AVP, error) {
+// searchKey returns the {Code, VendorID} of dictAVP for matching AVPs in a
+// message. A vendorID of dict.UndefinedVendorID asks for no Vendor-Id
+// filter, so only the code is matched then.
+func searchKey(dictAVP *dict.AVP, vendorID uint32) avpKey {
+	if vendorID == dict.UndefinedVendorID {
+		return avpKey{dictAVP.Code, dict.UndefinedVendorID}
+	}
+	return avpKey{dictAVP.Code, dictAVP.VendorID}
+}
+
+// matches reports whether a has the code and Vendor-Id of key. AVPs of
+// different vendors may share a code (RFC 6733 section 4.1), e.g. the S6a
+// Confidentiality-Key and the RFC 7683 OC-Validity-Duration are both 625.
+func (key avpKey) matches(a *AVP) bool {
+	return a.Code == key.Code &&
+		(key.VendorID == dict.UndefinedVendorID || a.VendorID == key.VendorID)
+}
+
+func findFromAVP(avps []*AVP, key avpKey, findMultiple bool) ([]*AVP, error) {
 	var avpResult []*AVP
 	for _, a := range avps {
 
-		if a.Code == code {
+		if key.matches(a) {
 			avpResult = append(avpResult, a)
 			if !findMultiple {
 				return avpResult, nil
@@ -438,7 +456,7 @@ func findFromAVP(avps []*AVP, code uint32, findMultiple bool) ([]*AVP, error) {
 
 		if a.Data.Type() == GroupedAVPType {
 			groupedAVP := a.Data
-			result, err := findFromAVP(groupedAVP.(*GroupedAVP).AVP, code, findMultiple)
+			result, err := findFromAVP(groupedAVP.(*GroupedAVP).AVP, key, findMultiple)
 			if err == nil {
 				avpResult = append(avpResult, result...)
 				if !findMultiple {
@@ -457,13 +475,13 @@ func findFromAVP(avps []*AVP, code uint32, findMultiple bool) ([]*AVP, error) {
 
 // Strict path search (eg: in case of groups)
 // Can be also used to search AVPs as findFromAVP
-func avpsWithPath(avps []*AVP, path []uint32) []*AVP {
+func avpsWithPath(avps []*AVP, path []avpKey) []*AVP {
 	if len(path) == 0 {
 		return avps
 	}
 	var avsOnPath []*AVP
 	for _, avp := range avps {
-		if avp.Code != path[0] {
+		if !path[0].matches(avp) {
 			continue
 		}
 		if len(path) == 1 { // Reached end
@@ -484,11 +502,17 @@ func avpsWithPath(avps []*AVP, path []uint32) []*AVP {
 // FindAVPs searches the Message for all avps that match the search criteria.
 // The code can be either the AVP code (int, uint32) or name (string).
 //
+// The AVP is matched on both its code and the Vendor-Id of the dictionary
+// AVP that code and vendorID resolve to, so an AVP with the same code but a
+// different Vendor-Id is not returned. Pass dict.UndefinedVendorID to match
+// on the code only.
+//
 // Example:
 //
-//	avps, err := m.FindAVPs(264)
-//	avps, err := m.FindAVPs(avp.OriginHost)
-//	avps, err := m.FindAVPs("Origin-Host")
+//	avps, err := m.FindAVPs(264, 0)
+//	avps, err := m.FindAVPs(avp.OriginHost, 0)
+//	avps, err := m.FindAVPs("Origin-Host", 0)
+//	avps, err := m.FindAVPs(avp.TGPPUserLocationInfo, 10415)
 func (m *Message) FindAVPs(code interface{}, vendorID uint32) ([]*AVP, error) {
 	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorID)
 
@@ -496,17 +520,23 @@ func (m *Message) FindAVPs(code interface{}, vendorID uint32) ([]*AVP, error) {
 		return nil, err
 	}
 
-	return findFromAVP(m.AVP, dictAVP.Code, true)
+	return findFromAVP(m.AVP, searchKey(dictAVP, vendorID), true)
 }
 
 // FindAVP searches the Message for a specific AVP.
 // The code can be either the AVP code (int, uint32) or name (string).
 //
+// The AVP is matched on both its code and the Vendor-Id of the dictionary
+// AVP that code and vendorID resolve to, so an AVP with the same code but a
+// different Vendor-Id is not returned. Pass dict.UndefinedVendorID to match
+// on the code only.
+//
 // Example:
 //
-//	avp, err := m.FindAVP(264)
-//	avp, err := m.FindAVP(avp.OriginHost)
-//	avp, err := m.FindAVP("Origin-Host")
+//	avp, err := m.FindAVP(264, 0)
+//	avp, err := m.FindAVP(avp.OriginHost, 0)
+//	avp, err := m.FindAVP("Origin-Host", 0)
+//	avp, err := m.FindAVP(avp.TGPPUserLocationInfo, 10415)
 func (m *Message) FindAVP(code interface{}, vendorID uint32) (*AVP, error) {
 	dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, code, vendorID)
 
@@ -514,7 +544,7 @@ func (m *Message) FindAVP(code interface{}, vendorID uint32) (*AVP, error) {
 		return nil, err
 	}
 
-	result, err := findFromAVP(m.AVP, dictAVP.Code, false)
+	result, err := findFromAVP(m.AVP, searchKey(dictAVP, vendorID), false)
 
 	if err == nil {
 		return result[0], err
@@ -526,21 +556,31 @@ func (m *Message) FindAVP(code interface{}, vendorID uint32) (*AVP, error) {
 // Used for example on group hierarchies.
 // The path elements can be either AVP code (int, uint32), name (string) or combination of them.
 //
+// The AVP is matched on both its code and the Vendor-Id of the dictionary
+// AVP that code and vendorID resolve to, so an AVP with the same code but a
+// different Vendor-Id is not returned. Pass dict.UndefinedVendorID to match
+// on the code only.
+//
+// vendorID applies to every element of the path. If the path mixes AVPs of
+// different vendors whose codes are shared with another vendor's AVPs, pass
+// dict.UndefinedVendorID.
+//
 // Example:
 //
-//	avp, err := m.FindAVPsWithPath([]interface{}{264})
-//	avp, err := m.FindAVPsWithPath([]interface{}{avp.OriginHost})
-//	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"})
+//	avp, err := m.FindAVPsWithPath([]interface{}{264}, 0)
+//	avp, err := m.FindAVPsWithPath([]interface{}{avp.OriginHost}, 0)
+//	avp, err := m.FindAVPsWithPath([]interface{}{"Origin-Host"}, 0)
+//	avp, err := m.FindAVPsWithPath([]interface{}{avp.SubscriptionData, avp.MSISDN}, 10415)
 func (m *Message) FindAVPsWithPath(path []interface{}, vendorID uint32) ([]*AVP, error) {
-	pathCodes := make([]uint32, len(path))
+	pathKeys := make([]avpKey, len(path))
 	for i, pathCode := range path {
 		dictAVP, err := m.Dictionary().FindAVPWithVendor(m.Header.ApplicationID, pathCode, vendorID)
 		if err != nil {
 			return nil, err
 		}
-		pathCodes[i] = dictAVP.Code
+		pathKeys[i] = searchKey(dictAVP, vendorID)
 	}
-	return avpsWithPath(m.AVP, pathCodes), nil
+	return avpsWithPath(m.AVP, pathKeys), nil
 }
 
 // Answer creates an answer for the current Message
